@@ -89,7 +89,8 @@ else:
     call('screen_facets', lambda o: all(r['ok'] and r['cached'] for r in o['rows']) and len(o['rows']) == len(lvl1),
          families=lvl1)
     call('screen_facet', lambda o: not o['ok'] and ('cached-only' in o['error'] or 'chain' in o['error']), family=new)
-    call('relax_facet', lambda o: o['ok'] and o['cached'] and o.get('consistent', True), family='{1 0 -1}')
+    call('relax_facet', lambda o: o['ok'] and o['cached'] and o['consistent'] is False and 'gamma_basis' in o,
+         family='{1 0 -1}')     # FIRE-continued 124.1 > unrelaxed 121.6 + 1: inconsistent
     r001 = call('relax_facet', lambda o: o['ok'] and o['cached'] and o['consistent'] is False
                 and 'relaxed gamma 247.2 > unrelaxed gamma 169.2' in o['inconsistent_reason'], family='{0 0 1}')
     call('relax_facet', lambda o: o['ok'] and o['cached'], family='{1 0 1}')
@@ -99,12 +100,15 @@ w = call('build_wulff', lambda o: o['ok'] and o['on_shape'] and o['next'] and 'c
          and all(r.get('run_dir') for r in o['facets']), level='best', n_samples=20)
 call('build_wulff', lambda o: 'ok' in o, level='2', n_samples=10)
 if MAT == 'paracetamol':
-    check('consistency guard', any(x['family'] == '{0 0 1}' for x in w.get('inconsistent', []))
-          and [r for r in w['facets'] if r['family'] == '{0 0 1}'][0]['level'] == 1
-          and any('not validated' in x for x in w['warnings']), '{0 0 1} excluded, level-1 value used, FF warning')
-    check('rejected runs', any(x['family'] == '{1 0 -1}' and x['gamma'] <= 0 for x in w.get('rejected_level2_runs', []))
-          and [r for r in w['facets'] if r['family'] == '{1 0 -1}'][0]['level'] == 2,
-          '{1 0 -1} n_periods-3 run (gamma <= 0) rejected, the consistent n_periods-2 run used')
+    lv = {r['family']: r['level'] for r in w['facets']}
+    bad = {x['family'] for x in w.get('inconsistent', [])}
+    check('consistency guard', '{0 0 1}' in bad and lv.get('{0 0 1}') == 1
+          and any('not validated' in x for x in w['warnings']),
+          '{0 0 1} excluded (247.2 > 169.2), level-1 value used, FF warning; inconsistent: %s' % sorted(bad))
+    check('guard per family', all(lv.get(f) == 1 for f in bad) and lv.get('{1 0 1}') == 2
+          and all(x['reason'] for x in w.get('rejected_level2_runs', [])),
+          'every inconsistent family at level 1, {1 0 1} (consistent) at level 2; %d rejected run(s) listed'
+          % len(w.get('rejected_level2_runs', [])))
     wi = call('build_wulff', lambda o: o['ok'] and [r for r in o['facets'] if r['family'] == '{0 0 1}'][0]['level'] == 2,
               level='best', n_samples=10, include_inconsistent=True)
 call('log_decision', lambda o: o['action'] == 'selftest', action='selftest', why='tool smoke test',

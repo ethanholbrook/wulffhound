@@ -127,6 +127,7 @@ result is compared with; it is never used as a γ.
   unrelaxed γ by more than 1 mJ/m² (a T = 0 minimisation cannot raise the energy), or whose molecules did not
   stay intact, is marked inconsistent. It is left out of `build_wulff` by default: the level-1 value is used and
   flagged, and the agent gets the reason. Example: paracetamol {0 0 1}, relaxed 247.2 vs unrelaxed 169.2 mJ/m².
+  A non-positive γ is rejected too.
 - **The force-field status is part of the result.** `material_info.forcefield_validated` is true for TNT and
   false for paracetamol, and the report header says so.
 - **Every decision is logged** (`log_decision`, with expected cost and outcome), and every skip is costed.
@@ -138,8 +139,13 @@ result is compared with; it is never used as a γ.
   them; do not expect them to be equal.
 - **TNT**: a validated non-reactive force field. **Paracetamol**: ReaxFF-lg 2011 is parametrised for nitramine
   energetic crystals and not validated for hydrogen-bonded pharmaceuticals, so the paracetamol numbers are
-  screening-level and the facet ranking matters more than absolute γ. Its relaxed (level-2) values also scatter
-  with the bulk reference of each run, which is what the consistency guard catches for {0 0 1}.
+  screening-level and the facet ranking matters more than absolute γ. Its T = 0 ReaxFF relaxations are
+  minimiser-limited. Where the chain's paracetamol study re-relaxed a run with FIRE, the bundle uses that value
+  and keeps surfenergy's own value as `gamma_surfenergy_raw`. Even so, {0 0 1} (247.2 vs 169.2) and {1 0 -1}
+  (124.1 vs 121.6) relax *above* their unrelaxed γ, so the consistency guard excludes them and only {1 0 1}
+  enters the shape at level 2. The paracetamol cache covers 19 families at level 1: 3 from the study plus 16
+  live screenings made here (cells of 4-156 molecules, at most 61 CPU s each). Two more, {0 1 3} and {1 1 -3},
+  failed in supercell at search_range 4 and are recorded as failures.
 - Level 2 relaxes only the termination with the lowest unrelaxed energy. Slabs are 2 periods thick; a slab whose
   top and bottom faces differ gives the average of the two (flagged).
 - Cost estimates come from a small calibration. Facets with no known oriented cell get a ROUGH estimate (flagged).

@@ -77,6 +77,40 @@ def cells_from_scout(path):
     return out
 
 
+def fire_corrections(led, spike):
+    """The paracetamol spike found surfenergy's T = 0 ReaxFF gammas minimiser-limited and re-relaxed bulk and slab
+    with FIRE at fixed box (results_runner*.json with 'gamma_for_wulff' = gamma_relaxed). Where such a record
+    exists for a level-2 run (same run dir), its gamma_relaxed replaces the surfenergy value, which is kept as
+    gamma_surfenergy_raw."""
+    import glob
+    notes = []
+    for p in sorted(glob.glob(os.path.join(spike, 'results_runner*.json'))):
+        try:
+            d = json.load(open(p))
+        except ValueError:
+            continue
+        if 'gamma_relaxed' not in str(d.get('gamma_for_wulff', '')):
+            continue
+        for r in d.get('results') or []:
+            if r.get('gamma_relaxed') is None or not r.get('run_dir'):
+                continue
+            rid = os.path.basename(r['run_dir'].rstrip('/'))
+            for e in led.entries:
+                if e['level'] == 2 and e.get('ok', True) and os.path.basename(str(e.get('run_dir') or '')) == rid:
+                    if e.get('gamma_surfenergy_raw') is None:
+                        e['gamma_surfenergy_raw'] = e['gamma']
+                    e['gamma'] = float(r['gamma_relaxed'])
+                    if r.get('molecules_intact') is not None:
+                        e['molecules_intact'] = bool(r['molecules_intact'])
+                    e['gamma_basis'] = ('FIRE-continued T = 0 relaxation at fixed box of the same run (spike %s, '
+                                        'gamma_relaxed_converged); surfenergy\'s own minimiser-limited value %.2f is '
+                                        'kept as gamma_surfenergy_raw' % (os.path.basename(p), e['gamma_surfenergy_raw']))
+                    e.setdefault('notes', []).append(e['gamma_basis'])
+                    notes.append('%s %s n_periods %s: gamma %.2f (FIRE) replaces %.2f (surfenergy)' % (
+                        e['family'], e['hkl'], e.get('n_periods'), e['gamma'], e['gamma_surfenergy_raw']))
+    return notes
+
+
 def build(material):
     croot = chain_root()
     import engine
@@ -126,6 +160,7 @@ def build(material):
                      if os.path.isfile(os.path.join(spike, f))]
             n, sk = import_spike(led, eng.mat, eng.family_of, spike, files)
             n1, sk1 = import_spike_level1(led, eng.mat, eng.family_of, spike)
+            notes += fire_corrections(led, spike)
         notes.append('%d entries newly imported from the spike %s (%s skipped)' % (n + n1, os.path.relpath(spike, croot),
                                                                                   len(sk + sk1)))
         notes += sk + sk1
@@ -137,7 +172,7 @@ def build(material):
                 if str(e.get('source', '')).startswith('live') and not any(
                         Ledger.key(x) == Ledger.key(e) and x['hkl'] == e['hkl'] and x.get('run_dir') == e.get('run_dir')
                         for x in led.entries):
-                    led.entries.append(dict(e, source='live (wulffhound)'))
+                    led.entries.append(dict(e))
                     nl += 1
         notes.append('%d live wulffhound entries from state/%s/ledger.json' % (nl, material))
         entries = scrub(led.entries, croot)

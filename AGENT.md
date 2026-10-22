@@ -35,13 +35,15 @@ search over ~44.5 M papers.
      out for every face you take from a paper (it is the agent's job to show it, the tool only checks the family).
 5. **Consistency guard and force-field status.** The engine marks a level-2 result as **inconsistent** when
    its relaxed gamma exceeds its unrelaxed gamma by more than 1 mJ/m^2 (a T = 0 minimisation cannot raise the
-   energy) or when molecules did not stay intact. Such a result is left out of `build_wulff` (the level-1
+   energy), when its gamma is not positive, or when molecules did not stay intact. Such a result is left out of `build_wulff` (the level-1
    value is used, flagged) and listed under `inconsistent` with the reason; `relax_facet` returns
    `consistent: false` and `inconsistent_reason`. Report it with the reason; do not re-run it with the same
    inputs (deterministic) and do not use its number. `material_info.forcefield_validated` says whether the
    force field is validated for the material (TNT: yes; paracetamol: **no**, ReaxFF-lg 2011 is
    nitramine-tuned): when false, call the result **screening-level** in your answer and give the ranking of
-   facets more weight than absolute gammas.
+   facets more weight than absolute gammas. A level-2 result may carry `gamma_basis` (e.g. paracetamol: a FIRE
+   re-relaxation replaced surfenergy's minimiser-limited value, kept as `gamma_surfenergy_raw`): quote the basis.
+   `build_wulff.rejected_level2_runs` lists every rejected run (also thickness checks); mention them.
 6. **Replay mode.** Without the simulation chain (`material_info.mode` = "replay") only the cached results in
    the ledger can be acquired; a run that is not cached is refused with a clear message. Say which facets
    would need a live run and what they would cost (`estimate_cost`).

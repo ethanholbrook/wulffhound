@@ -1,7 +1,7 @@
 {
  "material": "tnt",
  "what": "replay bundle: results of the private simulation chain with provenance (built by tools/build_bundle.py)",
- "built": "2026-10-22T16:12:44-04:00",
+ "built": "2026-10-22T16:17:40-04:00",
  "notes": [
   "21 entries from the wulffagent MVP ledger",
   "0 entries newly imported from the spike devtools/spikes/wulff_tnt (0 skipped)",

@@ -229,16 +229,22 @@ class Engine:
         """Merge the committed replay bundle (data/<material>/ledger.json) into the local ledger (the cache)."""
         p = os.path.join(self.bundle, 'ledger.json')
         n = 0
+        nu = 0
         if os.path.isfile(p):
-            have = {(Ledger.key(e), tuple(e['hkl']), e.get('source'), e.get('run_dir')) for e in self.ledger.entries}
-            new = [e for e in json.load(open(p)).get('entries', [])
-                   if (Ledger.key(e), tuple(e['hkl']), e.get('source'), e.get('run_dir')) not in have]
-            if new:
-                self.ledger.entries.extend(new)
+            ident = lambda e: (Ledger.key(e), tuple(e['hkl']), e.get('source'), e.get('run_dir'))
+            have = {ident(e): i for i, e in enumerate(self.ledger.entries)}
+            for e in json.load(open(p)).get('entries', []):
+                i = have.get(ident(e))
+                if i is None:
+                    self.ledger.entries.append(e)
+                    n += 1
+                elif self.ledger.entries[i] != e:      # the bundle was rebuilt (e.g. corrected values): it wins
+                    self.ledger.entries[i] = e
+                    nu += 1
+            if n or nu:
                 self.ledger.save()
-                n = len(new)
-        self.import_notes = (['seeded %d entries from the replay bundle data/%s/ledger.json' % (n, self.material)]
-                             if n else []) + self.mat_notes
+        self.import_notes = (['seeded %d entries from the replay bundle data/%s/ledger.json%s' % (
+            n, self.material, ', updated %d' % nu if nu else '')] if n or nu else []) + self.mat_notes
         return n, []
 
     # ------------------------------------------------------------------ oriented-cell sizes (scout + ledger)
@@ -547,7 +553,8 @@ class Engine:
 
     def summary(self, e):
         """Compact view of a ledger entry for tools."""
-        keys = ('family', 'hkl', 'level', 'ok', 'gamma', 'gamma_error', 'units', 'gamma_unrelaxed', 'termination_used',
+        keys = ('family', 'hkl', 'level', 'ok', 'gamma', 'gamma_error', 'units', 'gamma_unrelaxed', 'gamma_basis',
+                'gamma_surfenergy_raw', 'termination_used',
                 'n_terminations', 'faces_equivalent', 'molecules_intact', 'n_molecules_cell', 'n_molecules_slab',
                 'search_range', 'n_periods', 'cpu_s', 'wall_s', 'run_dir', 'source', 'cached', 'same_family_member',
                 'datafile_md5', 'script_md5', 'error', 'recorded')
@@ -723,7 +730,7 @@ class Engine:
             res['inconsistent'] = [{'family': f, 'reason': why, 'used': 'level-1 value instead (flagged)'
                                     if not include_inconsistent else 'level-2 value (include_inconsistent=True)'}
                                    for f, why in sorted(meta['inconsistent_level2'].items())]
-        rej = [x for x in self.rejected_level2() if x['family'] not in meta['inconsistent_level2']]
+        rej = self.rejected_level2()
         if rej:
             res['rejected_level2_runs'] = rej
         if not self.mat.get('forcefield_validated'):
