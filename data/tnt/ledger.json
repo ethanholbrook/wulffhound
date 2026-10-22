@@ -1,11 +1,11 @@
 {
  "material": "tnt",
  "what": "replay bundle: results of the private simulation chain with provenance (built by tools/build_bundle.py)",
- "built": "2026-10-22T16:17:40-04:00",
+ "built": "2026-10-22T16:21:37-04:00",
  "notes": [
   "21 entries from the wulffagent MVP ledger",
   "0 entries newly imported from the spike devtools/spikes/wulff_tnt (0 skipped)",
-  "0 live wulffhound entries from state/tnt/ledger.json"
+  "1 live wulffhound entries from state/tnt/ledger.json"
  ],
  "entries": [
   {
@@ -2456,6 +2456,194 @@
    "recorded": "2026-10-22T15:49:08-04:00",
    "material": "tnt",
    "provenance": "private chain run dir chain:wulffagent/state/tnt/runs/20261022-154835-L1-21m1-850052 (not shipped)"
+  },
+  {
+   "family": "{2 1 0}",
+   "hkl": [
+    2,
+    1,
+    0
+   ],
+   "search_range": 6,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "chain:surfenergy/examples/tnt001_nonreactive/tnt_unitcell.data",
+   "datafile_md5": "ede8756c5b71e4c8a1949038d47427bf",
+   "script": "chain:surfenergy/examples/tnt001_nonreactive/in.tnt-run0.lmp",
+   "script_md5": "fd7d9da6814b13e8f8c195abb0b05eb1",
+   "source": "live",
+   "cpu_s": 87.9,
+   "wall_s": 82.8,
+   "run_dir": "state:tnt/runs/20261022-162006-L1-210-68d406",
+   "child_runs": [
+    {
+     "tool": "supercell",
+     "run_dir": "state:tnt/runs/20261022-162006-L1-210-68d406/children/RUNS/supercell-d6f1ecdbfc7b4e60",
+     "inputs": {
+      "orientation_mode": "hkl",
+      "h": 2,
+      "k": 1,
+      "l": 0,
+      "search_range": 6,
+      "use_reaxff": false,
+      "RunEnergyCheck": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:tnt/runs/20261022-162006-L1-210-68d406/children/RUNS/slabcutter-a6be6e3deb504c4a",
+     "inputs": {
+      "termination_index": 0,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:tnt/runs/20261022-162006-L1-210-68d406/children/RUNS/slabcutter-9920167db13f4a0b",
+     "inputs": {
+      "termination_index": 2,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:tnt/runs/20261022-162006-L1-210-68d406/children/RUNS/slabcutter-19a17a6188244d60",
+     "inputs": {
+      "termination_index": 4,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:tnt/runs/20261022-162006-L1-210-68d406/children/RUNS/slabcutter-c28270b5c72d42ee",
+     "inputs": {
+      "termination_index": 5,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:tnt/runs/20261022-162006-L1-210-68d406/children/RUNS/slabcutter-cb3c6ecfc80c44e3",
+     "inputs": {
+      "termination_index": 7,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 4.567478329633943,
+   "n_molecules_cell": 672,
+   "mnp_used": [
+    -2,
+    4,
+    -1,
+    -1,
+    2,
+    3,
+    3,
+    6,
+    1
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 8,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 0.9313,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 161.43665650459067,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 0,
+     "gap": 0.9313,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 161.43665650459067,
+     "sfe_source": "group 0"
+    },
+    {
+     "index": 2,
+     "group": 2,
+     "gap": 0.8331,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 163.29422702123543,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 3,
+     "group": 2,
+     "gap": 0.8331,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 163.29422702123543,
+     "sfe_source": "group 2"
+    },
+    {
+     "index": 4,
+     "group": 4,
+     "gap": 0.3782,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 166.9097121830424,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 5,
+     "group": 5,
+     "gap": 0.2447,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 166.63486067179173,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 6,
+     "group": 5,
+     "gap": 0.2447,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 166.63486067179173,
+     "sfe_source": "group 5"
+    },
+    {
+     "index": 7,
+     "group": 7,
+     "gap": 0.1712,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 161.99426096111702,
+     "sfe_source": "computed"
+    }
+   ],
+   "notes": [
+    "slabcutter t0: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces",
+    "slabcutter t2: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces",
+    "slabcutter t4: this termination cuts between molecular layers only 0.38 A apart",
+    "slabcutter t5: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces",
+    "slabcutter t5: this termination cuts between molecular layers only 0.24 A apart",
+    "slabcutter t7: this termination cuts between molecular layers only 0.17 A apart"
+   ],
+   "surface_area_static": 2699.435093967384,
+   "gamma": 161.43665650459067,
+   "gamma_error": 0.0,
+   "termination_used": 0,
+   "faces_equivalent": false,
+   "n_molecules_slab": 112,
+   "thickness": 9.13495666,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "estimate_minutes": 0.8,
+   "recorded": "2026-10-22T16:21:30-04:00",
+   "material": "tnt",
+   "provenance": "private chain run dir state:tnt/runs/20261022-162006-L1-210-68d406 (not shipped)"
   }
  ]
 }
