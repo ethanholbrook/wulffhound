@@ -47,5 +47,5 @@ print(json.dumps({'agent': {'budget': e.budget(), 'on_shape': e._last.get('on_sh
   reset)    s="${1:-agent}"; eng "Engine('$MAT', session='$s').reset_session(); print('$MAT: session $s reset (acquisitions, decisions, literature); the ledger cache is kept')" ;;
   import)   run "$HERE/tools/build_bundle.py" "$@" ;;
   py)       run "$@" ;;
-  *)        sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//' ;;
+  *)        sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//' ;;
 esac
