@@ -1,0 +1,2859 @@
+{
+ "material": "paracetamol",
+ "what": "replay bundle: results of the private simulation chain with provenance (built by tools/build_bundle.py)",
+ "built": "2026-10-22T16:12:44-04:00",
+ "notes": [
+  "8 entries newly imported from the spike devtools/spikes/wulff_paracetamol (0 skipped)",
+  "18 live wulffhound entries from state/paracetamol/ledger.json"
+ ],
+ "entries": [
+  {
+   "family": "{1 0 -1}",
+   "hkl": [
+    1,
+    0,
+    -1
+   ],
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "data/paracetamol/paracetamol_unitcell.data",
+   "datafile_md5": "a33cd4b9edf72388623e5a725f810968",
+   "script": "data/paracetamol/in.paracetamol-run0.lmp",
+   "script_md5": "ddbd794a91c53ac2fc5de6f713082d52",
+   "source": "import:devtools/spikes/wulff_paracetamol/facet_runs.jsonl",
+   "cpu_s": 335.39,
+   "wall_s": 333.5,
+   "run_dir": "chain:surfenergy/bin/RUNS/1ef1aeb9908d4c118702e16433b8ff56",
+   "child_runs": [
+    {
+     "tool": "surfenergy",
+     "run_dir": "chain:surfenergy/bin/RUNS/1ef1aeb9908d4c118702e16433b8ff56",
+     "inputs": {
+      "temperature": 0.0,
+      "h": 1,
+      "k": 0,
+      "l": -1,
+      "search_range": 4,
+      "n_periods": 2,
+      "termination_mode": "lowest",
+      "termination_index": 0
+     }
+    }
+   ],
+   "level": 2,
+   "ok": true,
+   "d_hkl": 6.395835995365755,
+   "n_molecules_cell": 16,
+   "mnp_used": [
+    -1,
+    0,
+    -1,
+    0,
+    1,
+    0,
+    3,
+    0,
+    -1
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 2,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 4.0705,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 121.55235559847613,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 1,
+     "gap": 2.3253,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 146.65510926768602,
+     "sfe_source": "computed"
+    }
+   ],
+   "notes": [
+    "cif2lammps: 36 H atoms moved along their X-H bonds to the neutron-normalised distances (normalize_hydrogens: C-H 1.089, N-H 1.015, O-H 0.993 A; Allen & Bruno 2010), by up to 0.131 A; X-H before C-H 0.958-1.010 A; N-H 0.904-0.904 A; O-H 0.948-0.948 A; after C-H 1.089-1.089 A; N-H 1.015-1.015 A; O-H 0.993-0.993 A",
+    "cif2lammps: relax_unitcell = atoms: ReaxFF energy -2331.85 -> -2401.79 kcal/mol per molecule (-69.94), force norm 2179.6 -> 217.9 kcal/mol/A (max |F| 502.8 -> 80.0), 27 minimisation steps, 7.1 s; a small capped minimisation, not converged; max |pressure component| 88610 atm",
+    "force field: commands of the input script not used (surfenergy sets the run itself): read_data, run, thermo, thermo_style",
+    "bulk MD: bulk: ReaxFF at T = 0: cell relaxed by fix box/relax cycles only (ReaxFF minimisations stall, so the stress is not reliable enough for further cell steps); largest |P_ij| 15677 atm left. T = 0 ReaxFF gamma is approximate (minimiser-limited); prefer MD at T > 0",
+    "temperature 0: energy minimisation (bulk with box relaxation, slab in the relaxed bulk lateral box) instead of MD; errors are 0",
+    "gamma is the excess potential energy of the two surfaces per area, (<E_slab> - N_slab/N_bulk <E_bulk>) / (2 A): not the surface internal energy (kinetic energy left out) and not a surface free energy (no entropy term)"
+   ],
+   "surface_area_static": 117.419687152313,
+   "gamma": 66.99684293424956,
+   "gamma_error": 0.0,
+   "gamma_unrelaxed": 121.55235559847613,
+   "termination_used": 0,
+   "faces_equivalent": true,
+   "molecules_intact": true,
+   "n_molecules_slab": 8,
+   "n_molecules_bulk": 16,
+   "surface_area": 117.44849620583881,
+   "thickness": 12.79167199,
+   "units": "mJ/m^2",
+   "what": "relaxed T = 0 surface energy (surfenergy temperature 0: minimisations), lowest unrelaxed termination; excess potential energy per area",
+   "imported_tag": "calib",
+   "recorded": "2026-10-22T16:12:44-04:00",
+   "material": "paracetamol",
+   "provenance": "private chain run dir chain:surfenergy/bin/RUNS/1ef1aeb9908d4c118702e16433b8ff56 (not shipped)"
+  },
+  {
+   "family": "{1 0 -1}",
+   "hkl": [
+    1,
+    0,
+    -1
+   ],
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "data/paracetamol/paracetamol_unitcell.data",
+   "datafile_md5": "a33cd4b9edf72388623e5a725f810968",
+   "script": "data/paracetamol/in.paracetamol-run0.lmp",
+   "script_md5": "ddbd794a91c53ac2fc5de6f713082d52",
+   "source": "import:devtools/spikes/wulff_paracetamol/facet_runs.jsonl (screening step of the level-2 run)",
+   "cpu_s": null,
+   "wall_s": null,
+   "run_dir": "chain:surfenergy/bin/RUNS/1ef1aeb9908d4c118702e16433b8ff56",
+   "child_runs": [
+    {
+     "tool": "surfenergy",
+     "run_dir": "chain:surfenergy/bin/RUNS/1ef1aeb9908d4c118702e16433b8ff56",
+     "inputs": {
+      "temperature": 0.0,
+      "h": 1,
+      "k": 0,
+      "l": -1,
+      "search_range": 4,
+      "n_periods": 2,
+      "termination_mode": "lowest",
+      "termination_index": 0
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 6.395835995365755,
+   "n_molecules_cell": 16,
+   "mnp_used": [
+    -1,
+    0,
+    -1,
+    0,
+    1,
+    0,
+    3,
+    0,
+    -1
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 2,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 4.0705,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 121.55235559847613,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 1,
+     "gap": 2.3253,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 146.65510926768602,
+     "sfe_source": "computed"
+    }
+   ],
+   "notes": [
+    "cif2lammps: 36 H atoms moved along their X-H bonds to the neutron-normalised distances (normalize_hydrogens: C-H 1.089, N-H 1.015, O-H 0.993 A; Allen & Bruno 2010), by up to 0.131 A; X-H before C-H 0.958-1.010 A; N-H 0.904-0.904 A; O-H 0.948-0.948 A; after C-H 1.089-1.089 A; N-H 1.015-1.015 A; O-H 0.993-0.993 A",
+    "cif2lammps: relax_unitcell = atoms: ReaxFF energy -2331.85 -> -2401.79 kcal/mol per molecule (-69.94), force norm 2179.6 -> 217.9 kcal/mol/A (max |F| 502.8 -> 80.0), 27 minimisation steps, 7.1 s; a small capped minimisation, not converged; max |pressure component| 88610 atm",
+    "force field: commands of the input script not used (surfenergy sets the run itself): read_data, run, thermo, thermo_style",
+    "bulk MD: bulk: ReaxFF at T = 0: cell relaxed by fix box/relax cycles only (ReaxFF minimisations stall, so the stress is not reliable enough for further cell steps); largest |P_ij| 15677 atm left. T = 0 ReaxFF gamma is approximate (minimiser-limited); prefer MD at T > 0",
+    "temperature 0: energy minimisation (bulk with box relaxation, slab in the relaxed bulk lateral box) instead of MD; errors are 0",
+    "gamma is the excess potential energy of the two surfaces per area, (<E_slab> - N_slab/N_bulk <E_bulk>) / (2 A): not the surface internal energy (kinetic energy left out) and not a surface free energy (no entropy term)"
+   ],
+   "surface_area_static": 117.419687152313,
+   "gamma": 121.55235559847613,
+   "gamma_error": 0.0,
+   "termination_used": 0,
+   "faces_equivalent": true,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "imported_tag": "calib",
+   "recorded": "2026-10-22T16:12:44-04:00",
+   "material": "paracetamol",
+   "provenance": "private chain run dir chain:surfenergy/bin/RUNS/1ef1aeb9908d4c118702e16433b8ff56 (not shipped)"
+  },
+  {
+   "family": "{0 0 1}",
+   "hkl": [
+    0,
+    0,
+    1
+   ],
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "data/paracetamol/paracetamol_unitcell.data",
+   "datafile_md5": "a33cd4b9edf72388623e5a725f810968",
+   "script": "data/paracetamol/in.paracetamol-run0.lmp",
+   "script_md5": "ddbd794a91c53ac2fc5de6f713082d52",
+   "source": "import:devtools/spikes/wulff_paracetamol/facet_runs_runner2.jsonl",
+   "cpu_s": 284.4,
+   "wall_s": 284.7,
+   "run_dir": "chain:surfenergy/bin/RUNS/4873bb814d90452282b4ed636e87d206",
+   "child_runs": [
+    {
+     "tool": "surfenergy",
+     "run_dir": "chain:surfenergy/bin/RUNS/4873bb814d90452282b4ed636e87d206",
+     "inputs": {
+      "temperature": 0.0,
+      "h": 0,
+      "k": 0,
+      "l": 1,
+      "search_range": 4,
+      "n_periods": 2,
+      "termination_mode": "lowest",
+      "termination_index": 0
+     }
+    }
+   ],
+   "level": 2,
+   "ok": true,
+   "d_hkl": 11.4923674567,
+   "n_molecules_cell": 16,
+   "mnp_used": [
+    -1,
+    0,
+    0,
+    0,
+    -1,
+    0,
+    1,
+    0,
+    4
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 4,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 4.7638,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 169.22295406131963,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 0,
+     "gap": 4.7638,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 169.22295406131963,
+     "sfe_source": "group 0"
+    },
+    {
+     "index": 2,
+     "group": 2,
+     "gap": 0.9824,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 261.9014003624663,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 3,
+     "group": 2,
+     "gap": 0.9824,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 261.9014003624663,
+     "sfe_source": "group 2"
+    }
+   ],
+   "notes": [
+    "cif2lammps: 36 H atoms moved along their X-H bonds to the neutron-normalised distances (normalize_hydrogens: C-H 1.089, N-H 1.015, O-H 0.993 A; Allen & Bruno 2010), by up to 0.131 A; X-H before C-H 0.958-1.010 A; N-H 0.904-0.904 A; O-H 0.948-0.948 A; after C-H 1.089-1.089 A; N-H 1.015-1.015 A; O-H 0.993-0.993 A",
+    "cif2lammps: relax_unitcell = atoms: ReaxFF energy -2331.85 -> -2401.79 kcal/mol per molecule (-69.94), force norm 2179.6 -> 217.9 kcal/mol/A (max |F| 502.8 -> 80.0), 27 minimisation steps, 7.7 s; a small capped minimisation, not converged; max |pressure component| 88610 atm",
+    "force field: commands of the input script not used (surfenergy sets the run itself): read_data, run, thermo, thermo_style",
+    "bulk MD: bulk: ReaxFF at T = 0: cell relaxed by fix box/relax cycles only (ReaxFF minimisations stall, so the stress is not reliable enough for further cell steps); largest |P_ij| 6883 atm left. T = 0 ReaxFF gamma is approximate (minimiser-limited); prefer MD at T > 0",
+    "temperature 0: energy minimisation (bulk with box relaxation, slab in the relaxed bulk lateral box) instead of MD; errors are 0",
+    "gamma is the excess potential energy of the two surfaces per area, (<E_slab> - N_slab/N_bulk <E_bulk>) / (2 A): not the surface internal energy (kinetic energy left out) and not a surface free energy (no entropy term)"
+   ],
+   "surface_area_static": 65.34746335,
+   "gamma": 247.1613431913462,
+   "gamma_error": 0.0,
+   "gamma_unrelaxed": 169.22295406131963,
+   "termination_used": 0,
+   "faces_equivalent": true,
+   "molecules_intact": true,
+   "n_molecules_slab": 8,
+   "n_molecules_bulk": 16,
+   "surface_area": 65.36026426520336,
+   "thickness": 22.984734915,
+   "units": "mJ/m^2",
+   "what": "relaxed T = 0 surface energy (surfenergy temperature 0: minimisations), lowest unrelaxed termination; excess potential energy per area",
+   "imported_tag": "runner2",
+   "recorded": "2026-10-22T16:12:44-04:00",
+   "material": "paracetamol",
+   "provenance": "private chain run dir chain:surfenergy/bin/RUNS/4873bb814d90452282b4ed636e87d206 (not shipped)"
+  },
+  {
+   "family": "{0 0 1}",
+   "hkl": [
+    0,
+    0,
+    1
+   ],
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "data/paracetamol/paracetamol_unitcell.data",
+   "datafile_md5": "a33cd4b9edf72388623e5a725f810968",
+   "script": "data/paracetamol/in.paracetamol-run0.lmp",
+   "script_md5": "ddbd794a91c53ac2fc5de6f713082d52",
+   "source": "import:devtools/spikes/wulff_paracetamol/facet_runs_runner2.jsonl (screening step of the level-2 run)",
+   "cpu_s": null,
+   "wall_s": null,
+   "run_dir": "chain:surfenergy/bin/RUNS/4873bb814d90452282b4ed636e87d206",
+   "child_runs": [
+    {
+     "tool": "surfenergy",
+     "run_dir": "chain:surfenergy/bin/RUNS/4873bb814d90452282b4ed636e87d206",
+     "inputs": {
+      "temperature": 0.0,
+      "h": 0,
+      "k": 0,
+      "l": 1,
+      "search_range": 4,
+      "n_periods": 2,
+      "termination_mode": "lowest",
+      "termination_index": 0
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 11.4923674567,
+   "n_molecules_cell": 16,
+   "mnp_used": [
+    -1,
+    0,
+    0,
+    0,
+    -1,
+    0,
+    1,
+    0,
+    4
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 4,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 4.7638,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 169.22295406131963,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 0,
+     "gap": 4.7638,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 169.22295406131963,
+     "sfe_source": "group 0"
+    },
+    {
+     "index": 2,
+     "group": 2,
+     "gap": 0.9824,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 261.9014003624663,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 3,
+     "group": 2,
+     "gap": 0.9824,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 261.9014003624663,
+     "sfe_source": "group 2"
+    }
+   ],
+   "notes": [
+    "cif2lammps: 36 H atoms moved along their X-H bonds to the neutron-normalised distances (normalize_hydrogens: C-H 1.089, N-H 1.015, O-H 0.993 A; Allen & Bruno 2010), by up to 0.131 A; X-H before C-H 0.958-1.010 A; N-H 0.904-0.904 A; O-H 0.948-0.948 A; after C-H 1.089-1.089 A; N-H 1.015-1.015 A; O-H 0.993-0.993 A",
+    "cif2lammps: relax_unitcell = atoms: ReaxFF energy -2331.85 -> -2401.79 kcal/mol per molecule (-69.94), force norm 2179.6 -> 217.9 kcal/mol/A (max |F| 502.8 -> 80.0), 27 minimisation steps, 7.7 s; a small capped minimisation, not converged; max |pressure component| 88610 atm",
+    "force field: commands of the input script not used (surfenergy sets the run itself): read_data, run, thermo, thermo_style",
+    "bulk MD: bulk: ReaxFF at T = 0: cell relaxed by fix box/relax cycles only (ReaxFF minimisations stall, so the stress is not reliable enough for further cell steps); largest |P_ij| 6883 atm left. T = 0 ReaxFF gamma is approximate (minimiser-limited); prefer MD at T > 0",
+    "temperature 0: energy minimisation (bulk with box relaxation, slab in the relaxed bulk lateral box) instead of MD; errors are 0",
+    "gamma is the excess potential energy of the two surfaces per area, (<E_slab> - N_slab/N_bulk <E_bulk>) / (2 A): not the surface internal energy (kinetic energy left out) and not a surface free energy (no entropy term)"
+   ],
+   "surface_area_static": 65.34746335,
+   "gamma": 169.22295406131963,
+   "gamma_error": 0.0,
+   "termination_used": 0,
+   "faces_equivalent": true,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "imported_tag": "runner2",
+   "recorded": "2026-10-22T16:12:44-04:00",
+   "material": "paracetamol",
+   "provenance": "private chain run dir chain:surfenergy/bin/RUNS/4873bb814d90452282b4ed636e87d206 (not shipped)"
+  },
+  {
+   "family": "{1 0 1}",
+   "hkl": [
+    1,
+    0,
+    1
+   ],
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "data/paracetamol/paracetamol_unitcell.data",
+   "datafile_md5": "a33cd4b9edf72388623e5a725f810968",
+   "script": "data/paracetamol/in.paracetamol-run0.lmp",
+   "script_md5": "ddbd794a91c53ac2fc5de6f713082d52",
+   "source": "import:devtools/spikes/wulff_paracetamol/runner1_runs.jsonl",
+   "cpu_s": 374.41,
+   "wall_s": 373.5,
+   "run_dir": "chain:surfenergy/bin/RUNS/282a3d9e7c124767aa65b1c394133d60",
+   "child_runs": [
+    {
+     "tool": "surfenergy",
+     "run_dir": "chain:surfenergy/bin/RUNS/282a3d9e7c124767aa65b1c394133d60",
+     "inputs": {
+      "temperature": 0.0,
+      "h": 1,
+      "k": 0,
+      "l": 1,
+      "search_range": 4,
+      "n_periods": 2,
+      "termination_mode": "lowest",
+      "termination_index": 0
+     }
+    }
+   ],
+   "level": 2,
+   "ok": true,
+   "d_hkl": 5.659042107058514,
+   "n_molecules_cell": 12,
+   "mnp_used": [
+    -1,
+    0,
+    1,
+    0,
+    -1,
+    0,
+    2,
+    0,
+    1
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 2,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 4.569,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 154.9521847757901,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 1,
+     "gap": 1.09,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 263.07771879376406,
+     "sfe_source": "computed"
+    }
+   ],
+   "notes": [
+    "cif2lammps: 36 H atoms moved along their X-H bonds to the neutron-normalised distances (normalize_hydrogens: C-H 1.089, N-H 1.015, O-H 0.993 A; Allen & Bruno 2010), by up to 0.131 A; X-H before C-H 0.958-1.010 A; N-H 0.904-0.904 A; O-H 0.948-0.948 A; after C-H 1.089-1.089 A; N-H 1.015-1.015 A; O-H 0.993-0.993 A",
+    "cif2lammps: relax_unitcell = atoms: ReaxFF energy -2331.85 -> -2401.79 kcal/mol per molecule (-69.94), force norm 2179.6 -> 217.9 kcal/mol/A (max |F| 502.8 -> 80.0), 27 minimisation steps, 8.2 s; a small capped minimisation, not converged; max |pressure component| 88610 atm",
+    "force field: commands of the input script not used (surfenergy sets the run itself): read_data, run, thermo, thermo_style",
+    "bulk MD: bulk: ReaxFF at T = 0: cell relaxed by fix box/relax cycles only (ReaxFF minimisations stall, so the stress is not reliable enough for further cell steps); largest |P_ij| 11383 atm left. T = 0 ReaxFF gamma is approximate (minimiser-limited); prefer MD at T > 0",
+    "temperature 0: energy minimisation (bulk with box relaxation, slab in the relaxed bulk lateral box) instead of MD; errors are 0",
+    "gamma is the excess potential energy of the two surfaces per area, (<E_slab> - N_slab/N_bulk <E_bulk>) / (2 A): not the surface internal energy (kinetic energy left out) and not a surface free energy (no entropy term)"
+   ],
+   "surface_area_static": 132.70745238229202,
+   "gamma": 57.273569988141155,
+   "gamma_error": 0.0,
+   "gamma_unrelaxed": 154.9521847757901,
+   "termination_used": 0,
+   "faces_equivalent": true,
+   "molecules_intact": true,
+   "n_molecules_slab": 8,
+   "n_molecules_bulk": 12,
+   "surface_area": 132.7756456273873,
+   "thickness": 11.318084213333334,
+   "units": "mJ/m^2",
+   "what": "relaxed T = 0 surface energy (surfenergy temperature 0: minimisations), lowest unrelaxed termination; excess potential energy per area",
+   "imported_tag": "runner1",
+   "recorded": "2026-10-22T16:12:44-04:00",
+   "material": "paracetamol",
+   "provenance": "private chain run dir chain:surfenergy/bin/RUNS/282a3d9e7c124767aa65b1c394133d60 (not shipped)"
+  },
+  {
+   "family": "{1 0 1}",
+   "hkl": [
+    1,
+    0,
+    1
+   ],
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "data/paracetamol/paracetamol_unitcell.data",
+   "datafile_md5": "a33cd4b9edf72388623e5a725f810968",
+   "script": "data/paracetamol/in.paracetamol-run0.lmp",
+   "script_md5": "ddbd794a91c53ac2fc5de6f713082d52",
+   "source": "import:devtools/spikes/wulff_paracetamol/runner1_runs.jsonl (screening step of the level-2 run)",
+   "cpu_s": null,
+   "wall_s": null,
+   "run_dir": "chain:surfenergy/bin/RUNS/282a3d9e7c124767aa65b1c394133d60",
+   "child_runs": [
+    {
+     "tool": "surfenergy",
+     "run_dir": "chain:surfenergy/bin/RUNS/282a3d9e7c124767aa65b1c394133d60",
+     "inputs": {
+      "temperature": 0.0,
+      "h": 1,
+      "k": 0,
+      "l": 1,
+      "search_range": 4,
+      "n_periods": 2,
+      "termination_mode": "lowest",
+      "termination_index": 0
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 5.659042107058514,
+   "n_molecules_cell": 12,
+   "mnp_used": [
+    -1,
+    0,
+    1,
+    0,
+    -1,
+    0,
+    2,
+    0,
+    1
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 2,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 4.569,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 154.9521847757901,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 1,
+     "gap": 1.09,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 263.07771879376406,
+     "sfe_source": "computed"
+    }
+   ],
+   "notes": [
+    "cif2lammps: 36 H atoms moved along their X-H bonds to the neutron-normalised distances (normalize_hydrogens: C-H 1.089, N-H 1.015, O-H 0.993 A; Allen & Bruno 2010), by up to 0.131 A; X-H before C-H 0.958-1.010 A; N-H 0.904-0.904 A; O-H 0.948-0.948 A; after C-H 1.089-1.089 A; N-H 1.015-1.015 A; O-H 0.993-0.993 A",
+    "cif2lammps: relax_unitcell = atoms: ReaxFF energy -2331.85 -> -2401.79 kcal/mol per molecule (-69.94), force norm 2179.6 -> 217.9 kcal/mol/A (max |F| 502.8 -> 80.0), 27 minimisation steps, 8.2 s; a small capped minimisation, not converged; max |pressure component| 88610 atm",
+    "force field: commands of the input script not used (surfenergy sets the run itself): read_data, run, thermo, thermo_style",
+    "bulk MD: bulk: ReaxFF at T = 0: cell relaxed by fix box/relax cycles only (ReaxFF minimisations stall, so the stress is not reliable enough for further cell steps); largest |P_ij| 11383 atm left. T = 0 ReaxFF gamma is approximate (minimiser-limited); prefer MD at T > 0",
+    "temperature 0: energy minimisation (bulk with box relaxation, slab in the relaxed bulk lateral box) instead of MD; errors are 0",
+    "gamma is the excess potential energy of the two surfaces per area, (<E_slab> - N_slab/N_bulk <E_bulk>) / (2 A): not the surface internal energy (kinetic energy left out) and not a surface free energy (no entropy term)"
+   ],
+   "surface_area_static": 132.70745238229202,
+   "gamma": 154.9521847757901,
+   "gamma_error": 0.0,
+   "termination_used": 0,
+   "faces_equivalent": true,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "imported_tag": "runner1",
+   "recorded": "2026-10-22T16:12:44-04:00",
+   "material": "paracetamol",
+   "provenance": "private chain run dir chain:surfenergy/bin/RUNS/282a3d9e7c124767aa65b1c394133d60 (not shipped)"
+  },
+  {
+   "family": "{1 0 -1}",
+   "hkl": [
+    1,
+    0,
+    -1
+   ],
+   "search_range": 4,
+   "n_periods": 3,
+   "temperature": 0.0,
+   "datafile": "data/paracetamol/paracetamol_unitcell.data",
+   "datafile_md5": "a33cd4b9edf72388623e5a725f810968",
+   "script": "data/paracetamol/in.paracetamol-run0.lmp",
+   "script_md5": "ddbd794a91c53ac2fc5de6f713082d52",
+   "source": "import:devtools/spikes/wulff_paracetamol/runner1_runs.jsonl",
+   "cpu_s": 307.75,
+   "wall_s": 298.9,
+   "run_dir": "chain:surfenergy/bin/RUNS/b57143f801814353a6fa21cbbf8042a2",
+   "child_runs": [
+    {
+     "tool": "surfenergy",
+     "run_dir": "chain:surfenergy/bin/RUNS/b57143f801814353a6fa21cbbf8042a2",
+     "inputs": {
+      "temperature": 0.0,
+      "h": 1,
+      "k": 0,
+      "l": -1,
+      "search_range": 4,
+      "n_periods": 3,
+      "termination_mode": "lowest",
+      "termination_index": 0
+     }
+    }
+   ],
+   "level": 2,
+   "ok": true,
+   "d_hkl": 6.395835995365755,
+   "n_molecules_cell": 16,
+   "mnp_used": [
+    -1,
+    0,
+    -1,
+    0,
+    1,
+    0,
+    3,
+    0,
+    -1
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 2,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 4.0705,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 121.53904241150042,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 1,
+     "gap": 2.3253,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 146.0027631057477,
+     "sfe_source": "computed"
+    }
+   ],
+   "notes": [
+    "cif2lammps: 36 H atoms moved along their X-H bonds to the neutron-normalised distances (normalize_hydrogens: C-H 1.089, N-H 1.015, O-H 0.993 A; Allen & Bruno 2010), by up to 0.131 A; X-H before C-H 0.958-1.010 A; N-H 0.904-0.904 A; O-H 0.948-0.948 A; after C-H 1.089-1.089 A; N-H 1.015-1.015 A; O-H 0.993-0.993 A",
+    "cif2lammps: relax_unitcell = atoms: ReaxFF energy -2331.85 -> -2401.79 kcal/mol per molecule (-69.94), force norm 2179.6 -> 217.9 kcal/mol/A (max |F| 502.8 -> 80.0), 27 minimisation steps, 5.2 s; a small capped minimisation, not converged; max |pressure component| 88610 atm",
+    "force field: commands of the input script not used (surfenergy sets the run itself): read_data, run, thermo, thermo_style",
+    "bulk MD: bulk: ReaxFF at T = 0: cell relaxed by fix box/relax cycles only (ReaxFF minimisations stall, so the stress is not reliable enough for further cell steps); largest |P_ij| 15677 atm left. T = 0 ReaxFF gamma is approximate (minimiser-limited); prefer MD at T > 0",
+    "temperature 0: energy minimisation (bulk with box relaxation, slab in the relaxed bulk lateral box) instead of MD; errors are 0",
+    "gamma is the excess potential energy of the two surfaces per area, (<E_slab> - N_slab/N_bulk <E_bulk>) / (2 A): not the surface internal energy (kinetic energy left out) and not a surface free energy (no entropy term)"
+   ],
+   "surface_area_static": 117.419687152313,
+   "gamma": -4.840932232994733,
+   "gamma_error": 0.0,
+   "gamma_unrelaxed": 121.53904241150042,
+   "termination_used": 0,
+   "faces_equivalent": true,
+   "molecules_intact": true,
+   "n_molecules_slab": 12,
+   "n_molecules_bulk": 16,
+   "surface_area": 117.44849620583881,
+   "thickness": 19.187507985,
+   "units": "mJ/m^2",
+   "what": "relaxed T = 0 surface energy (surfenergy temperature 0: minimisations), lowest unrelaxed termination; excess potential energy per area",
+   "imported_tag": "runner1-thickness",
+   "recorded": "2026-10-22T16:12:44-04:00",
+   "material": "paracetamol",
+   "provenance": "private chain run dir chain:surfenergy/bin/RUNS/b57143f801814353a6fa21cbbf8042a2 (not shipped)"
+  },
+  {
+   "family": "{1 0 -1}",
+   "hkl": [
+    1,
+    0,
+    -1
+   ],
+   "search_range": 4,
+   "n_periods": 3,
+   "temperature": 0.0,
+   "datafile": "data/paracetamol/paracetamol_unitcell.data",
+   "datafile_md5": "a33cd4b9edf72388623e5a725f810968",
+   "script": "data/paracetamol/in.paracetamol-run0.lmp",
+   "script_md5": "ddbd794a91c53ac2fc5de6f713082d52",
+   "source": "import:devtools/spikes/wulff_paracetamol/runner1_runs.jsonl (screening step of the level-2 run)",
+   "cpu_s": null,
+   "wall_s": null,
+   "run_dir": "chain:surfenergy/bin/RUNS/b57143f801814353a6fa21cbbf8042a2",
+   "child_runs": [
+    {
+     "tool": "surfenergy",
+     "run_dir": "chain:surfenergy/bin/RUNS/b57143f801814353a6fa21cbbf8042a2",
+     "inputs": {
+      "temperature": 0.0,
+      "h": 1,
+      "k": 0,
+      "l": -1,
+      "search_range": 4,
+      "n_periods": 3,
+      "termination_mode": "lowest",
+      "termination_index": 0
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 6.395835995365755,
+   "n_molecules_cell": 16,
+   "mnp_used": [
+    -1,
+    0,
+    -1,
+    0,
+    1,
+    0,
+    3,
+    0,
+    -1
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 2,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 4.0705,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 121.53904241150042,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 1,
+     "gap": 2.3253,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 146.0027631057477,
+     "sfe_source": "computed"
+    }
+   ],
+   "notes": [
+    "cif2lammps: 36 H atoms moved along their X-H bonds to the neutron-normalised distances (normalize_hydrogens: C-H 1.089, N-H 1.015, O-H 0.993 A; Allen & Bruno 2010), by up to 0.131 A; X-H before C-H 0.958-1.010 A; N-H 0.904-0.904 A; O-H 0.948-0.948 A; after C-H 1.089-1.089 A; N-H 1.015-1.015 A; O-H 0.993-0.993 A",
+    "cif2lammps: relax_unitcell = atoms: ReaxFF energy -2331.85 -> -2401.79 kcal/mol per molecule (-69.94), force norm 2179.6 -> 217.9 kcal/mol/A (max |F| 502.8 -> 80.0), 27 minimisation steps, 5.2 s; a small capped minimisation, not converged; max |pressure component| 88610 atm",
+    "force field: commands of the input script not used (surfenergy sets the run itself): read_data, run, thermo, thermo_style",
+    "bulk MD: bulk: ReaxFF at T = 0: cell relaxed by fix box/relax cycles only (ReaxFF minimisations stall, so the stress is not reliable enough for further cell steps); largest |P_ij| 15677 atm left. T = 0 ReaxFF gamma is approximate (minimiser-limited); prefer MD at T > 0",
+    "temperature 0: energy minimisation (bulk with box relaxation, slab in the relaxed bulk lateral box) instead of MD; errors are 0",
+    "gamma is the excess potential energy of the two surfaces per area, (<E_slab> - N_slab/N_bulk <E_bulk>) / (2 A): not the surface internal energy (kinetic energy left out) and not a surface free energy (no entropy term)"
+   ],
+   "surface_area_static": 117.419687152313,
+   "gamma": 121.53904241150042,
+   "gamma_error": 0.0,
+   "termination_used": 0,
+   "faces_equivalent": true,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "imported_tag": "runner1-thickness",
+   "recorded": "2026-10-22T16:12:44-04:00",
+   "material": "paracetamol",
+   "provenance": "private chain run dir chain:surfenergy/bin/RUNS/b57143f801814353a6fa21cbbf8042a2 (not shipped)"
+  },
+  {
+   "family": "{0 1 0}",
+   "hkl": [
+    0,
+    1,
+    0
+   ],
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "data/paracetamol/paracetamol_unitcell.data",
+   "datafile_md5": "a33cd4b9edf72388623e5a725f810968",
+   "script": "data/paracetamol/in.paracetamol-run0.lmp",
+   "script_md5": "ddbd794a91c53ac2fc5de6f713082d52",
+   "source": "live (wulffhound)",
+   "cpu_s": 32.2,
+   "wall_s": 30.2,
+   "run_dir": "state:paracetamol/runs/20261022-160437-L1-010-ec2c9b",
+   "child_runs": [
+    {
+     "tool": "supercell",
+     "run_dir": "state:paracetamol/runs/20261022-160437-L1-010-ec2c9b/children/RUNS/supercell-7d4845ee5fb34b0a",
+     "inputs": {
+      "orientation_mode": "hkl",
+      "h": 0,
+      "k": 1,
+      "l": 0,
+      "search_range": 4,
+      "use_reaxff": true,
+      "RunEnergyCheck": false
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160437-L1-010-ec2c9b/children/RUNS/slabcutter-96c24cea7ced42ee",
+     "inputs": {
+      "termination_index": 0,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160437-L1-010-ec2c9b/children/RUNS/slabcutter-88ba5b0f1af94ae4",
+     "inputs": {
+      "termination_index": 2,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 9.2149,
+   "n_molecules_cell": 16,
+   "mnp_used": [
+    -1,
+    0,
+    -4,
+    -1,
+    0,
+    0,
+    0,
+    1,
+    0
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 4,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 2.9263,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 153.75847681975634,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 0,
+     "gap": 2.9263,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 153.75847681975634,
+     "sfe_source": "group 0"
+    },
+    {
+     "index": 2,
+     "group": 2,
+     "gap": 1.6812,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 176.73433459722403,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 3,
+     "group": 2,
+     "gap": 1.6812,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 176.73433459722403,
+     "sfe_source": "group 2"
+    }
+   ],
+   "notes": [],
+   "surface_area_static": 325.99249512442105,
+   "gamma": 153.75847681975634,
+   "gamma_error": 0.0,
+   "termination_used": 0,
+   "faces_equivalent": true,
+   "n_molecules_slab": 32,
+   "thickness": 18.4298,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "estimate_minutes": 0.8,
+   "recorded": "2026-10-22T16:05:08-04:00",
+   "material": "paracetamol",
+   "provenance": "private chain run dir state:paracetamol/runs/20261022-160437-L1-010-ec2c9b (not shipped)"
+  },
+  {
+   "family": "{1 1 1}",
+   "hkl": [
+    1,
+    1,
+    1
+   ],
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "data/paracetamol/paracetamol_unitcell.data",
+   "datafile_md5": "a33cd4b9edf72388623e5a725f810968",
+   "script": "data/paracetamol/in.paracetamol-run0.lmp",
+   "script_md5": "ddbd794a91c53ac2fc5de6f713082d52",
+   "source": "live (wulffhound)",
+   "cpu_s": 39.5,
+   "wall_s": 36.7,
+   "run_dir": "state:paracetamol/runs/20261022-160437-L1-111-b4e36a",
+   "child_runs": [
+    {
+     "tool": "supercell",
+     "run_dir": "state:paracetamol/runs/20261022-160437-L1-111-b4e36a/children/RUNS/supercell-4b9dc5c5af104a7d",
+     "inputs": {
+      "orientation_mode": "hkl",
+      "h": 1,
+      "k": 1,
+      "l": 1,
+      "search_range": 4,
+      "use_reaxff": true,
+      "RunEnergyCheck": false
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160437-L1-111-b4e36a/children/RUNS/slabcutter-5fbbfae647804422",
+     "inputs": {
+      "termination_index": 0,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160437-L1-111-b4e36a/children/RUNS/slabcutter-692d2a4634374963",
+     "inputs": {
+      "termination_index": 1,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160437-L1-111-b4e36a/children/RUNS/slabcutter-40971d3f16e64274",
+     "inputs": {
+      "termination_index": 3,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 4.822293118162391,
+   "n_molecules_cell": 48,
+   "mnp_used": [
+    -3,
+    2,
+    1,
+    0,
+    -1,
+    1,
+    2,
+    1,
+    1
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 4,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 2.4602,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 179.09731087212802,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 1,
+     "gap": 0.8798,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 182.16218425005832,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 2,
+     "group": 1,
+     "gap": 0.8798,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 182.16218425005832,
+     "sfe_source": "group 1"
+    },
+    {
+     "index": 3,
+     "group": 3,
+     "gap": 0.6025,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 217.80973989246584,
+     "sfe_source": "computed"
+    }
+   ],
+   "notes": [
+    "slabcutter t1: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces"
+   ],
+   "surface_area_static": 467.20328458332875,
+   "gamma": 179.09731087212802,
+   "gamma_error": 0.0,
+   "termination_used": 0,
+   "faces_equivalent": true,
+   "n_molecules_slab": 24,
+   "thickness": 9.644586235,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "estimate_minutes": 0.9,
+   "recorded": "2026-10-22T16:05:14-04:00",
+   "material": "paracetamol",
+   "provenance": "private chain run dir state:paracetamol/runs/20261022-160437-L1-111-b4e36a (not shipped)"
+  },
+  {
+   "family": "{1 1 0}",
+   "hkl": [
+    1,
+    1,
+    0
+   ],
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "data/paracetamol/paracetamol_unitcell.data",
+   "datafile_md5": "a33cd4b9edf72388623e5a725f810968",
+   "script": "data/paracetamol/in.paracetamol-run0.lmp",
+   "script_md5": "ddbd794a91c53ac2fc5de6f713082d52",
+   "source": "live (wulffhound)",
+   "cpu_s": 38.0,
+   "wall_s": 34.9,
+   "run_dir": "state:paracetamol/runs/20261022-160508-L1-110-ee16e2",
+   "child_runs": [
+    {
+     "tool": "supercell",
+     "run_dir": "state:paracetamol/runs/20261022-160508-L1-110-ee16e2/children/RUNS/supercell-9b8db8e2121c4c71",
+     "inputs": {
+      "orientation_mode": "hkl",
+      "h": 1,
+      "k": 1,
+      "l": 0,
+      "search_range": 4,
+      "use_reaxff": true,
+      "RunEnergyCheck": false
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160508-L1-110-ee16e2/children/RUNS/slabcutter-938a76a300db45e8",
+     "inputs": {
+      "termination_index": 0,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160508-L1-110-ee16e2/children/RUNS/slabcutter-b9d30919f4a74c4a",
+     "inputs": {
+      "termination_index": 1,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160508-L1-110-ee16e2/children/RUNS/slabcutter-95f45b3a19a8480e",
+     "inputs": {
+      "termination_index": 3,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 5.586597738480754,
+   "n_molecules_cell": 40,
+   "mnp_used": [
+    -1,
+    1,
+    -1,
+    -1,
+    1,
+    1,
+    3,
+    2,
+    0
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 4,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 2.2589,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 158.06151148310425,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 1,
+     "gap": 1.5536,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 162.91456620456276,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 2,
+     "group": 1,
+     "gap": 1.5536,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 162.91456620456276,
+     "sfe_source": "group 1"
+    },
+    {
+     "index": 3,
+     "group": 3,
+     "gap": 0.2205,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 204.0492440832415,
+     "sfe_source": "computed"
+    }
+   ],
+   "notes": [
+    "slabcutter t1: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces",
+    "slabcutter t3: this termination cuts between molecular layers only 0.22 A apart"
+   ],
+   "surface_area_static": 268.8566803566341,
+   "gamma": 158.06151148310425,
+   "gamma_error": 0.0,
+   "termination_used": 0,
+   "faces_equivalent": true,
+   "n_molecules_slab": 16,
+   "thickness": 11.173195476,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "estimate_minutes": 0.7,
+   "recorded": "2026-10-22T16:05:43-04:00",
+   "material": "paracetamol",
+   "provenance": "private chain run dir state:paracetamol/runs/20261022-160508-L1-110-ee16e2 (not shipped)"
+  },
+  {
+   "family": "{0 2 1}",
+   "hkl": [
+    0,
+    2,
+    1
+   ],
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "data/paracetamol/paracetamol_unitcell.data",
+   "datafile_md5": "a33cd4b9edf72388623e5a725f810968",
+   "script": "data/paracetamol/in.paracetamol-run0.lmp",
+   "script_md5": "ddbd794a91c53ac2fc5de6f713082d52",
+   "source": "live (wulffhound)",
+   "cpu_s": 38.0,
+   "wall_s": 34.6,
+   "run_dir": "state:paracetamol/runs/20261022-160514-L1-021-4487e9",
+   "child_runs": [
+    {
+     "tool": "supercell",
+     "run_dir": "state:paracetamol/runs/20261022-160514-L1-021-4487e9/children/RUNS/supercell-dbd4389ef1ef4225",
+     "inputs": {
+      "orientation_mode": "hkl",
+      "h": 0,
+      "k": 2,
+      "l": 1,
+      "search_range": 4,
+      "use_reaxff": true,
+      "RunEnergyCheck": false
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160514-L1-021-4487e9/children/RUNS/slabcutter-aadbbd028f9f4241",
+     "inputs": {
+      "termination_index": 0,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160514-L1-021-4487e9/children/RUNS/slabcutter-f15a1217d08946e8",
+     "inputs": {
+      "termination_index": 1,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160514-L1-021-4487e9/children/RUNS/slabcutter-95b1ca744a004275",
+     "inputs": {
+      "termination_index": 2,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 4.276560877713957,
+   "n_molecules_cell": 56,
+   "mnp_used": [
+    -1,
+    0,
+    0,
+    1,
+    -2,
+    4,
+    0,
+    3,
+    1
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 4,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 1.926,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 153.05187446066967,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 1,
+     "gap": 1.1949,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 154.42770198082525,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 2,
+     "group": 2,
+     "gap": 0.5778,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 182.23010008575582,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 3,
+     "group": 2,
+     "gap": 0.5778,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 182.23010008575582,
+     "sfe_source": "group 2"
+    }
+   ],
+   "notes": [
+    "slabcutter t2: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces"
+   ],
+   "surface_area_static": 351.215419391005,
+   "gamma": 153.05187446066967,
+   "gamma_error": 0.0,
+   "termination_used": 0,
+   "faces_equivalent": true,
+   "n_molecules_slab": 16,
+   "thickness": 8.553121754285714,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "estimate_minutes": 0.8,
+   "recorded": "2026-10-22T16:05:49-04:00",
+   "material": "paracetamol",
+   "provenance": "private chain run dir state:paracetamol/runs/20261022-160514-L1-021-4487e9 (not shipped)"
+  },
+  {
+   "family": "{1 1 -1}",
+   "hkl": [
+    1,
+    1,
+    -1
+   ],
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "data/paracetamol/paracetamol_unitcell.data",
+   "datafile_md5": "a33cd4b9edf72388623e5a725f810968",
+   "script": "data/paracetamol/in.paracetamol-run0.lmp",
+   "script_md5": "ddbd794a91c53ac2fc5de6f713082d52",
+   "source": "live (wulffhound)",
+   "cpu_s": 50.1,
+   "wall_s": 47.8,
+   "run_dir": "state:paracetamol/runs/20261022-160637-L1-11m1-33be78",
+   "child_runs": [
+    {
+     "tool": "supercell",
+     "run_dir": "state:paracetamol/runs/20261022-160637-L1-11m1-33be78/children/RUNS/supercell-469255ab7220421d",
+     "inputs": {
+      "orientation_mode": "hkl",
+      "h": 1,
+      "k": 1,
+      "l": -1,
+      "search_range": 4,
+      "use_reaxff": true,
+      "RunEnergyCheck": false
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160637-L1-11m1-33be78/children/RUNS/slabcutter-01ae3f15e3484501",
+     "inputs": {
+      "termination_index": 0,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160637-L1-11m1-33be78/children/RUNS/slabcutter-cc1eb12936e04b9b",
+     "inputs": {
+      "termination_index": 1,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160637-L1-11m1-33be78/children/RUNS/slabcutter-9420678809bc4c65",
+     "inputs": {
+      "termination_index": 3,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 5.254255729375285,
+   "n_molecules_cell": 96,
+   "mnp_used": [
+    -3,
+    4,
+    1,
+    1,
+    0,
+    1,
+    3,
+    2,
+    -1
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 4,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 3.5788,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 113.34581131951659,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 1,
+     "gap": 0.7168,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 176.47809533528033,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 2,
+     "group": 1,
+     "gap": 0.7168,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 176.47809533528033,
+     "sfe_source": "group 1"
+    },
+    {
+     "index": 3,
+     "group": 3,
+     "gap": 0.2418,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 228.5786502518886,
+     "sfe_source": "computed"
+    }
+   ],
+   "notes": [
+    "slabcutter t1: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces",
+    "slabcutter t3: this termination cuts between molecular layers only 0.24 A apart"
+   ],
+   "surface_area_static": 571.724788136675,
+   "gamma": 113.34581131951659,
+   "gamma_error": 0.0,
+   "termination_used": 0,
+   "faces_equivalent": true,
+   "n_molecules_slab": 32,
+   "thickness": 10.50851146,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "estimate_minutes": 0.9,
+   "recorded": "2026-10-22T16:07:26-04:00",
+   "material": "paracetamol",
+   "provenance": "private chain run dir state:paracetamol/runs/20261022-160637-L1-11m1-33be78 (not shipped)"
+  },
+  {
+   "family": "{0 1 1}",
+   "hkl": [
+    0,
+    1,
+    1
+   ],
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "data/paracetamol/paracetamol_unitcell.data",
+   "datafile_md5": "a33cd4b9edf72388623e5a725f810968",
+   "script": "data/paracetamol/in.paracetamol-run0.lmp",
+   "script_md5": "ddbd794a91c53ac2fc5de6f713082d52",
+   "source": "live (wulffhound)",
+   "cpu_s": 52.6,
+   "wall_s": 50.2,
+   "run_dir": "state:paracetamol/runs/20261022-160637-L1-011-c85163",
+   "child_runs": [
+    {
+     "tool": "supercell",
+     "run_dir": "state:paracetamol/runs/20261022-160637-L1-011-c85163/children/RUNS/supercell-cb7e4a100d174049",
+     "inputs": {
+      "orientation_mode": "hkl",
+      "h": 0,
+      "k": 1,
+      "l": 1,
+      "search_range": 4,
+      "use_reaxff": true,
+      "RunEnergyCheck": false
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160637-L1-011-c85163/children/RUNS/slabcutter-048e37fe907347aa",
+     "inputs": {
+      "termination_index": 0,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160637-L1-011-c85163/children/RUNS/slabcutter-a8481ca692814cfa",
+     "inputs": {
+      "termination_index": 1,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160637-L1-011-c85163/children/RUNS/slabcutter-da146b2cc31e4932",
+     "inputs": {
+      "termination_index": 2,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 7.189213471037705,
+   "n_molecules_cell": 112,
+   "mnp_used": [
+    -1,
+    0,
+    0,
+    1,
+    -4,
+    4,
+    1,
+    4,
+    3
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 4,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 4.2917,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 139.34686898365433,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 1,
+     "gap": 1.6685,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 236.63112165566338,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 2,
+     "group": 2,
+     "gap": 0.6145,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 193.5246627561604,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 3,
+     "group": 2,
+     "gap": 0.6145,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 193.5246627561604,
+     "sfe_source": "group 2"
+    }
+   ],
+   "notes": [
+    "slabcutter t2: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces"
+   ],
+   "surface_area_static": 417.84657763212,
+   "gamma": 139.34686898365433,
+   "gamma_error": 0.0,
+   "termination_used": 0,
+   "faces_equivalent": true,
+   "n_molecules_slab": 32,
+   "thickness": 14.378426942857143,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "estimate_minutes": 0.9,
+   "recorded": "2026-10-22T16:07:28-04:00",
+   "material": "paracetamol",
+   "provenance": "private chain run dir state:paracetamol/runs/20261022-160637-L1-011-c85163 (not shipped)"
+  },
+  {
+   "family": "{1 0 0}",
+   "hkl": [
+    1,
+    0,
+    0
+   ],
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "data/paracetamol/paracetamol_unitcell.data",
+   "datafile_md5": "a33cd4b9edf72388623e5a725f810968",
+   "script": "data/paracetamol/in.paracetamol-run0.lmp",
+   "script_md5": "ddbd794a91c53ac2fc5de6f713082d52",
+   "source": "live (wulffhound)",
+   "cpu_s": 36.9,
+   "wall_s": 34.8,
+   "run_dir": "state:paracetamol/runs/20261022-160728-L1-100-191c54",
+   "child_runs": [
+    {
+     "tool": "supercell",
+     "run_dir": "state:paracetamol/runs/20261022-160728-L1-100-191c54/children/RUNS/supercell-ee43430c1d64443b",
+     "inputs": {
+      "orientation_mode": "hkl",
+      "h": 1,
+      "k": 0,
+      "l": 0,
+      "search_range": 4,
+      "use_reaxff": true,
+      "RunEnergyCheck": false
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160728-L1-100-191c54/children/RUNS/slabcutter-2e46d44da0394aa7",
+     "inputs": {
+      "termination_index": 0,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160728-L1-100-191c54/children/RUNS/slabcutter-49187d3e79034ee2",
+     "inputs": {
+      "termination_index": 2,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 7.024791950971976,
+   "n_molecules_cell": 4,
+   "mnp_used": [
+    0,
+    -1,
+    0,
+    0,
+    0,
+    -1,
+    1,
+    0,
+    0
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 4,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 1.9535,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 163.93641915526814,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 0,
+     "gap": 1.9535,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 163.93641915526814,
+     "sfe_source": "group 0"
+    },
+    {
+     "index": 2,
+     "group": 2,
+     "gap": 1.5589,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 161.4993551849514,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 3,
+     "group": 2,
+     "gap": 1.5589,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 161.4993551849514,
+     "sfe_source": "group 2"
+    }
+   ],
+   "notes": [],
+   "surface_area_static": 106.90666235,
+   "gamma": 161.4993551849514,
+   "gamma_error": 0.0,
+   "termination_used": 2,
+   "faces_equivalent": true,
+   "n_molecules_slab": 8,
+   "thickness": 14.0495839,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "estimate_minutes": 0.7,
+   "recorded": "2026-10-22T16:08:03-04:00",
+   "material": "paracetamol",
+   "provenance": "private chain run dir state:paracetamol/runs/20261022-160728-L1-100-191c54 (not shipped)"
+  },
+  {
+   "family": "{1 1 2}",
+   "hkl": [
+    1,
+    1,
+    2
+   ],
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "data/paracetamol/paracetamol_unitcell.data",
+   "datafile_md5": "a33cd4b9edf72388623e5a725f810968",
+   "script": "data/paracetamol/in.paracetamol-run0.lmp",
+   "script_md5": "ddbd794a91c53ac2fc5de6f713082d52",
+   "source": "live (wulffhound)",
+   "cpu_s": 51.2,
+   "wall_s": 48.0,
+   "run_dir": "state:paracetamol/runs/20261022-160726-L1-112-e77d8c",
+   "child_runs": [
+    {
+     "tool": "supercell",
+     "run_dir": "state:paracetamol/runs/20261022-160726-L1-112-e77d8c/children/RUNS/supercell-d1d77f7a254c4e1f",
+     "inputs": {
+      "orientation_mode": "hkl",
+      "h": 1,
+      "k": 1,
+      "l": 2,
+      "search_range": 4,
+      "use_reaxff": true,
+      "RunEnergyCheck": false
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160726-L1-112-e77d8c/children/RUNS/slabcutter-1d40678ff33a4fd2",
+     "inputs": {
+      "termination_index": 0,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160726-L1-112-e77d8c/children/RUNS/slabcutter-03788128152f45c8",
+     "inputs": {
+      "termination_index": 1,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160726-L1-112-e77d8c/children/RUNS/slabcutter-748065c7952b4169",
+     "inputs": {
+      "termination_index": 2,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 3.8039907383435856,
+   "n_molecules_cell": 144,
+   "mnp_used": [
+    -3,
+    1,
+    1,
+    0,
+    -2,
+    1,
+    4,
+    2,
+    3
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 4,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 2.1885,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 180.7500411190772,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 1,
+     "gap": 0.8004,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 209.2366409657131,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 2,
+     "group": 2,
+     "gap": 0.4075,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 199.08966811637436,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 3,
+     "group": 2,
+     "gap": 0.4075,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 199.08966811637436,
+     "sfe_source": "group 2"
+    }
+   ],
+   "notes": [
+    "slabcutter t2: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces",
+    "slabcutter t2: this termination cuts between molecular layers only 0.41 A apart"
+   ],
+   "surface_area_static": 592.2704179099215,
+   "gamma": 180.7500411190772,
+   "gamma_error": 0.0,
+   "termination_used": 0,
+   "faces_equivalent": true,
+   "n_molecules_slab": 24,
+   "thickness": 7.607981476666667,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "estimate_minutes": 1.0,
+   "recorded": "2026-10-22T16:08:14-04:00",
+   "material": "paracetamol",
+   "provenance": "private chain run dir state:paracetamol/runs/20261022-160726-L1-112-e77d8c (not shipped)"
+  },
+  {
+   "family": "{1 0 -2}",
+   "hkl": [
+    1,
+    0,
+    -2
+   ],
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "data/paracetamol/paracetamol_unitcell.data",
+   "datafile_md5": "a33cd4b9edf72388623e5a725f810968",
+   "script": "data/paracetamol/in.paracetamol-run0.lmp",
+   "script_md5": "ddbd794a91c53ac2fc5de6f713082d52",
+   "source": "live (wulffhound)",
+   "cpu_s": 36.1,
+   "wall_s": 34.0,
+   "run_dir": "state:paracetamol/runs/20261022-160803-L1-10m2-374c6e",
+   "child_runs": [
+    {
+     "tool": "supercell",
+     "run_dir": "state:paracetamol/runs/20261022-160803-L1-10m2-374c6e/children/RUNS/supercell-82cfb45744dd48af",
+     "inputs": {
+      "orientation_mode": "hkl",
+      "h": 1,
+      "k": 0,
+      "l": -2,
+      "search_range": 4,
+      "use_reaxff": true,
+      "RunEnergyCheck": false
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160803-L1-10m2-374c6e/children/RUNS/slabcutter-47acd151564e4a4b",
+     "inputs": {
+      "termination_index": 0,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160803-L1-10m2-374c6e/children/RUNS/slabcutter-8cea01b2d2a84e53",
+     "inputs": {
+      "termination_index": 2,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 4.779804340112269,
+   "n_molecules_cell": 40,
+   "mnp_used": [
+    -2,
+    0,
+    -1,
+    0,
+    1,
+    0,
+    4,
+    0,
+    -3
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 4,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 2.1464,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 177.5959479347128,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 0,
+     "gap": 2.1464,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 177.5959479347128,
+     "sfe_source": "group 0"
+    },
+    {
+     "index": 2,
+     "group": 2,
+     "gap": 0.2435,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 160.29512885485914,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 3,
+     "group": 2,
+     "gap": 0.2435,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 160.29512885485914,
+     "sfe_source": "group 2"
+    }
+   ],
+   "notes": [
+    "slabcutter t2: this termination cuts between molecular layers only 0.24 A apart"
+   ],
+   "surface_area_static": 157.118787263987,
+   "gamma": 160.29512885485914,
+   "gamma_error": 0.0,
+   "termination_used": 2,
+   "faces_equivalent": true,
+   "n_molecules_slab": 8,
+   "thickness": 9.55960868,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "estimate_minutes": 0.8,
+   "recorded": "2026-10-22T16:08:38-04:00",
+   "material": "paracetamol",
+   "provenance": "private chain run dir state:paracetamol/runs/20261022-160803-L1-10m2-374c6e (not shipped)"
+  },
+  {
+   "family": "{1 2 -1}",
+   "hkl": [
+    1,
+    2,
+    -1
+   ],
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "data/paracetamol/paracetamol_unitcell.data",
+   "datafile_md5": "a33cd4b9edf72388623e5a725f810968",
+   "script": "data/paracetamol/in.paracetamol-run0.lmp",
+   "script_md5": "ddbd794a91c53ac2fc5de6f713082d52",
+   "source": "live (wulffhound)",
+   "cpu_s": 38.6,
+   "wall_s": 36.3,
+   "run_dir": "state:paracetamol/runs/20261022-160814-L1-12m1-1e194f",
+   "child_runs": [
+    {
+     "tool": "supercell",
+     "run_dir": "state:paracetamol/runs/20261022-160814-L1-12m1-1e194f/children/RUNS/supercell-d712d87fd74d484d",
+     "inputs": {
+      "orientation_mode": "hkl",
+      "h": 1,
+      "k": 2,
+      "l": -1,
+      "search_range": 4,
+      "use_reaxff": true,
+      "RunEnergyCheck": false
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160814-L1-12m1-1e194f/children/RUNS/slabcutter-1ce28c6375784f96",
+     "inputs": {
+      "termination_index": 0,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160814-L1-12m1-1e194f/children/RUNS/slabcutter-83394f14ed6142bd",
+     "inputs": {
+      "termination_index": 2,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 3.738425260841182,
+   "n_molecules_cell": 96,
+   "mnp_used": [
+    -3,
+    2,
+    1,
+    1,
+    0,
+    1,
+    3,
+    4,
+    -1
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 3,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 1.3616,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 151.38539584832395,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 0,
+     "gap": 1.3616,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 151.38539584832395,
+     "sfe_source": "group 0"
+    },
+    {
+     "index": 2,
+     "group": 2,
+     "gap": 1.0151,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 143.50687629436908,
+     "sfe_source": "computed"
+    }
+   ],
+   "notes": [
+    "slabcutter t0: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces"
+   ],
+   "surface_area_static": 401.7718738048179,
+   "gamma": 143.50687629436908,
+   "gamma_error": 0.0,
+   "termination_used": 2,
+   "faces_equivalent": true,
+   "n_molecules_slab": 16,
+   "thickness": 7.476850521666666,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "estimate_minutes": 1.0,
+   "recorded": "2026-10-22T16:08:51-04:00",
+   "material": "paracetamol",
+   "provenance": "private chain run dir state:paracetamol/runs/20261022-160814-L1-12m1-1e194f (not shipped)"
+  },
+  {
+   "family": "{1 2 0}",
+   "hkl": [
+    1,
+    2,
+    0
+   ],
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "data/paracetamol/paracetamol_unitcell.data",
+   "datafile_md5": "a33cd4b9edf72388623e5a725f810968",
+   "script": "data/paracetamol/in.paracetamol-run0.lmp",
+   "script_md5": "ddbd794a91c53ac2fc5de6f713082d52",
+   "source": "live (wulffhound)",
+   "cpu_s": 55.8,
+   "wall_s": 53.4,
+   "run_dir": "state:paracetamol/runs/20261022-160838-L1-120-8c3003",
+   "child_runs": [
+    {
+     "tool": "supercell",
+     "run_dir": "state:paracetamol/runs/20261022-160838-L1-120-8c3003/children/RUNS/supercell-e149b8c7bd7b4879",
+     "inputs": {
+      "orientation_mode": "hkl",
+      "h": 1,
+      "k": 2,
+      "l": 0,
+      "search_range": 4,
+      "use_reaxff": true,
+      "RunEnergyCheck": false
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160838-L1-120-8c3003/children/RUNS/slabcutter-6a1bd4198f1a4299",
+     "inputs": {
+      "termination_index": 0,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160838-L1-120-8c3003/children/RUNS/slabcutter-554853e9631b4fd3",
+     "inputs": {
+      "termination_index": 1,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160838-L1-120-8c3003/children/RUNS/slabcutter-ef0592acfb97415d",
+     "inputs": {
+      "termination_index": 3,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 3.8526952906839784,
+   "n_molecules_cell": 132,
+   "mnp_used": [
+    -2,
+    1,
+    -2,
+    -2,
+    1,
+    1,
+    3,
+    4,
+    0
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 4,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 2.4772,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 152.63147437883558,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 1,
+     "gap": 0.5206,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 179.23614473870512,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 2,
+     "group": 1,
+     "gap": 0.5206,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 179.23614473870512,
+     "sfe_source": "group 1"
+    },
+    {
+     "index": 3,
+     "group": 3,
+     "gap": 0.3344,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 172.13558597454767,
+     "sfe_source": "computed"
+    }
+   ],
+   "notes": [
+    "slabcutter t1: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces",
+    "slabcutter t3: this termination cuts between molecular layers only 0.33 A apart"
+   ],
+   "surface_area_static": 584.7831229086623,
+   "gamma": 152.63147437883558,
+   "gamma_error": 0.0,
+   "termination_used": 0,
+   "faces_equivalent": true,
+   "n_molecules_slab": 24,
+   "thickness": 7.705390581818182,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "estimate_minutes": 0.8,
+   "recorded": "2026-10-22T16:09:32-04:00",
+   "material": "paracetamol",
+   "provenance": "private chain run dir state:paracetamol/runs/20261022-160838-L1-120-8c3003 (not shipped)"
+  },
+  {
+   "family": "{1 0 -3}",
+   "hkl": [
+    1,
+    0,
+    -3
+   ],
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "data/paracetamol/paracetamol_unitcell.data",
+   "datafile_md5": "a33cd4b9edf72388623e5a725f810968",
+   "script": "data/paracetamol/in.paracetamol-run0.lmp",
+   "script_md5": "ddbd794a91c53ac2fc5de6f713082d52",
+   "source": "live (wulffhound)",
+   "cpu_s": 43.7,
+   "wall_s": 44.4,
+   "run_dir": "state:paracetamol/runs/20261022-160851-L1-10m3-d26613",
+   "child_runs": [
+    {
+     "tool": "supercell",
+     "run_dir": "state:paracetamol/runs/20261022-160851-L1-10m3-d26613/children/RUNS/supercell-81c9b3ca61914e77",
+     "inputs": {
+      "orientation_mode": "hkl",
+      "h": 1,
+      "k": 0,
+      "l": -3,
+      "search_range": 4,
+      "use_reaxff": true,
+      "RunEnergyCheck": false
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160851-L1-10m3-d26613/children/RUNS/slabcutter-75c75d3616864d07",
+     "inputs": {
+      "termination_index": 0,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-160851-L1-10m3-d26613/children/RUNS/slabcutter-2107e9c037c645d4",
+     "inputs": {
+      "termination_index": 1,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 3.5751298099084994,
+   "n_molecules_cell": 60,
+   "mnp_used": [
+    -3,
+    0,
+    -1,
+    0,
+    1,
+    0,
+    3,
+    0,
+    -4
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 2,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 1.911,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 199.83591029199607,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 1,
+     "gap": 1.6641,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 171.32399012220685,
+     "sfe_source": "computed"
+    }
+   ],
+   "notes": [],
+   "surface_area_static": 210.06148056087403,
+   "gamma": 171.32399012220685,
+   "gamma_error": 0.0,
+   "termination_used": 1,
+   "faces_equivalent": true,
+   "n_molecules_slab": 8,
+   "thickness": 7.15025962,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "estimate_minutes": 1.0,
+   "recorded": "2026-10-22T16:09:36-04:00",
+   "material": "paracetamol",
+   "provenance": "private chain run dir state:paracetamol/runs/20261022-160851-L1-10m3-d26613 (not shipped)"
+  },
+  {
+   "family": "{1 2 1}",
+   "hkl": [
+    1,
+    2,
+    1
+   ],
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "data/paracetamol/paracetamol_unitcell.data",
+   "datafile_md5": "a33cd4b9edf72388623e5a725f810968",
+   "script": "data/paracetamol/in.paracetamol-run0.lmp",
+   "script_md5": "ddbd794a91c53ac2fc5de6f713082d52",
+   "source": "live (wulffhound)",
+   "cpu_s": 58.5,
+   "wall_s": 56.4,
+   "run_dir": "state:paracetamol/runs/20261022-161023-L1-121-1d6957",
+   "child_runs": [
+    {
+     "tool": "supercell",
+     "run_dir": "state:paracetamol/runs/20261022-161023-L1-121-1d6957/children/RUNS/supercell-7fac2c6710ba4379",
+     "inputs": {
+      "orientation_mode": "hkl",
+      "h": 1,
+      "k": 2,
+      "l": 1,
+      "search_range": 4,
+      "use_reaxff": true,
+      "RunEnergyCheck": false
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-161023-L1-121-1d6957/children/RUNS/slabcutter-183780c99ee84775",
+     "inputs": {
+      "termination_index": 0,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-161023-L1-121-1d6957/children/RUNS/slabcutter-ae433f9aab244b4a",
+     "inputs": {
+      "termination_index": 1,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-161023-L1-121-1d6957/children/RUNS/slabcutter-c9bef13a749f4f2d",
+     "inputs": {
+      "termination_index": 3,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 3.5729758212312643,
+   "n_molecules_cell": 120,
+   "mnp_used": [
+    -4,
+    1,
+    2,
+    1,
+    -1,
+    1,
+    3,
+    3,
+    1
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 4,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 1.581,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 196.54997911478492,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 1,
+     "gap": 0.6882,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 174.260692635692,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 2,
+     "group": 1,
+     "gap": 0.6882,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 174.260692635692,
+     "sfe_source": "group 1"
+    },
+    {
+     "index": 3,
+     "group": 3,
+     "gap": 0.6155,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 169.50688623839852,
+     "sfe_source": "computed"
+    }
+   ],
+   "notes": [
+    "slabcutter t1: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces"
+   ],
+   "surface_area_static": 630.5643520120835,
+   "gamma": 169.50688623839852,
+   "gamma_error": 0.0,
+   "termination_used": 3,
+   "faces_equivalent": true,
+   "n_molecules_slab": 24,
+   "thickness": 7.145951642,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "estimate_minutes": 1.0,
+   "recorded": "2026-10-22T16:11:20-04:00",
+   "material": "paracetamol",
+   "provenance": "private chain run dir state:paracetamol/runs/20261022-161023-L1-121-1d6957 (not shipped)"
+  },
+  {
+   "family": "{1 1 -2}",
+   "hkl": [
+    1,
+    1,
+    -2
+   ],
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "data/paracetamol/paracetamol_unitcell.data",
+   "datafile_md5": "a33cd4b9edf72388623e5a725f810968",
+   "script": "data/paracetamol/in.paracetamol-run0.lmp",
+   "script_md5": "ddbd794a91c53ac2fc5de6f713082d52",
+   "source": "live (wulffhound)",
+   "cpu_s": 61.2,
+   "wall_s": 58.8,
+   "run_dir": "state:paracetamol/runs/20261022-161023-L1-11m2-601446",
+   "child_runs": [
+    {
+     "tool": "supercell",
+     "run_dir": "state:paracetamol/runs/20261022-161023-L1-11m2-601446/children/RUNS/supercell-acdeefc08aad4554",
+     "inputs": {
+      "orientation_mode": "hkl",
+      "h": 1,
+      "k": 1,
+      "l": -2,
+      "search_range": 4,
+      "use_reaxff": true,
+      "RunEnergyCheck": false
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-161023-L1-11m2-601446/children/RUNS/slabcutter-9ee3315bc0314b96",
+     "inputs": {
+      "termination_index": 0,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-161023-L1-11m2-601446/children/RUNS/slabcutter-a261faafe90b45d3",
+     "inputs": {
+      "termination_index": 2,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-161023-L1-11m2-601446/children/RUNS/slabcutter-73ef0ea8f866467e",
+     "inputs": {
+      "termination_index": 3,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 4.242971529913237,
+   "n_molecules_cell": 156,
+   "mnp_used": [
+    -4,
+    -2,
+    -3,
+    -1,
+    1,
+    0,
+    4,
+    3,
+    -3
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 4,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 1.3474,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 156.55334978553338,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 0,
+     "gap": 1.3474,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 156.55334978553338,
+     "sfe_source": "group 0"
+    },
+    {
+     "index": 2,
+     "group": 2,
+     "gap": 0.9903,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 165.78106435706454,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 3,
+     "group": 3,
+     "gap": 0.5579,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 165.50694791569722,
+     "sfe_source": "computed"
+    }
+   ],
+   "notes": [
+    "slabcutter t0: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces"
+   ],
+   "surface_area_static": 530.9937075446487,
+   "gamma": 156.55334978553338,
+   "gamma_error": 0.0,
+   "termination_used": 0,
+   "faces_equivalent": false,
+   "n_molecules_slab": 24,
+   "thickness": 8.48594306,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "estimate_minutes": 1.1,
+   "recorded": "2026-10-22T16:11:22-04:00",
+   "material": "paracetamol",
+   "provenance": "private chain run dir state:paracetamol/runs/20261022-161023-L1-11m2-601446 (not shipped)"
+  },
+  {
+   "family": "{1 1 -3}",
+   "hkl": [
+    1,
+    1,
+    -3
+   ],
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "data/paracetamol/paracetamol_unitcell.data",
+   "datafile_md5": "a33cd4b9edf72388623e5a725f810968",
+   "script": "data/paracetamol/in.paracetamol-run0.lmp",
+   "script_md5": "ddbd794a91c53ac2fc5de6f713082d52",
+   "source": "live (wulffhound)",
+   "cpu_s": 13.2,
+   "wall_s": 12.5,
+   "run_dir": "state:paracetamol/runs/20261022-161120-L1-11m3-e327eb",
+   "child_runs": [],
+   "level": 1,
+   "ok": false,
+   "gamma": null,
+   "error": "SurfError: the supercell child run failed - RuntimeError: GCCM found no (x1,x2) pair for (hkl) = (1 1 -3). Try a larger search_range (now 4) and/or a larger angle_dev (now 1.0 degrees) or s_tol (now 0.0001).\n--- sin.out stdout (tail) ---\nSearching over  5.31E+05 (x1,x2) pairs.\nNumber of (x1,x2) pairs found:                0\nNo (x1,x2) found. Increase possible m, n, and p.\n--- sin.out stderr (tail) ---\nNote: The following floating-point exceptions are signalling: IEEE_INVALID_FLAG (executed notebook: state:paracetamol/runs/20261022-161120-L1-11m3-e327eb/children/RUNS/supercell-489cd2ff43a44438/supercell.ipynb)",
+   "estimate_minutes": 1.2,
+   "recorded": "2026-10-22T16:11:33-04:00",
+   "material": "paracetamol",
+   "provenance": "private chain run dir state:paracetamol/runs/20261022-161120-L1-11m3-e327eb (not shipped)"
+  },
+  {
+   "family": "{0 1 3}",
+   "hkl": [
+    0,
+    1,
+    3
+   ],
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "data/paracetamol/paracetamol_unitcell.data",
+   "datafile_md5": "a33cd4b9edf72388623e5a725f810968",
+   "script": "data/paracetamol/in.paracetamol-run0.lmp",
+   "script_md5": "ddbd794a91c53ac2fc5de6f713082d52",
+   "source": "live (wulffhound)",
+   "cpu_s": 13.2,
+   "wall_s": 12.5,
+   "run_dir": "state:paracetamol/runs/20261022-161122-L1-013-3553cd",
+   "child_runs": [],
+   "level": 1,
+   "ok": false,
+   "gamma": null,
+   "error": "SurfError: the supercell child run failed - RuntimeError: GCCM found no (x1,x2) pair for (hkl) = (0 1 3). Try a larger search_range (now 4) and/or a larger angle_dev (now 1.0 degrees) or s_tol (now 0.0001).\n--- sin.out stdout (tail) ---\nSearching over  5.31E+05 (x1,x2) pairs.\nNumber of (x1,x2) pairs found:                0\nNo (x1,x2) found. Increase possible m, n, and p.\n--- sin.out stderr (tail) ---\nNote: The following floating-point exceptions are signalling: IEEE_INVALID_FLAG (executed notebook: state:paracetamol/runs/20261022-161122-L1-013-3553cd/children/RUNS/supercell-15b8c497621c403e/supercell.ipynb)",
+   "estimate_minutes": 1.0,
+   "recorded": "2026-10-22T16:11:35-04:00",
+   "material": "paracetamol",
+   "provenance": "private chain run dir state:paracetamol/runs/20261022-161122-L1-013-3553cd (not shipped)"
+  },
+  {
+   "family": "{2 1 0}",
+   "hkl": [
+    2,
+    1,
+    0
+   ],
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "data/paracetamol/paracetamol_unitcell.data",
+   "datafile_md5": "a33cd4b9edf72388623e5a725f810968",
+   "script": "data/paracetamol/in.paracetamol-run0.lmp",
+   "script_md5": "ddbd794a91c53ac2fc5de6f713082d52",
+   "source": "live (wulffhound)",
+   "cpu_s": 49.3,
+   "wall_s": 46.3,
+   "run_dir": "state:paracetamol/runs/20261022-161133-L1-210-1e7258",
+   "child_runs": [
+    {
+     "tool": "supercell",
+     "run_dir": "state:paracetamol/runs/20261022-161133-L1-210-1e7258/children/RUNS/supercell-8ba6ccc04ac94906",
+     "inputs": {
+      "orientation_mode": "hkl",
+      "h": 2,
+      "k": 1,
+      "l": 0,
+      "search_range": 4,
+      "use_reaxff": true,
+      "RunEnergyCheck": false
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-161133-L1-210-1e7258/children/RUNS/slabcutter-5cd4fa1b2f614d3f",
+     "inputs": {
+      "termination_index": 0,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-161133-L1-210-1e7258/children/RUNS/slabcutter-a49d9ffafb234dcd",
+     "inputs": {
+      "termination_index": 1,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-161133-L1-210-1e7258/children/RUNS/slabcutter-87e90e28a6b342b4",
+     "inputs": {
+      "termination_index": 2,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 3.2820589178847963,
+   "n_molecules_cell": 112,
+   "mnp_used": [
+    -1,
+    2,
+    -1,
+    -1,
+    2,
+    3,
+    3,
+    1,
+    0
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 4,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 2.4989,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 152.7369085800309,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 1,
+     "gap": 0.4144,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 168.79452489702632,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 2,
+     "group": 2,
+     "gap": 0.1844,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 173.32776138398597,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 3,
+     "group": 2,
+     "gap": 0.1844,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 173.32776138398597,
+     "sfe_source": "group 2"
+    }
+   ],
+   "notes": [
+    "slabcutter t1: this termination cuts between molecular layers only 0.41 A apart",
+    "slabcutter t2: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces",
+    "slabcutter t2: this termination cuts between molecular layers only 0.18 A apart"
+   ],
+   "surface_area_static": 915.2755387760158,
+   "gamma": 152.7369085800309,
+   "gamma_error": 0.0,
+   "termination_used": 0,
+   "faces_equivalent": true,
+   "n_molecules_slab": 32,
+   "thickness": 6.564117837142858,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "estimate_minutes": 0.9,
+   "recorded": "2026-10-22T16:12:20-04:00",
+   "material": "paracetamol",
+   "provenance": "private chain run dir state:paracetamol/runs/20261022-161133-L1-210-1e7258 (not shipped)"
+  },
+  {
+   "family": "{1 2 -2}",
+   "hkl": [
+    1,
+    2,
+    -2
+   ],
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "data/paracetamol/paracetamol_unitcell.data",
+   "datafile_md5": "a33cd4b9edf72388623e5a725f810968",
+   "script": "data/paracetamol/in.paracetamol-run0.lmp",
+   "script_md5": "ddbd794a91c53ac2fc5de6f713082d52",
+   "source": "live (wulffhound)",
+   "cpu_s": 49.1,
+   "wall_s": 46.7,
+   "run_dir": "state:paracetamol/runs/20261022-161135-L1-12m2-2df427",
+   "child_runs": [
+    {
+     "tool": "supercell",
+     "run_dir": "state:paracetamol/runs/20261022-161135-L1-12m2-2df427/children/RUNS/supercell-792cf8320e1c4907",
+     "inputs": {
+      "orientation_mode": "hkl",
+      "h": 1,
+      "k": 2,
+      "l": -2,
+      "search_range": 4,
+      "use_reaxff": true,
+      "RunEnergyCheck": false
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-161135-L1-12m2-2df427/children/RUNS/slabcutter-9438e2dfe7d94e54",
+     "inputs": {
+      "termination_index": 0,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-161135-L1-12m2-2df427/children/RUNS/slabcutter-f20ad1c0b9574809",
+     "inputs": {
+      "termination_index": 1,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "state:paracetamol/runs/20261022-161135-L1-12m2-2df427/children/RUNS/slabcutter-e0ad27da31fe48ef",
+     "inputs": {
+      "termination_index": 2,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 3.317217697732037,
+   "n_molecules_cell": 120,
+   "mnp_used": [
+    -4,
+    1,
+    -1,
+    0,
+    1,
+    1,
+    3,
+    4,
+    -2
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 4,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 2.7,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 137.21713880353178,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 1,
+     "gap": 0.2792,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 181.85207974877815,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 2,
+     "group": 2,
+     "gap": 0.169,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 168.60997653597056,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 3,
+     "group": 2,
+     "gap": 0.169,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 168.60997653597056,
+     "sfe_source": "group 2"
+    }
+   ],
+   "notes": [
+    "slabcutter t1: this termination cuts between molecular layers only 0.28 A apart",
+    "slabcutter t2: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces",
+    "slabcutter t2: this termination cuts between molecular layers only 0.17 A apart"
+   ],
+   "surface_area_static": 452.7873234063803,
+   "gamma": 137.21713880353178,
+   "gamma_error": 0.0,
+   "termination_used": 0,
+   "faces_equivalent": true,
+   "n_molecules_slab": 16,
+   "thickness": 6.634435396,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "estimate_minutes": 1.2,
+   "recorded": "2026-10-22T16:12:23-04:00",
+   "material": "paracetamol",
+   "provenance": "private chain run dir state:paracetamol/runs/20261022-161135-L1-12m2-2df427 (not shipped)"
+  }
+ ]
+}

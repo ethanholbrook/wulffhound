@@ -1,0 +1,214 @@
+{
+ "name": "paracetamol (acetaminophen) form I, monoclinic P2_1/n, Z = 4 (COD 2104364, 100 K)",
+ "route": "CIF route: COD 2104364 -> cif2lammps (X-H normalised to Allen & Bruno 2010, atoms relaxed in the CIF cell) -> ReaxFF-lg unit cell; level 2 through the chain's CIF-route surfenergy example",
+ "datafile": "data:paracetamol/paracetamol_unitcell.data",
+ "script": "data:paracetamol/in.paracetamol-run0.lmp",
+ "supplementary": "chain:devtools/spikes/wulff_paracetamol/example/reax-lg-2011.ff",
+ "example_dir": "chain:devtools/spikes/wulff_paracetamol/example",
+ "use_reaxff": true,
+ "force_field": "ReaxFF-lg (reax-lg-2011.ff, Liu, Liu, Zybin & Goddard 2011; in the private chain, not distributed here)",
+ "forcefield_validated": false,
+ "forcefield_note": "ReaxFF-lg 2011 is parametrised for nitramine energetic crystals (RDX, HMX, PETN); it is not validated for hydrogen-bonded pharmaceuticals like paracetamol. Absolute gammas are uncertain: screening-level, the facet ranking is the usable result.",
+ "setting_note": "Miller indices are relative to the data-file a, b, c (a = 7.0915 along x, b = 9.2149 along y, c = 11.6015 in xz; beta 97.865 deg): the COD cell, space group P2_1/n (No. 14, Hall -P 2yn; h0l absent for h + l odd, 0k0 for k odd). The paracetamol morphology literature mostly uses P2_1/a (a ~12.87, b ~9.40, c ~7.10 A, beta ~115.9 deg): convert with setting_map before using a paper's (hkl): h_n = -l_a, k_n = k_a, l_n = h_a + l_a (e.g. (1 1 0)_a -> (0 1 1)_n, (0 0 1)_a -> (-1 0 1)_n = {1 0 -1}, (2 0 -1)_a -> (1 0 1)_n). Check the paper's lattice parameters first: the map holds only for the P2_1/a cell.",
+ "spacegroup_data_setting": "P2_1/n (No. 14; spglib prints the standard symbol P2_1/c)",
+ "setting_map": {
+  "our_setting": "P 1 21/n 1 (No. 14), a 7.0915, b 9.2149, c 11.6015 A, beta 97.865 deg (COD 2104364, 100 K)",
+  "literature_setting": "P 1 21/a 1 (No. 14), a ~12.87, b ~9.40, c ~7.10 A, beta ~115.9 deg (room temperature, Haisa et al. 1976 cell)",
+  "basis_relation": "a_n = -c_a, b_n = b_a, c_n = a_a + c_a (rows of M in terms of a_a, b_a, c_a)",
+  "M_basis_a_to_n": [
+   [
+    0,
+    0,
+    -1
+   ],
+   [
+    0,
+    1,
+    0
+   ],
+   [
+    1,
+    0,
+    1
+   ]
+  ],
+  "miller_rule": "Miller indices transform like the basis vectors: (h k l)_n = M (h k l)_a; (h k l)_a = M^-1 (h k l)_n",
+  "explicit": "h_n = -l_a, k_n = k_a, l_n = h_a + l_a;  h_a = h_n + l_n, k_a = k_n, l_a = -h_n",
+  "absences_check": "P2_1/a h0l (h odd) -> P2_1/n h0l (h + l odd): OK",
+  "examples": [
+   {
+    "hkl_P21a": [
+     1,
+     1,
+     0
+    ],
+    "hkl_P21n": [
+     0,
+     1,
+     1
+    ],
+    "family_P21n": "{0 1 1}"
+   },
+   {
+    "hkl_P21a": [
+     0,
+     0,
+     1
+    ],
+    "hkl_P21n": [
+     -1,
+     0,
+     1
+    ],
+    "family_P21n": "{1 0 -1}"
+   },
+   {
+    "hkl_P21a": [
+     2,
+     0,
+     -1
+    ],
+    "hkl_P21n": [
+     1,
+     0,
+     1
+    ],
+    "family_P21n": "{1 0 1}"
+   },
+   {
+    "hkl_P21a": [
+     2,
+     0,
+     1
+    ],
+    "hkl_P21n": [
+     -1,
+     0,
+     3
+    ],
+    "family_P21n": null
+   },
+   {
+    "hkl_P21a": [
+     0,
+     1,
+     1
+    ],
+    "hkl_P21n": [
+     -1,
+     1,
+     1
+    ],
+    "family_P21n": "{1 1 -1}"
+   },
+   {
+    "hkl_P21a": [
+     1,
+     0,
+     0
+    ],
+    "hkl_P21n": [
+     0,
+     0,
+     1
+    ],
+    "family_P21n": "{0 0 1}"
+   },
+   {
+    "hkl_P21a": [
+     1,
+     0,
+     -1
+    ],
+    "hkl_P21n": [
+     1,
+     0,
+     0
+    ],
+    "family_P21n": "{1 0 0}"
+   },
+   {
+    "hkl_P21a": [
+     1,
+     0,
+     1
+    ],
+    "hkl_P21n": [
+     -1,
+     0,
+     2
+    ],
+    "family_P21n": "{1 0 -2}"
+   },
+   {
+    "hkl_P21a": [
+     0,
+     2,
+     0
+    ],
+    "hkl_P21n": [
+     0,
+     2,
+     0
+    ],
+    "family_P21n": "{0 1 0}"
+   },
+   {
+    "hkl_P21a": [
+     1,
+     1,
+     -1
+    ],
+    "hkl_P21n": [
+     1,
+     1,
+     0
+    ],
+    "family_P21n": "{1 1 0}"
+   },
+   {
+    "hkl_P21a": [
+     1,
+     1,
+     1
+    ],
+    "hkl_P21n": [
+     -1,
+     1,
+     2
+    ],
+    "family_P21n": "{1 1 -2}"
+   },
+   {
+    "hkl_P21a": [
+     2,
+     1,
+     0
+    ],
+    "hkl_P21n": [
+     0,
+     1,
+     2
+    ],
+    "family_P21n": "{0 1 2}"
+   },
+   {
+    "hkl_P21a": [
+     0,
+     1,
+     0
+    ],
+    "hkl_P21n": [
+     0,
+     1,
+     0
+    ],
+    "family_P21n": "{0 1 0}"
+   }
+  ]
+ },
+ "source_structure": "COD 2104364 (CC0), Bouhmaida, Bonhomme, Guillot, Jelsch, Ghermani, Acta Cryst. B65, 363-374 (2009), doi:10.1107/S0108768109008271",
+ "files_distributed": true,
+ "datafile_md5_recorded": "a33cd4b9edf72388623e5a725f810968",
+ "script_md5_recorded": "ddbd794a91c53ac2fc5de6f713082d52"
+}

@@ -1,0 +1,307 @@
+{
+ "what": "the wulffagent MVP agent session of 22 Oct 2026 (TNT, budget 30 CPU min, 2 live level-1 runs <= 1.5 min): what it acquired, and the area fractions of its last build_wulff(\"best\") computed by the MVP code. selftest replays the acquisitions from the bundle and checks the area fractions to 4 decimals.",
+ "acquired": [
+  {
+   "family": "{0 0 1}",
+   "level": 1,
+   "charge_cpu_s": 38.4,
+   "cached": true,
+   "live": false,
+   "ok": true,
+   "hkl": [
+    0,
+    0,
+    1
+   ],
+   "run_dir": "chain:wulffagent/state/tnt/runs/20261022-150500-L1-001-tmpmv",
+   "time": "2026-10-22T15:47:14-04:00"
+  },
+  {
+   "family": "{2 0 -1}",
+   "level": 1,
+   "charge_cpu_s": 55.9,
+   "cached": true,
+   "live": false,
+   "ok": true,
+   "hkl": [
+    -2,
+    0,
+    1
+   ],
+   "run_dir": "chain:wulffagent/state/tnt/runs/20261022-153023-L1-m201-085ebc",
+   "time": "2026-10-22T15:47:14-04:00"
+  },
+  {
+   "family": "{1 0 0}",
+   "level": 1,
+   "charge_cpu_s": 40.1,
+   "cached": true,
+   "live": false,
+   "ok": true,
+   "hkl": [
+    1,
+    0,
+    0
+   ],
+   "run_dir": "chain:surfenergy/bin/RUNS/3c1bc43a9feb41bb9d3824ea05203d09",
+   "time": "2026-10-22T15:47:14-04:00"
+  },
+  {
+   "family": "{1 0 -1}",
+   "level": 1,
+   "charge_cpu_s": 35.1,
+   "cached": true,
+   "live": false,
+   "ok": true,
+   "hkl": [
+    1,
+    0,
+    -1
+   ],
+   "run_dir": "chain:wulffagent/state/tnt/runs/20261022-153140-L1-10m1-addaff",
+   "time": "2026-10-22T15:47:14-04:00"
+  },
+  {
+   "family": "{2 0 1}",
+   "level": 1,
+   "charge_cpu_s": 25.0,
+   "cached": true,
+   "live": false,
+   "ok": true,
+   "hkl": [
+    2,
+    0,
+    1
+   ],
+   "run_dir": "chain:surfenergy/bin/RUNS/6829605a54f24897a082f7050cc55aab",
+   "time": "2026-10-22T15:47:14-04:00"
+  },
+  {
+   "family": "{2 0 -3}",
+   "level": 1,
+   "charge_cpu_s": 54.3,
+   "cached": true,
+   "live": false,
+   "ok": true,
+   "hkl": [
+    2,
+    0,
+    -3
+   ],
+   "run_dir": "chain:wulffagent/state/tnt/runs/20261022-154237-L1-20m3-8e5da3",
+   "time": "2026-10-22T15:47:14-04:00"
+  },
+  {
+   "family": "{0 1 1}",
+   "level": 1,
+   "charge_cpu_s": 36.8,
+   "cached": true,
+   "live": false,
+   "ok": true,
+   "hkl": [
+    0,
+    1,
+    1
+   ],
+   "run_dir": "chain:surfenergy/bin/RUNS/ecaa52b933bd4eedb7644fc01597f94c",
+   "time": "2026-10-22T15:47:14-04:00"
+  },
+  {
+   "family": "{1 1 0}",
+   "level": 1,
+   "charge_cpu_s": 50.1,
+   "cached": true,
+   "live": false,
+   "ok": true,
+   "hkl": [
+    1,
+    1,
+    0
+   ],
+   "run_dir": "chain:supercell/bin/RUNS/eab645fdd6b0422aadcc25bfd695bbfb",
+   "time": "2026-10-22T15:47:14-04:00"
+  },
+  {
+   "family": "{1 1 -1}",
+   "level": 1,
+   "charge_cpu_s": 52.3,
+   "cached": true,
+   "live": false,
+   "ok": true,
+   "hkl": [
+    1,
+    1,
+    -1
+   ],
+   "run_dir": "chain:supercell/bin/RUNS/6a55d1da93794c8cbb7de38d7cfba567",
+   "time": "2026-10-22T15:47:14-04:00"
+  },
+  {
+   "family": "{1 1 1}",
+   "level": 1,
+   "charge_cpu_s": 57.3,
+   "cached": true,
+   "live": false,
+   "ok": true,
+   "hkl": [
+    1,
+    1,
+    1
+   ],
+   "run_dir": "chain:supercell/bin/RUNS/5c3bcbd870614931b4a15ae943855d39",
+   "time": "2026-10-22T15:47:14-04:00"
+  },
+  {
+   "family": "{0 1 2}",
+   "level": 1,
+   "charge_cpu_s": 28.3,
+   "cached": true,
+   "live": false,
+   "ok": true,
+   "hkl": [
+    0,
+    1,
+    -2
+   ],
+   "run_dir": "chain:surfenergy/bin/RUNS/2b3bc919e25d49608e28dadd7d2b6a2b",
+   "time": "2026-10-22T15:47:14-04:00"
+  },
+  {
+   "family": "{1 1 -2}",
+   "level": 1,
+   "charge_cpu_s": 41.6,
+   "cached": true,
+   "live": false,
+   "ok": true,
+   "hkl": [
+    1,
+    1,
+    -2
+   ],
+   "run_dir": "chain:supercell/bin/RUNS/85ab13c6a26b46759d589fa804e493a7",
+   "time": "2026-10-22T15:47:14-04:00"
+  },
+  {
+   "family": "{1 0 1}",
+   "level": 1,
+   "charge_cpu_s": 39.0,
+   "cached": true,
+   "live": false,
+   "ok": true,
+   "hkl": [
+    1,
+    0,
+    1
+   ],
+   "run_dir": "chain:wulffagent/state/tnt/runs/20261022-154337-L1-101-922b43",
+   "time": "2026-10-22T15:47:14-04:00"
+  },
+  {
+   "family": "{2 0 1}",
+   "level": 2,
+   "charge_cpu_s": 138.4,
+   "cached": true,
+   "live": false,
+   "ok": true,
+   "hkl": [
+    2,
+    0,
+    1
+   ],
+   "run_dir": "chain:surfenergy/bin/RUNS/6829605a54f24897a082f7050cc55aab",
+   "time": "2026-10-22T15:47:44-04:00"
+  },
+  {
+   "family": "{1 0 0}",
+   "level": 2,
+   "charge_cpu_s": 145.4,
+   "cached": true,
+   "live": false,
+   "ok": true,
+   "hkl": [
+    1,
+    0,
+    0
+   ],
+   "run_dir": "chain:surfenergy/bin/RUNS/3c1bc43a9feb41bb9d3824ea05203d09",
+   "time": "2026-10-22T15:47:44-04:00"
+  },
+  {
+   "family": "{1 0 -2}",
+   "level": 1,
+   "charge_cpu_s": 40.5,
+   "cached": false,
+   "live": true,
+   "ok": true,
+   "hkl": [
+    1,
+    0,
+    -2
+   ],
+   "run_dir": "chain:wulffagent/state/tnt/runs/20261022-154751-L1-10m2-ff2b52",
+   "time": "2026-10-22T15:48:30-04:00"
+  },
+  {
+   "family": "{2 1 -1}",
+   "level": 1,
+   "charge_cpu_s": 34.7,
+   "cached": false,
+   "live": true,
+   "ok": true,
+   "hkl": [
+    2,
+    1,
+    -1
+   ],
+   "run_dir": "chain:wulffagent/state/tnt/runs/20261022-154835-L1-21m1-850052",
+   "time": "2026-10-22T15:49:08-04:00"
+  },
+  {
+   "family": "{0 1 1}",
+   "level": 2,
+   "charge_cpu_s": 404.3,
+   "cached": true,
+   "live": false,
+   "ok": true,
+   "hkl": [
+    0,
+    1,
+    1
+   ],
+   "run_dir": "chain:surfenergy/bin/RUNS/ecaa52b933bd4eedb7644fc01597f94c",
+   "time": "2026-10-22T15:49:24-04:00"
+  },
+  {
+   "family": "{0 1 2}",
+   "level": 2,
+   "charge_cpu_s": 306.5,
+   "cached": true,
+   "live": false,
+   "ok": true,
+   "hkl": [
+    0,
+    1,
+    -2
+   ],
+   "run_dir": "chain:surfenergy/bin/RUNS/2b3bc919e25d49608e28dadd7d2b6a2b",
+   "time": "2026-10-22T15:49:28-04:00"
+  }
+ ],
+ "area_fractions_best": {
+  "{0 0 1}": 0.2188,
+  "{1 1 1}": 0.1687,
+  "{1 0 0}": 0.1032,
+  "{1 0 -1}": 0.0966,
+  "{1 1 0}": 0.0914,
+  "{1 1 -2}": 0.087,
+  "{2 0 -3}": 0.0717,
+  "{2 0 1}": 0.0686,
+  "{1 1 -1}": 0.0355,
+  "{0 1 2}": 0.0268,
+  "{2 1 -1}": 0.0165,
+  "{0 1 1}": 0.0152,
+  "{2 0 -1}": 0.0,
+  "{1 0 1}": 0.0,
+  "{1 0 -2}": 0.0
+ }
+}

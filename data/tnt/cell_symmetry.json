@@ -1,0 +1,3027 @@
+{
+ "datafile": "chain:surfenergy/examples/tnt001_nonreactive/tnt_unitcell.data",
+ "n_atoms": 168,
+ "n_molecules": 8,
+ "atoms_per_molecule": 21,
+ "formula_cell": {
+  "C": 56,
+  "N": 24,
+  "O": 48,
+  "H": 40
+ },
+ "formula_molecule": {
+  "C": 7,
+  "N": 3,
+  "O": 6,
+  "H": 5
+ },
+ "lattice_rows_abc": [
+  [
+   14.9112997055,
+   0.0,
+   0.0
+  ],
+  [
+   0.0,
+   6.0339999199,
+   0.0
+  ],
+  [
+   -7.2667494387,
+   0.0,
+   19.5762970206
+  ]
+ ],
+ "lattice_parameters": {
+  "a": 14.9112997055,
+  "b": 6.0339999199,
+  "c": 20.88150024408206,
+  "alpha": 90.0,
+  "beta": 110.36499786369157,
+  "gamma": 90.0,
+  "volume": 1761.37304169442
+ },
+ "spacegroup": {
+  "international_data_setting": "P2_1/c",
+  "number": 14,
+  "hall": "-P 2ybc",
+  "pointgroup": "2/m",
+  "symprec": 0.05
+ },
+ "operations_in_data_setting": [
+  {
+   "R": [
+    [
+     1,
+     0,
+     0
+    ],
+    [
+     0,
+     1,
+     0
+    ],
+    [
+     0,
+     0,
+     1
+    ]
+   ],
+   "t": [
+    "0",
+    "0",
+    "0"
+   ]
+  },
+  {
+   "R": [
+    [
+     -1,
+     0,
+     0
+    ],
+    [
+     0,
+     -1,
+     0
+    ],
+    [
+     0,
+     0,
+     -1
+    ]
+   ],
+   "t": [
+    "0",
+    "0",
+    "0"
+   ]
+  },
+  {
+   "R": [
+    [
+     -1,
+     0,
+     0
+    ],
+    [
+     0,
+     1,
+     0
+    ],
+    [
+     0,
+     0,
+     -1
+    ]
+   ],
+   "t": [
+    "1/2",
+    "1/2",
+    "0"
+   ]
+  },
+  {
+   "R": [
+    [
+     1,
+     0,
+     0
+    ],
+    [
+     0,
+     -1,
+     0
+    ],
+    [
+     0,
+     0,
+     1
+    ]
+   ],
+   "t": [
+    "1/2",
+    "1/2",
+    "0"
+   ]
+  }
+ ],
+ "laue_order": 4,
+ "laue_ops_on_miller": [
+  [
+   [
+    1,
+    0,
+    0
+   ],
+   [
+    0,
+    1,
+    0
+   ],
+   [
+    0,
+    0,
+    1
+   ]
+  ],
+  [
+   [
+    -1,
+    0,
+    0
+   ],
+   [
+    0,
+    -1,
+    0
+   ],
+   [
+    0,
+    0,
+    -1
+   ]
+  ],
+  [
+   [
+    -1,
+    0,
+    0
+   ],
+   [
+    0,
+    1,
+    0
+   ],
+   [
+    0,
+    0,
+    -1
+   ]
+  ],
+  [
+   [
+    1,
+    0,
+    0
+   ],
+   [
+    0,
+    -1,
+    0
+   ],
+   [
+    0,
+    0,
+    1
+   ]
+  ]
+ ],
+ "has_inversion": true,
+ "systematic_absences_data_setting": {
+  "h00 absent for h =": [
+   1,
+   3,
+   5
+  ],
+  "0k0 absent for k =": [
+   1,
+   3,
+   5
+  ],
+  "00l absent for l =": [],
+  "h0l absent examples": [
+   [
+    -3,
+    0,
+    -3
+   ],
+   [
+    -3,
+    0,
+    -2
+   ],
+   [
+    -3,
+    0,
+    -1
+   ],
+   [
+    -3,
+    0,
+    0
+   ],
+   [
+    -3,
+    0,
+    1
+   ],
+   [
+    -3,
+    0,
+    2
+   ],
+   [
+    -3,
+    0,
+    3
+   ],
+   [
+    -1,
+    0,
+    -3
+   ]
+  ],
+  "hkl general absences": false
+ },
+ "max_index": 3,
+ "families": [
+  {
+   "family": "{0 0 1}",
+   "representative": [
+    0,
+    0,
+    1
+   ],
+   "members": [
+    [
+     0,
+     0,
+     1
+    ],
+    [
+     0,
+     0,
+     -1
+    ]
+   ],
+   "multiplicity": 2,
+   "d_hkl": 19.5762970206,
+   "extinction_factor": 1,
+   "d_eff": 19.5762970206,
+   "max_abs_index": 1,
+   "bfdh_rank": 1
+  },
+  {
+   "family": "{2 0 -1}",
+   "representative": [
+    2,
+    0,
+    -1
+   ],
+   "members": [
+    [
+     2,
+     0,
+     -1
+    ],
+    [
+     -2,
+     0,
+     1
+    ]
+   ],
+   "multiplicity": 2,
+   "d_hkl": 7.455302772494031,
+   "extinction_factor": 1,
+   "d_eff": 7.455302772494031,
+   "max_abs_index": 2,
+   "bfdh_rank": 2
+  },
+  {
+   "family": "{1 0 0}",
+   "representative": [
+    1,
+    0,
+    0
+   ],
+   "members": [
+    [
+     1,
+     0,
+     0
+    ],
+    [
+     -1,
+     0,
+     0
+    ]
+   ],
+   "multiplicity": 2,
+   "d_hkl": 13.979265310727936,
+   "extinction_factor": 2,
+   "d_eff": 6.989632655363968,
+   "max_abs_index": 1,
+   "bfdh_rank": 3
+  },
+  {
+   "family": "{1 0 -1}",
+   "representative": [
+    1,
+    0,
+    -1
+   ],
+   "members": [
+    [
+     1,
+     0,
+     -1
+    ],
+    [
+     -1,
+     0,
+     1
+    ]
+   ],
+   "multiplicity": 2,
+   "d_hkl": 13.889826536834306,
+   "extinction_factor": 2,
+   "d_eff": 6.944913268417153,
+   "max_abs_index": 1,
+   "bfdh_rank": 4
+  },
+  {
+   "family": "{2 0 1}",
+   "representative": [
+    2,
+    0,
+    1
+   ],
+   "members": [
+    [
+     2,
+     0,
+     1
+    ],
+    [
+     -2,
+     0,
+     -1
+    ]
+   ],
+   "multiplicity": 2,
+   "d_hkl": 5.9586448490223,
+   "extinction_factor": 1,
+   "d_eff": 5.9586448490223,
+   "max_abs_index": 2,
+   "bfdh_rank": 5
+  },
+  {
+   "family": "{2 0 -3}",
+   "representative": [
+    2,
+    0,
+    -3
+   ],
+   "members": [
+    [
+     2,
+     0,
+     -3
+    ],
+    [
+     -2,
+     0,
+     3
+    ]
+   ],
+   "multiplicity": 2,
+   "d_hkl": 5.903472161486582,
+   "extinction_factor": 1,
+   "d_eff": 5.903472161486582,
+   "max_abs_index": 3,
+   "bfdh_rank": 6
+  },
+  {
+   "family": "{0 1 1}",
+   "representative": [
+    0,
+    1,
+    1
+   ],
+   "members": [
+    [
+     0,
+     1,
+     1
+    ],
+    [
+     0,
+     1,
+     -1
+    ],
+    [
+     0,
+     -1,
+     1
+    ],
+    [
+     0,
+     -1,
+     -1
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 5.766298451308431,
+   "extinction_factor": 1,
+   "d_eff": 5.766298451308431,
+   "max_abs_index": 1,
+   "bfdh_rank": 7
+  },
+  {
+   "family": "{1 1 0}",
+   "representative": [
+    1,
+    1,
+    0
+   ],
+   "members": [
+    [
+     1,
+     1,
+     0
+    ],
+    [
+     1,
+     -1,
+     0
+    ],
+    [
+     -1,
+     1,
+     0
+    ],
+    [
+     -1,
+     -1,
+     0
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 5.539948834554,
+   "extinction_factor": 1,
+   "d_eff": 5.539948834554,
+   "max_abs_index": 1,
+   "bfdh_rank": 8
+  },
+  {
+   "family": "{1 1 -1}",
+   "representative": [
+    1,
+    1,
+    -1
+   ],
+   "members": [
+    [
+     1,
+     1,
+     -1
+    ],
+    [
+     1,
+     -1,
+     -1
+    ],
+    [
+     -1,
+     1,
+     1
+    ],
+    [
+     -1,
+     -1,
+     1
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 5.534336891150194,
+   "extinction_factor": 1,
+   "d_eff": 5.534336891150194,
+   "max_abs_index": 1,
+   "bfdh_rank": 9
+  },
+  {
+   "family": "{1 1 1}",
+   "representative": [
+    1,
+    1,
+    1
+   ],
+   "members": [
+    [
+     1,
+     1,
+     1
+    ],
+    [
+     1,
+     -1,
+     1
+    ],
+    [
+     -1,
+     1,
+     -1
+    ],
+    [
+     -1,
+     -1,
+     -1
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 5.147840734113284,
+   "extinction_factor": 1,
+   "d_eff": 5.147840734113284,
+   "max_abs_index": 1,
+   "bfdh_rank": 10
+  },
+  {
+   "family": "{0 1 2}",
+   "representative": [
+    0,
+    1,
+    2
+   ],
+   "members": [
+    [
+     0,
+     1,
+     2
+    ],
+    [
+     0,
+     1,
+     -2
+    ],
+    [
+     0,
+     -1,
+     2
+    ],
+    [
+     0,
+     -1,
+     -2
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 5.136439657012362,
+   "extinction_factor": 1,
+   "d_eff": 5.136439657012362,
+   "max_abs_index": 2,
+   "bfdh_rank": 11
+  },
+  {
+   "family": "{1 1 -2}",
+   "representative": [
+    1,
+    1,
+    -2
+   ],
+   "members": [
+    [
+     1,
+     1,
+     -2
+    ],
+    [
+     1,
+     -1,
+     -2
+    ],
+    [
+     -1,
+     1,
+     2
+    ],
+    [
+     -1,
+     -1,
+     2
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 5.134365230892218,
+   "extinction_factor": 1,
+   "d_eff": 5.134365230892218,
+   "max_abs_index": 2,
+   "bfdh_rank": 12
+  },
+  {
+   "family": "{1 0 1}",
+   "representative": [
+    1,
+    0,
+    1
+   ],
+   "members": [
+    [
+     1,
+     0,
+     1
+    ],
+    [
+     -1,
+     0,
+     -1
+    ]
+   ],
+   "multiplicity": 2,
+   "d_hkl": 9.867744153439487,
+   "extinction_factor": 2,
+   "d_eff": 4.9338720767197435,
+   "max_abs_index": 1,
+   "bfdh_rank": 13
+  },
+  {
+   "family": "{1 0 -2}",
+   "representative": [
+    1,
+    0,
+    -2
+   ],
+   "members": [
+    [
+     1,
+     0,
+     -2
+    ],
+    [
+     -1,
+     0,
+     2
+    ]
+   ],
+   "multiplicity": 2,
+   "d_hkl": 9.77381602497662,
+   "extinction_factor": 2,
+   "d_eff": 4.88690801248831,
+   "max_abs_index": 2,
+   "bfdh_rank": 14
+  },
+  {
+   "family": "{2 1 -1}",
+   "representative": [
+    2,
+    1,
+    -1
+   ],
+   "members": [
+    [
+     2,
+     1,
+     -1
+    ],
+    [
+     2,
+     -1,
+     -1
+    ],
+    [
+     -2,
+     1,
+     1
+    ],
+    [
+     -2,
+     -1,
+     1
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 4.690278563066608,
+   "extinction_factor": 1,
+   "d_eff": 4.690278563066608,
+   "max_abs_index": 2,
+   "bfdh_rank": 15
+  },
+  {
+   "family": "{2 1 0}",
+   "representative": [
+    2,
+    1,
+    0
+   ],
+   "members": [
+    [
+     2,
+     1,
+     0
+    ],
+    [
+     2,
+     -1,
+     0
+    ],
+    [
+     -2,
+     1,
+     0
+    ],
+    [
+     -2,
+     -1,
+     0
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 4.567478329633943,
+   "extinction_factor": 1,
+   "d_eff": 4.567478329633943,
+   "max_abs_index": 2,
+   "bfdh_rank": 16
+  },
+  {
+   "family": "{1 1 2}",
+   "representative": [
+    1,
+    1,
+    2
+   ],
+   "members": [
+    [
+     1,
+     1,
+     2
+    ],
+    [
+     1,
+     -1,
+     2
+    ],
+    [
+     -1,
+     1,
+     -2
+    ],
+    [
+     -1,
+     -1,
+     -2
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 4.559279674972713,
+   "extinction_factor": 1,
+   "d_eff": 4.559279674972713,
+   "max_abs_index": 2,
+   "bfdh_rank": 17
+  },
+  {
+   "family": "{2 1 -2}",
+   "representative": [
+    2,
+    1,
+    -2
+   ],
+   "members": [
+    [
+     2,
+     1,
+     -2
+    ],
+    [
+     2,
+     -1,
+     -2
+    ],
+    [
+     -2,
+     1,
+     2
+    ],
+    [
+     -2,
+     -1,
+     2
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 4.55493094133051,
+   "extinction_factor": 1,
+   "d_eff": 4.55493094133051,
+   "max_abs_index": 2,
+   "bfdh_rank": 18
+  },
+  {
+   "family": "{1 1 -3}",
+   "representative": [
+    1,
+    1,
+    -3
+   ],
+   "members": [
+    [
+     1,
+     1,
+     -3
+    ],
+    [
+     1,
+     -1,
+     -3
+    ],
+    [
+     -1,
+     1,
+     3
+    ],
+    [
+     -1,
+     -1,
+     3
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 4.5436954982089865,
+   "extinction_factor": 1,
+   "d_eff": 4.5436954982089865,
+   "max_abs_index": 3,
+   "bfdh_rank": 19
+  },
+  {
+   "family": "{0 1 3}",
+   "representative": [
+    0,
+    1,
+    3
+   ],
+   "members": [
+    [
+     0,
+     1,
+     3
+    ],
+    [
+     0,
+     1,
+     -3
+    ],
+    [
+     0,
+     -1,
+     3
+    ],
+    [
+     0,
+     -1,
+     -3
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 4.430241217865345,
+   "extinction_factor": 1,
+   "d_eff": 4.430241217865345,
+   "max_abs_index": 3,
+   "bfdh_rank": 20
+  },
+  {
+   "family": "{2 1 1}",
+   "representative": [
+    2,
+    1,
+    1
+   ],
+   "members": [
+    [
+     2,
+     1,
+     1
+    ],
+    [
+     2,
+     -1,
+     1
+    ],
+    [
+     -2,
+     1,
+     -1
+    ],
+    [
+     -2,
+     -1,
+     -1
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 4.239789120495423,
+   "extinction_factor": 1,
+   "d_eff": 4.239789120495423,
+   "max_abs_index": 2,
+   "bfdh_rank": 21
+  },
+  {
+   "family": "{2 1 -3}",
+   "representative": [
+    2,
+    1,
+    -3
+   ],
+   "members": [
+    [
+     2,
+     1,
+     -3
+    ],
+    [
+     2,
+     -1,
+     -3
+    ],
+    [
+     -2,
+     1,
+     3
+    ],
+    [
+     -2,
+     -1,
+     3
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 4.219776880263948,
+   "extinction_factor": 1,
+   "d_eff": 4.219776880263948,
+   "max_abs_index": 3,
+   "bfdh_rank": 22
+  },
+  {
+   "family": "{2 0 3}",
+   "representative": [
+    2,
+    0,
+    3
+   ],
+   "members": [
+    [
+     2,
+     0,
+     3
+    ],
+    [
+     -2,
+     0,
+     -3
+    ]
+   ],
+   "multiplicity": 2,
+   "d_hkl": 4.109526489378553,
+   "extinction_factor": 1,
+   "d_eff": 4.109526489378553,
+   "max_abs_index": 3,
+   "bfdh_rank": 23
+  },
+  {
+   "family": "{1 1 3}",
+   "representative": [
+    1,
+    1,
+    3
+   ],
+   "members": [
+    [
+     1,
+     1,
+     3
+    ],
+    [
+     1,
+     -1,
+     3
+    ],
+    [
+     -1,
+     1,
+     -3
+    ],
+    [
+     -1,
+     -1,
+     -3
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 3.962233149983484,
+   "extinction_factor": 1,
+   "d_eff": 3.962233149983484,
+   "max_abs_index": 3,
+   "bfdh_rank": 24
+  },
+  {
+   "family": "{3 1 -1}",
+   "representative": [
+    3,
+    1,
+    -1
+   ],
+   "members": [
+    [
+     3,
+     1,
+     -1
+    ],
+    [
+     3,
+     -1,
+     -1
+    ],
+    [
+     -3,
+     1,
+     1
+    ],
+    [
+     -3,
+     -1,
+     1
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 3.820807388211135,
+   "extinction_factor": 1,
+   "d_eff": 3.820807388211135,
+   "max_abs_index": 3,
+   "bfdh_rank": 25
+  },
+  {
+   "family": "{2 1 2}",
+   "representative": [
+    2,
+    1,
+    2
+   ],
+   "members": [
+    [
+     2,
+     1,
+     2
+    ],
+    [
+     2,
+     -1,
+     2
+    ],
+    [
+     -2,
+     1,
+     -2
+    ],
+    [
+     -2,
+     -1,
+     -2
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 3.819548300683305,
+   "extinction_factor": 1,
+   "d_eff": 3.819548300683305,
+   "max_abs_index": 2,
+   "bfdh_rank": 26
+  },
+  {
+   "family": "{3 1 -2}",
+   "representative": [
+    3,
+    1,
+    -2
+   ],
+   "members": [
+    [
+     3,
+     1,
+     -2
+    ],
+    [
+     3,
+     -1,
+     -2
+    ],
+    [
+     -3,
+     1,
+     2
+    ],
+    [
+     -3,
+     -1,
+     2
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 3.815287870318815,
+   "extinction_factor": 1,
+   "d_eff": 3.815287870318815,
+   "max_abs_index": 3,
+   "bfdh_rank": 27
+  },
+  {
+   "family": "{3 1 0}",
+   "representative": [
+    3,
+    1,
+    0
+   ],
+   "members": [
+    [
+     3,
+     1,
+     0
+    ],
+    [
+     3,
+     -1,
+     0
+    ],
+    [
+     -3,
+     1,
+     0
+    ],
+    [
+     -3,
+     -1,
+     0
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 3.6880461915055616,
+   "extinction_factor": 1,
+   "d_eff": 3.6880461915055616,
+   "max_abs_index": 3,
+   "bfdh_rank": 28
+  },
+  {
+   "family": "{3 1 -3}",
+   "representative": [
+    3,
+    1,
+    -3
+   ],
+   "members": [
+    [
+     3,
+     1,
+     -3
+    ],
+    [
+     3,
+     -1,
+     -3
+    ],
+    [
+     -3,
+     1,
+     3
+    ],
+    [
+     -3,
+     -1,
+     3
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 3.673212081998504,
+   "extinction_factor": 1,
+   "d_eff": 3.673212081998504,
+   "max_abs_index": 3,
+   "bfdh_rank": 29
+  },
+  {
+   "family": "{1 0 2}",
+   "representative": [
+    1,
+    0,
+    2
+   ],
+   "members": [
+    [
+     1,
+     0,
+     2
+    ],
+    [
+     -1,
+     0,
+     -2
+    ]
+   ],
+   "multiplicity": 2,
+   "d_hkl": 6.960356672183072,
+   "extinction_factor": 2,
+   "d_eff": 3.480178336091536,
+   "max_abs_index": 2,
+   "bfdh_rank": 30
+  },
+  {
+   "family": "{3 1 1}",
+   "representative": [
+    3,
+    1,
+    1
+   ],
+   "members": [
+    [
+     3,
+     1,
+     1
+    ],
+    [
+     3,
+     -1,
+     1
+    ],
+    [
+     -3,
+     1,
+     -1
+    ],
+    [
+     -3,
+     -1,
+     -1
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 3.4552772504457723,
+   "extinction_factor": 1,
+   "d_eff": 3.4552772504457723,
+   "max_abs_index": 3,
+   "bfdh_rank": 31
+  },
+  {
+   "family": "{1 0 -3}",
+   "representative": [
+    1,
+    0,
+    -3
+   ],
+   "members": [
+    [
+     1,
+     0,
+     -3
+    ],
+    [
+     -1,
+     0,
+     3
+    ]
+   ],
+   "multiplicity": 2,
+   "d_hkl": 6.90528320953764,
+   "extinction_factor": 2,
+   "d_eff": 3.45264160476882,
+   "max_abs_index": 3,
+   "bfdh_rank": 32
+  },
+  {
+   "family": "{2 1 3}",
+   "representative": [
+    2,
+    1,
+    3
+   ],
+   "members": [
+    [
+     2,
+     1,
+     3
+    ],
+    [
+     2,
+     -1,
+     3
+    ],
+    [
+     -2,
+     1,
+     -3
+    ],
+    [
+     -2,
+     -1,
+     -3
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 3.3965985768490965,
+   "extinction_factor": 1,
+   "d_eff": 3.3965985768490965,
+   "max_abs_index": 3,
+   "bfdh_rank": 33
+  },
+  {
+   "family": "{3 1 2}",
+   "representative": [
+    3,
+    1,
+    2
+   ],
+   "members": [
+    [
+     3,
+     1,
+     2
+    ],
+    [
+     3,
+     -1,
+     2
+    ],
+    [
+     -3,
+     1,
+     -2
+    ],
+    [
+     -3,
+     -1,
+     -2
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 3.1747228106014407,
+   "extinction_factor": 1,
+   "d_eff": 3.1747228106014407,
+   "max_abs_index": 3,
+   "bfdh_rank": 34
+  },
+  {
+   "family": "{0 1 0}",
+   "representative": [
+    0,
+    1,
+    0
+   ],
+   "members": [
+    [
+     0,
+     1,
+     0
+    ],
+    [
+     0,
+     -1,
+     0
+    ]
+   ],
+   "multiplicity": 2,
+   "d_hkl": 6.0339999199,
+   "extinction_factor": 2,
+   "d_eff": 3.01699995995,
+   "max_abs_index": 1,
+   "bfdh_rank": 35
+  },
+  {
+   "family": "{0 2 1}",
+   "representative": [
+    0,
+    2,
+    1
+   ],
+   "members": [
+    [
+     0,
+     2,
+     1
+    ],
+    [
+     0,
+     2,
+     -1
+    ],
+    [
+     0,
+     -2,
+     1
+    ],
+    [
+     0,
+     -2,
+     -1
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 2.9817968152182384,
+   "extinction_factor": 1,
+   "d_eff": 2.9817968152182384,
+   "max_abs_index": 2,
+   "bfdh_rank": 36
+  },
+  {
+   "family": "{1 2 0}",
+   "representative": [
+    1,
+    2,
+    0
+   ],
+   "members": [
+    [
+     1,
+     2,
+     0
+    ],
+    [
+     1,
+     -2,
+     0
+    ],
+    [
+     -1,
+     2,
+     0
+    ],
+    [
+     -1,
+     -2,
+     0
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 2.949099868736887,
+   "extinction_factor": 1,
+   "d_eff": 2.949099868736887,
+   "max_abs_index": 2,
+   "bfdh_rank": 37
+  },
+  {
+   "family": "{1 2 -1}",
+   "representative": [
+    1,
+    2,
+    -1
+   ],
+   "members": [
+    [
+     1,
+     2,
+     -1
+    ],
+    [
+     1,
+     -2,
+     -1
+    ],
+    [
+     -1,
+     2,
+     1
+    ],
+    [
+     -1,
+     -2,
+     1
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 2.948252373005329,
+   "extinction_factor": 1,
+   "d_eff": 2.948252373005329,
+   "max_abs_index": 2,
+   "bfdh_rank": 38
+  },
+  {
+   "family": "{3 1 3}",
+   "representative": [
+    3,
+    1,
+    3
+   ],
+   "members": [
+    [
+     3,
+     1,
+     3
+    ],
+    [
+     3,
+     -1,
+     3
+    ],
+    [
+     -3,
+     1,
+     -3
+    ],
+    [
+     -3,
+     -1,
+     -3
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 2.8880235727975303,
+   "extinction_factor": 1,
+   "d_eff": 2.8880235727975303,
+   "max_abs_index": 3,
+   "bfdh_rank": 39
+  },
+  {
+   "family": "{1 2 1}",
+   "representative": [
+    1,
+    2,
+    1
+   ],
+   "members": [
+    [
+     1,
+     2,
+     1
+    ],
+    [
+     1,
+     -2,
+     1
+    ],
+    [
+     -1,
+     2,
+     -1
+    ],
+    [
+     -1,
+     -2,
+     -1
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 2.8851609614190363,
+   "extinction_factor": 1,
+   "d_eff": 2.8851609614190363,
+   "max_abs_index": 2,
+   "bfdh_rank": 40
+  },
+  {
+   "family": "{1 2 -2}",
+   "representative": [
+    1,
+    2,
+    -2
+   ],
+   "members": [
+    [
+     1,
+     2,
+     -2
+    ],
+    [
+     1,
+     -2,
+     -2
+    ],
+    [
+     -1,
+     2,
+     2
+    ],
+    [
+     -1,
+     -2,
+     2
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 2.882782202902904,
+   "extinction_factor": 1,
+   "d_eff": 2.882782202902904,
+   "max_abs_index": 2,
+   "bfdh_rank": 41
+  },
+  {
+   "family": "{2 2 -1}",
+   "representative": [
+    2,
+    2,
+    -1
+   ],
+   "members": [
+    [
+     2,
+     2,
+     -1
+    ],
+    [
+     2,
+     -2,
+     -1
+    ],
+    [
+     -2,
+     2,
+     1
+    ],
+    [
+     -2,
+     -2,
+     1
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 2.796679716114741,
+   "extinction_factor": 1,
+   "d_eff": 2.796679716114741,
+   "max_abs_index": 2,
+   "bfdh_rank": 42
+  },
+  {
+   "family": "{1 2 2}",
+   "representative": [
+    1,
+    2,
+    2
+   ],
+   "members": [
+    [
+     1,
+     2,
+     2
+    ],
+    [
+     1,
+     -2,
+     2
+    ],
+    [
+     -1,
+     2,
+     -2
+    ],
+    [
+     -1,
+     -2,
+     -2
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 2.768142609159258,
+   "extinction_factor": 1,
+   "d_eff": 2.768142609159258,
+   "max_abs_index": 2,
+   "bfdh_rank": 43
+  },
+  {
+   "family": "{1 2 -3}",
+   "representative": [
+    1,
+    2,
+    -3
+   ],
+   "members": [
+    [
+     1,
+     2,
+     -3
+    ],
+    [
+     1,
+     -2,
+     -3
+    ],
+    [
+     -1,
+     2,
+     3
+    ],
+    [
+     -1,
+     -2,
+     3
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 2.764643418442055,
+   "extinction_factor": 1,
+   "d_eff": 2.764643418442055,
+   "max_abs_index": 3,
+   "bfdh_rank": 44
+  },
+  {
+   "family": "{0 2 3}",
+   "representative": [
+    0,
+    2,
+    3
+   ],
+   "members": [
+    [
+     0,
+     2,
+     3
+    ],
+    [
+     0,
+     2,
+     -3
+    ],
+    [
+     0,
+     -2,
+     3
+    ],
+    [
+     0,
+     -2,
+     -3
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 2.7384726131563633,
+   "extinction_factor": 1,
+   "d_eff": 2.7384726131563633,
+   "max_abs_index": 3,
+   "bfdh_rank": 45
+  },
+  {
+   "family": "{2 2 1}",
+   "representative": [
+    2,
+    2,
+    1
+   ],
+   "members": [
+    [
+     2,
+     2,
+     1
+    ],
+    [
+     2,
+     -2,
+     1
+    ],
+    [
+     -2,
+     2,
+     -1
+    ],
+    [
+     -2,
+     -2,
+     -1
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 2.6916445561008224,
+   "extinction_factor": 1,
+   "d_eff": 2.6916445561008224,
+   "max_abs_index": 2,
+   "bfdh_rank": 46
+  },
+  {
+   "family": "{2 2 -3}",
+   "representative": [
+    2,
+    2,
+    -3
+   ],
+   "members": [
+    [
+     2,
+     2,
+     -3
+    ],
+    [
+     2,
+     -2,
+     -3
+    ],
+    [
+     -2,
+     2,
+     3
+    ],
+    [
+     -2,
+     -2,
+     3
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 2.6865023024348327,
+   "extinction_factor": 1,
+   "d_eff": 2.6865023024348327,
+   "max_abs_index": 3,
+   "bfdh_rank": 47
+  },
+  {
+   "family": "{1 0 3}",
+   "representative": [
+    1,
+    0,
+    3
+   ],
+   "members": [
+    [
+     1,
+     0,
+     3
+    ],
+    [
+     -1,
+     0,
+     -3
+    ]
+   ],
+   "multiplicity": 2,
+   "d_hkl": 5.253596440700631,
+   "extinction_factor": 2,
+   "d_eff": 2.6267982203503153,
+   "max_abs_index": 3,
+   "bfdh_rank": 48
+  },
+  {
+   "family": "{1 2 3}",
+   "representative": [
+    1,
+    2,
+    3
+   ],
+   "members": [
+    [
+     1,
+     2,
+     3
+    ],
+    [
+     1,
+     -2,
+     3
+    ],
+    [
+     -1,
+     2,
+     -3
+    ],
+    [
+     -1,
+     -2,
+     -3
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 2.6162775177852917,
+   "extinction_factor": 1,
+   "d_eff": 2.6162775177852917,
+   "max_abs_index": 3,
+   "bfdh_rank": 49
+  },
+  {
+   "family": "{3 2 -1}",
+   "representative": [
+    3,
+    2,
+    -1
+   ],
+   "members": [
+    [
+     3,
+     2,
+     -1
+    ],
+    [
+     3,
+     -2,
+     -1
+    ],
+    [
+     -3,
+     2,
+     1
+    ],
+    [
+     -3,
+     -2,
+     1
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 2.574305568586764,
+   "extinction_factor": 1,
+   "d_eff": 2.574305568586764,
+   "max_abs_index": 3,
+   "bfdh_rank": 50
+  },
+  {
+   "family": "{3 2 -2}",
+   "representative": [
+    3,
+    2,
+    -2
+   ],
+   "members": [
+    [
+     3,
+     2,
+     -2
+    ],
+    [
+     3,
+     -2,
+     -2
+    ],
+    [
+     -3,
+     2,
+     2
+    ],
+    [
+     -3,
+     -2,
+     2
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 2.5726154001301436,
+   "extinction_factor": 1,
+   "d_eff": 2.5726154001301436,
+   "max_abs_index": 3,
+   "bfdh_rank": 51
+  },
+  {
+   "family": "{3 2 0}",
+   "representative": [
+    3,
+    2,
+    0
+   ],
+   "members": [
+    [
+     3,
+     2,
+     0
+    ],
+    [
+     3,
+     -2,
+     0
+    ],
+    [
+     -3,
+     2,
+     0
+    ],
+    [
+     -3,
+     -2,
+     0
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 2.532520899361563,
+   "extinction_factor": 1,
+   "d_eff": 2.532520899361563,
+   "max_abs_index": 3,
+   "bfdh_rank": 52
+  },
+  {
+   "family": "{3 2 -3}",
+   "representative": [
+    3,
+    2,
+    -3
+   ],
+   "members": [
+    [
+     3,
+     2,
+     -3
+    ],
+    [
+     3,
+     -2,
+     -3
+    ],
+    [
+     -3,
+     2,
+     3
+    ],
+    [
+     -3,
+     -2,
+     3
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 2.5277023414286974,
+   "extinction_factor": 1,
+   "d_eff": 2.5277023414286974,
+   "max_abs_index": 3,
+   "bfdh_rank": 53
+  },
+  {
+   "family": "{3 0 -1}",
+   "representative": [
+    3,
+    0,
+    -1
+   ],
+   "members": [
+    [
+     3,
+     0,
+     -1
+    ],
+    [
+     -3,
+     0,
+     1
+    ]
+   ],
+   "multiplicity": 2,
+   "d_hkl": 4.936586810080902,
+   "extinction_factor": 2,
+   "d_eff": 2.468293405040451,
+   "max_abs_index": 3,
+   "bfdh_rank": 54
+  },
+  {
+   "family": "{3 0 -2}",
+   "representative": [
+    3,
+    0,
+    -2
+   ],
+   "members": [
+    [
+     3,
+     0,
+     -2
+    ],
+    [
+     -3,
+     0,
+     2
+    ]
+   ],
+   "multiplicity": 2,
+   "d_hkl": 4.924699406240768,
+   "extinction_factor": 2,
+   "d_eff": 2.462349703120384,
+   "max_abs_index": 3,
+   "bfdh_rank": 55
+  },
+  {
+   "family": "{3 2 1}",
+   "representative": [
+    3,
+    2,
+    1
+   ],
+   "members": [
+    [
+     3,
+     2,
+     1
+    ],
+    [
+     3,
+     -2,
+     1
+    ],
+    [
+     -3,
+     2,
+     -1
+    ],
+    [
+     -3,
+     -2,
+     -1
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 2.453248185042502,
+   "extinction_factor": 1,
+   "d_eff": 2.453248185042502,
+   "max_abs_index": 3,
+   "bfdh_rank": 56
+  },
+  {
+   "family": "{2 2 3}",
+   "representative": [
+    2,
+    2,
+    3
+   ],
+   "members": [
+    [
+     2,
+     2,
+     3
+    ],
+    [
+     2,
+     -2,
+     3
+    ],
+    [
+     -2,
+     2,
+     -3
+    ],
+    [
+     -2,
+     -2,
+     -3
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 2.4319788780574365,
+   "extinction_factor": 1,
+   "d_eff": 2.4319788780574365,
+   "max_abs_index": 3,
+   "bfdh_rank": 57
+  },
+  {
+   "family": "{3 2 2}",
+   "representative": [
+    3,
+    2,
+    2
+   ],
+   "members": [
+    [
+     3,
+     2,
+     2
+    ],
+    [
+     3,
+     -2,
+     2
+    ],
+    [
+     -3,
+     2,
+     -2
+    ],
+    [
+     -3,
+     -2,
+     -2
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 2.346523366862418,
+   "extinction_factor": 1,
+   "d_eff": 2.346523366862418,
+   "max_abs_index": 3,
+   "bfdh_rank": 58
+  },
+  {
+   "family": "{3 2 3}",
+   "representative": [
+    3,
+    2,
+    3
+   ],
+   "members": [
+    [
+     3,
+     2,
+     3
+    ],
+    [
+     3,
+     -2,
+     3
+    ],
+    [
+     -3,
+     2,
+     -3
+    ],
+    [
+     -3,
+     -2,
+     -3
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 2.2233690212519646,
+   "extinction_factor": 1,
+   "d_eff": 2.2233690212519646,
+   "max_abs_index": 3,
+   "bfdh_rank": 59
+  },
+  {
+   "family": "{3 0 1}",
+   "representative": [
+    3,
+    0,
+    1
+   ],
+   "members": [
+    [
+     3,
+     0,
+     1
+    ],
+    [
+     -3,
+     0,
+     -1
+    ]
+   ],
+   "multiplicity": 2,
+   "d_hkl": 4.21472570331183,
+   "extinction_factor": 2,
+   "d_eff": 2.107362851655915,
+   "max_abs_index": 3,
+   "bfdh_rank": 60
+  },
+  {
+   "family": "{0 3 1}",
+   "representative": [
+    0,
+    3,
+    1
+   ],
+   "members": [
+    [
+     0,
+     3,
+     1
+    ],
+    [
+     0,
+     3,
+     -1
+    ],
+    [
+     0,
+     -3,
+     1
+    ],
+    [
+     0,
+     -3,
+     -1
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 2.000800619012201,
+   "extinction_factor": 1,
+   "d_eff": 2.000800619012201,
+   "max_abs_index": 3,
+   "bfdh_rank": 61
+  },
+  {
+   "family": "{1 3 0}",
+   "representative": [
+    1,
+    3,
+    0
+   ],
+   "members": [
+    [
+     1,
+     3,
+     0
+    ],
+    [
+     1,
+     -3,
+     0
+    ],
+    [
+     -1,
+     3,
+     0
+    ],
+    [
+     -1,
+     -3,
+     0
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 1.9908323692223966,
+   "extinction_factor": 1,
+   "d_eff": 1.9908323692223966,
+   "max_abs_index": 3,
+   "bfdh_rank": 62
+  },
+  {
+   "family": "{1 3 -1}",
+   "representative": [
+    1,
+    3,
+    -1
+   ],
+   "members": [
+    [
+     1,
+     3,
+     -1
+    ],
+    [
+     1,
+     -3,
+     -1
+    ],
+    [
+     -1,
+     3,
+     1
+    ],
+    [
+     -1,
+     -3,
+     1
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 1.990571588754627,
+   "extinction_factor": 1,
+   "d_eff": 1.990571588754627,
+   "max_abs_index": 3,
+   "bfdh_rank": 63
+  },
+  {
+   "family": "{1 3 1}",
+   "representative": [
+    1,
+    3,
+    1
+   ],
+   "members": [
+    [
+     1,
+     3,
+     1
+    ],
+    [
+     1,
+     -3,
+     1
+    ],
+    [
+     -1,
+     3,
+     -1
+    ],
+    [
+     -1,
+     -3,
+     -1
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 1.9708099925088303,
+   "extinction_factor": 1,
+   "d_eff": 1.9708099925088303,
+   "max_abs_index": 3,
+   "bfdh_rank": 64
+  },
+  {
+   "family": "{0 3 2}",
+   "representative": [
+    0,
+    3,
+    2
+   ],
+   "members": [
+    [
+     0,
+     3,
+     2
+    ],
+    [
+     0,
+     3,
+     -2
+    ],
+    [
+     0,
+     -3,
+     2
+    ],
+    [
+     0,
+     -3,
+     -2
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 1.9701684323699502,
+   "extinction_factor": 1,
+   "d_eff": 1.9701684323699502,
+   "max_abs_index": 3,
+   "bfdh_rank": 65
+  },
+  {
+   "family": "{1 3 -2}",
+   "representative": [
+    1,
+    3,
+    -2
+   ],
+   "members": [
+    [
+     1,
+     3,
+     -2
+    ],
+    [
+     1,
+     -3,
+     -2
+    ],
+    [
+     -1,
+     3,
+     2
+    ],
+    [
+     -1,
+     -3,
+     2
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 1.9700513083696276,
+   "extinction_factor": 1,
+   "d_eff": 1.9700513083696276,
+   "max_abs_index": 3,
+   "bfdh_rank": 66
+  },
+  {
+   "family": "{2 3 -1}",
+   "representative": [
+    2,
+    3,
+    -1
+   ],
+   "members": [
+    [
+     2,
+     3,
+     -1
+    ],
+    [
+     2,
+     -3,
+     -1
+    ],
+    [
+     -2,
+     3,
+     1
+    ],
+    [
+     -2,
+     -3,
+     1
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 1.9419044066802733,
+   "extinction_factor": 1,
+   "d_eff": 1.9419044066802733,
+   "max_abs_index": 3,
+   "bfdh_rank": 67
+  },
+  {
+   "family": "{2 3 0}",
+   "representative": [
+    2,
+    3,
+    0
+   ],
+   "members": [
+    [
+     2,
+     3,
+     0
+    ],
+    [
+     2,
+     -3,
+     0
+    ],
+    [
+     -2,
+     3,
+     0
+    ],
+    [
+     -2,
+     -3,
+     0
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 1.932897440789852,
+   "extinction_factor": 1,
+   "d_eff": 1.932897440789852,
+   "max_abs_index": 3,
+   "bfdh_rank": 68
+  },
+  {
+   "family": "{1 3 2}",
+   "representative": [
+    1,
+    3,
+    2
+   ],
+   "members": [
+    [
+     1,
+     3,
+     2
+    ],
+    [
+     1,
+     -3,
+     2
+    ],
+    [
+     -1,
+     3,
+     -2
+    ],
+    [
+     -1,
+     -3,
+     -2
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 1.9322747102123312,
+   "extinction_factor": 1,
+   "d_eff": 1.9322747102123312,
+   "max_abs_index": 3,
+   "bfdh_rank": 69
+  },
+  {
+   "family": "{2 3 -2}",
+   "representative": [
+    2,
+    3,
+    -2
+   ],
+   "members": [
+    [
+     2,
+     3,
+     -2
+    ],
+    [
+     2,
+     -3,
+     -2
+    ],
+    [
+     -2,
+     3,
+     2
+    ],
+    [
+     -2,
+     -3,
+     2
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 1.9319432810850523,
+   "extinction_factor": 1,
+   "d_eff": 1.9319432810850523,
+   "max_abs_index": 3,
+   "bfdh_rank": 70
+  },
+  {
+   "family": "{1 3 -3}",
+   "representative": [
+    1,
+    3,
+    -3
+   ],
+   "members": [
+    [
+     1,
+     3,
+     -3
+    ],
+    [
+     1,
+     -3,
+     -3
+    ],
+    [
+     -1,
+     3,
+     3
+    ],
+    [
+     -1,
+     -3,
+     3
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 1.9310833827652658,
+   "extinction_factor": 1,
+   "d_eff": 1.9310833827652658,
+   "max_abs_index": 3,
+   "bfdh_rank": 71
+  },
+  {
+   "family": "{2 3 1}",
+   "representative": [
+    2,
+    3,
+    1
+   ],
+   "members": [
+    [
+     2,
+     3,
+     1
+    ],
+    [
+     2,
+     -3,
+     1
+    ],
+    [
+     -2,
+     3,
+     -1
+    ],
+    [
+     -2,
+     -3,
+     -1
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 1.9056946102813341,
+   "extinction_factor": 1,
+   "d_eff": 1.9056946102813341,
+   "max_abs_index": 3,
+   "bfdh_rank": 72
+  },
+  {
+   "family": "{2 3 -3}",
+   "representative": [
+    2,
+    3,
+    -3
+   ],
+   "members": [
+    [
+     2,
+     3,
+     -3
+    ],
+    [
+     2,
+     -3,
+     -3
+    ],
+    [
+     -2,
+     3,
+     3
+    ],
+    [
+     -2,
+     -3,
+     3
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 1.903867010372893,
+   "extinction_factor": 1,
+   "d_eff": 1.903867010372893,
+   "max_abs_index": 3,
+   "bfdh_rank": 73
+  },
+  {
+   "family": "{1 3 3}",
+   "representative": [
+    1,
+    3,
+    3
+   ],
+   "members": [
+    [
+     1,
+     3,
+     3
+    ],
+    [
+     1,
+     -3,
+     3
+    ],
+    [
+     -1,
+     3,
+     -3
+    ],
+    [
+     -1,
+     -3,
+     -3
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 1.8783786597775225,
+   "extinction_factor": 1,
+   "d_eff": 1.8783786597775225,
+   "max_abs_index": 3,
+   "bfdh_rank": 74
+  },
+  {
+   "family": "{3 0 2}",
+   "representative": [
+    3,
+    0,
+    2
+   ],
+   "members": [
+    [
+     3,
+     0,
+     2
+    ],
+    [
+     -3,
+     0,
+     -2
+    ]
+   ],
+   "multiplicity": 2,
+   "d_hkl": 3.733217477818884,
+   "extinction_factor": 2,
+   "d_eff": 1.866608738909442,
+   "max_abs_index": 3,
+   "bfdh_rank": 75
+  },
+  {
+   "family": "{3 3 -1}",
+   "representative": [
+    3,
+    3,
+    -1
+   ],
+   "members": [
+    [
+     3,
+     3,
+     -1
+    ],
+    [
+     3,
+     -3,
+     -1
+    ],
+    [
+     -3,
+     3,
+     1
+    ],
+    [
+     -3,
+     -3,
+     1
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 1.8626631008052417,
+   "extinction_factor": 1,
+   "d_eff": 1.8626631008052417,
+   "max_abs_index": 3,
+   "bfdh_rank": 76
+  },
+  {
+   "family": "{2 3 2}",
+   "representative": [
+    2,
+    3,
+    2
+   ],
+   "members": [
+    [
+     2,
+     3,
+     2
+    ],
+    [
+     2,
+     -3,
+     2
+    ],
+    [
+     -2,
+     3,
+     -2
+    ],
+    [
+     -2,
+     -3,
+     -2
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 1.8625171666010853,
+   "extinction_factor": 1,
+   "d_eff": 1.8625171666010853,
+   "max_abs_index": 3,
+   "bfdh_rank": 77
+  },
+  {
+   "family": "{3 3 -2}",
+   "representative": [
+    3,
+    3,
+    -2
+   ],
+   "members": [
+    [
+     3,
+     3,
+     -2
+    ],
+    [
+     3,
+     -3,
+     -2
+    ],
+    [
+     -3,
+     3,
+     2
+    ],
+    [
+     -3,
+     -3,
+     2
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 1.8620225457879598,
+   "extinction_factor": 1,
+   "d_eff": 1.8620225457879598,
+   "max_abs_index": 3,
+   "bfdh_rank": 78
+  },
+  {
+   "family": "{3 3 1}",
+   "representative": [
+    3,
+    3,
+    1
+   ],
+   "members": [
+    [
+     3,
+     3,
+     1
+    ],
+    [
+     3,
+     -3,
+     1
+    ],
+    [
+     -3,
+     3,
+     -1
+    ],
+    [
+     -3,
+     -3,
+     -1
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 1.8152304028731194,
+   "extinction_factor": 1,
+   "d_eff": 1.8152304028731194,
+   "max_abs_index": 3,
+   "bfdh_rank": 79
+  },
+  {
+   "family": "{2 3 3}",
+   "representative": [
+    2,
+    3,
+    3
+   ],
+   "members": [
+    [
+     2,
+     3,
+     3
+    ],
+    [
+     2,
+     -3,
+     3
+    ],
+    [
+     -2,
+     3,
+     -3
+    ],
+    [
+     -2,
+     -3,
+     -3
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 1.8065631465641638,
+   "extinction_factor": 1,
+   "d_eff": 1.8065631465641638,
+   "max_abs_index": 3,
+   "bfdh_rank": 80
+  },
+  {
+   "family": "{3 3 2}",
+   "representative": [
+    3,
+    3,
+    2
+   ],
+   "members": [
+    [
+     3,
+     3,
+     2
+    ],
+    [
+     3,
+     -3,
+     2
+    ],
+    [
+     -3,
+     3,
+     -2
+    ],
+    [
+     -3,
+     -3,
+     -2
+    ]
+   ],
+   "multiplicity": 4,
+   "d_hkl": 1.7706952320576006,
+   "extinction_factor": 1,
+   "d_eff": 1.7706952320576006,
+   "max_abs_index": 3,
+   "bfdh_rank": 81
+  }
+ ],
+ "datafile_md5": "ede8756c5b71e4c8a1949038d47427bf"
+}

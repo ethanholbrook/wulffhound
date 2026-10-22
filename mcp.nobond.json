@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "wulffhound": {
+      "type": "stdio",
+      "command": "${WULFFHOUND_REPO}/wh",
+      "args": ["server"],
+      "env": {
+        "WULFFHOUND_MATERIAL": "${WULFFHOUND_MATERIAL:-tnt}",
+        "WULFFHOUND_BUDGET_MIN": "${WULFFHOUND_BUDGET_MIN:-30}",
+        "WULFFHOUND_LIVE_RUNS": "${WULFFHOUND_LIVE_RUNS:-none}",
+        "WULFFHOUND_LIVE_LEVEL": "${WULFFHOUND_LIVE_LEVEL:-none}",
+        "WULFFHOUND_LIVE_MAX_MIN": "${WULFFHOUND_LIVE_MAX_MIN:-none}"
+      }
+    }
+  }
+}

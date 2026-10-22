@@ -1,0 +1,644 @@
+[
+ {
+  "hkl": [
+   1,
+   0,
+   -1
+  ],
+  "search_range": 4,
+  "rc": 0,
+  "n_molecules": 16,
+  "mnp_used": [
+   -1,
+   0,
+   -1,
+   0,
+   1,
+   0,
+   3,
+   0,
+   -1
+  ],
+  "cpu_s": 32.44,
+  "error_tail": null,
+  "run_dir": "chain:supercell/bin/RUNS/d72d807006e74861a525579aea0dd63e"
+ },
+ {
+  "hkl": [
+   0,
+   1,
+   1
+  ],
+  "search_range": 4,
+  "rc": 0,
+  "n_molecules": 112,
+  "mnp_used": [
+   -1,
+   0,
+   0,
+   1,
+   -4,
+   4,
+   1,
+   4,
+   3
+  ],
+  "cpu_s": 33.98,
+  "error_tail": null,
+  "run_dir": "chain:supercell/bin/RUNS/5a7d1cfa4a1744ccb971f03cc128d898"
+ },
+ {
+  "hkl": [
+   0,
+   -1,
+   1
+  ],
+  "search_range": 4,
+  "rc": 0,
+  "n_molecules": 112,
+  "mnp_used": [
+   -1,
+   -4,
+   -4,
+   1,
+   0,
+   0,
+   1,
+   -4,
+   3
+  ],
+  "cpu_s": 28.5,
+  "error_tail": null,
+  "run_dir": "chain:supercell/bin/RUNS/766c3fa1ba7442209e2e39c8c7662478"
+ },
+ {
+  "hkl": [
+   0,
+   1,
+   1
+  ],
+  "search_range": 3,
+  "rc": 1,
+  "n_molecules": null,
+  "mnp_used": null,
+  "cpu_s": 12.59,
+  "error_tail": "Note: The following floating-point exceptions are signalling: IEEE_INVALID_FLAG",
+  "run_dir": null
+ },
+ {
+  "hkl": [
+   0,
+   0,
+   1
+  ],
+  "search_range": 4,
+  "rc": 0,
+  "n_molecules": 16,
+  "mnp_used": [
+   -1,
+   0,
+   0,
+   0,
+   -1,
+   0,
+   1,
+   0,
+   4
+  ],
+  "cpu_s": 23.71,
+  "error_tail": null,
+  "run_dir": "chain:supercell/bin/RUNS/2f7045bc20514fe1afd800588cc97fb4"
+ },
+ {
+  "hkl": [
+   1,
+   0,
+   1
+  ],
+  "search_range": 4,
+  "rc": 0,
+  "n_molecules": 12,
+  "mnp_used": [
+   -1,
+   0,
+   1,
+   0,
+   -1,
+   0,
+   2,
+   0,
+   1
+  ],
+  "cpu_s": 22.18,
+  "error_tail": null,
+  "run_dir": "chain:supercell/bin/RUNS/55c0270965ea4cb490525115617cf624"
+ },
+ {
+  "hkl": [
+   1,
+   1,
+   0
+  ],
+  "search_range": 4,
+  "rc": 0,
+  "n_molecules": 40,
+  "mnp_used": [
+   -1,
+   1,
+   -1,
+   -1,
+   1,
+   1,
+   3,
+   2,
+   0
+  ],
+  "cpu_s": 27.06,
+  "error_tail": null,
+  "run_dir": "chain:supercell/bin/RUNS/63bea670d1d144ffb95511f3ede5bc1b"
+ },
+ {
+  "hkl": [
+   1,
+   -1,
+   0
+  ],
+  "search_range": 4,
+  "rc": 0,
+  "n_molecules": 40,
+  "mnp_used": [
+   -1,
+   -1,
+   -1,
+   1,
+   1,
+   -1,
+   3,
+   -2,
+   0
+  ],
+  "cpu_s": 22.0,
+  "error_tail": null,
+  "run_dir": "chain:supercell/bin/RUNS/b4bd7e2cda3b4288936b4c91679171bf"
+ },
+ {
+  "hkl": [
+   1,
+   1,
+   -1
+  ],
+  "search_range": 4,
+  "rc": 0,
+  "n_molecules": 96,
+  "mnp_used": [
+   -3,
+   4,
+   1,
+   1,
+   0,
+   1,
+   3,
+   2,
+   -1
+  ],
+  "cpu_s": 23.78,
+  "error_tail": null,
+  "run_dir": "chain:supercell/bin/RUNS/d0cdc70d35be45af8dedfae2ae8ad625"
+ },
+ {
+  "hkl": [
+   1,
+   -1,
+   -1
+  ],
+  "search_range": 4,
+  "rc": 0,
+  "n_molecules": 96,
+  "mnp_used": [
+   -3,
+   -4,
+   1,
+   -1,
+   0,
+   -1,
+   3,
+   -2,
+   -1
+  ],
+  "cpu_s": 23.71,
+  "error_tail": null,
+  "run_dir": "chain:supercell/bin/RUNS/6e2c7309904045e19f7f8f909b6954e9"
+ },
+ {
+  "hkl": [
+   0,
+   1,
+   2
+  ],
+  "search_range": 4,
+  "rc": 1,
+  "n_molecules": null,
+  "mnp_used": null,
+  "cpu_s": 15.76,
+  "error_tail": "Note: The following floating-point exceptions are signalling: IEEE_INVALID_FLAG",
+  "run_dir": null
+ },
+ {
+  "hkl": [
+   0,
+   -1,
+   2
+  ],
+  "search_range": 4,
+  "rc": 1,
+  "n_molecules": null,
+  "mnp_used": null,
+  "cpu_s": 12.94,
+  "error_tail": "Note: The following floating-point exceptions are signalling: IEEE_INVALID_FLAG",
+  "run_dir": null
+ },
+ {
+  "hkl": [
+   1,
+   1,
+   1
+  ],
+  "search_range": 4,
+  "rc": 0,
+  "n_molecules": 48,
+  "mnp_used": [
+   -3,
+   2,
+   1,
+   0,
+   -1,
+   1,
+   2,
+   1,
+   1
+  ],
+  "cpu_s": 16.56,
+  "error_tail": null,
+  "run_dir": "chain:supercell/bin/RUNS/63caf4a5a7a04f62a4aa1bf39dc9c72c"
+ },
+ {
+  "hkl": [
+   1,
+   -1,
+   1
+  ],
+  "search_range": 4,
+  "rc": 0,
+  "n_molecules": 48,
+  "mnp_used": [
+   -3,
+   -2,
+   1,
+   0,
+   -1,
+   -1,
+   2,
+   -1,
+   1
+  ],
+  "cpu_s": 17.14,
+  "error_tail": null,
+  "run_dir": "chain:supercell/bin/RUNS/1086f7b182764b9d9a39036ee5be13bc"
+ },
+ {
+  "hkl": [
+   0,
+   1,
+   0
+  ],
+  "search_range": 4,
+  "rc": 0,
+  "n_molecules": 16,
+  "mnp_used": [
+   -1,
+   0,
+   -4,
+   -1,
+   0,
+   0,
+   0,
+   1,
+   0
+  ],
+  "cpu_s": 17.96,
+  "error_tail": null,
+  "run_dir": "chain:supercell/bin/RUNS/ef544037d7cf4532995971e64fcee151"
+ },
+ {
+  "hkl": [
+   0,
+   2,
+   1
+  ],
+  "search_range": 4,
+  "rc": 0,
+  "n_molecules": 56,
+  "mnp_used": [
+   -1,
+   0,
+   0,
+   1,
+   -2,
+   4,
+   0,
+   3,
+   1
+  ],
+  "cpu_s": 19.51,
+  "error_tail": null,
+  "run_dir": "chain:supercell/bin/RUNS/de549da0075047c2bb1d24a512a19193"
+ },
+ {
+  "hkl": [
+   0,
+   -2,
+   1
+  ],
+  "search_range": 4,
+  "rc": 0,
+  "n_molecules": 56,
+  "mnp_used": [
+   -1,
+   -2,
+   -4,
+   1,
+   0,
+   0,
+   0,
+   -3,
+   1
+  ],
+  "cpu_s": 17.13,
+  "error_tail": null,
+  "run_dir": "chain:supercell/bin/RUNS/f12fed86cfd343bc904e47ec21b4cd05"
+ },
+ {
+  "hkl": [
+   1,
+   1,
+   -2
+  ],
+  "search_range": 4,
+  "rc": 0,
+  "n_molecules": 156,
+  "mnp_used": [
+   -4,
+   -2,
+   -3,
+   -1,
+   1,
+   0,
+   4,
+   3,
+   -3
+  ],
+  "cpu_s": 17.42,
+  "error_tail": null,
+  "run_dir": "chain:supercell/bin/RUNS/1178b760e1f0431db7738b5e3af7c1bd"
+ },
+ {
+  "hkl": [
+   1,
+   -1,
+   -2
+  ],
+  "search_range": 4,
+  "rc": 0,
+  "n_molecules": 156,
+  "mnp_used": [
+   -4,
+   2,
+   -3,
+   1,
+   1,
+   0,
+   4,
+   -3,
+   -3
+  ],
+  "cpu_s": 18.3,
+  "error_tail": null,
+  "run_dir": "chain:supercell/bin/RUNS/c196049e7f5041c0b47b8c7967a8e146"
+ },
+ {
+  "hkl": [
+   0,
+   1,
+   1
+  ],
+  "search_range": 6,
+  "rc": 0,
+  "n_molecules": 160,
+  "mnp_used": [
+   -1,
+   0,
+   0,
+   1,
+   -4,
+   4,
+   1,
+   6,
+   4
+  ],
+  "cpu_s": 16.5,
+  "error_tail": null,
+  "run_dir": "chain:supercell/bin/RUNS/df7879ad42db4ae19880409d575964ad"
+ },
+ {
+  "hkl": [
+   0,
+   -1,
+   1
+  ],
+  "search_range": 6,
+  "rc": 0,
+  "n_molecules": 160,
+  "mnp_used": [
+   -1,
+   -4,
+   -4,
+   1,
+   0,
+   0,
+   1,
+   -6,
+   4
+  ],
+  "cpu_s": 17.11,
+  "error_tail": null,
+  "run_dir": "chain:supercell/bin/RUNS/d6b1fc7e85a54b8aa44e22e267fcb0b0"
+ },
+ {
+  "hkl": [
+   0,
+   1,
+   2
+  ],
+  "search_range": 6,
+  "rc": 0,
+  "n_molecules": 392,
+  "mnp_used": [
+   -5,
+   -2,
+   1,
+   2,
+   -2,
+   1,
+   1,
+   4,
+   5
+  ],
+  "cpu_s": 15.64,
+  "error_tail": null,
+  "run_dir": "chain:supercell/bin/RUNS/f37fe06e489e4c479b14e7e74af3eb34"
+ },
+ {
+  "hkl": [
+   0,
+   -1,
+   2
+  ],
+  "search_range": 6,
+  "rc": 0,
+  "n_molecules": 392,
+  "mnp_used": [
+   -5,
+   2,
+   1,
+   -2,
+   -2,
+   -1,
+   1,
+   -4,
+   5
+  ],
+  "cpu_s": 18.45,
+  "error_tail": null,
+  "run_dir": "chain:supercell/bin/RUNS/a4213d9e4a234b30b9a3185cec363ac9"
+ },
+ {
+  "hkl": [
+   1,
+   1,
+   -1
+  ],
+  "search_range": 6,
+  "rc": 0,
+  "n_molecules": 96,
+  "mnp_used": [
+   -3,
+   4,
+   1,
+   1,
+   0,
+   1,
+   3,
+   2,
+   -1
+  ],
+  "cpu_s": 17.13,
+  "error_tail": null,
+  "run_dir": "chain:supercell/bin/RUNS/b9b1fd2f1a2c424a9e0629316bc5ab1b"
+ },
+ {
+  "hkl": [
+   1,
+   1,
+   0
+  ],
+  "search_range": 6,
+  "rc": 0,
+  "n_molecules": 64,
+  "mnp_used": [
+   -1,
+   1,
+   -1,
+   -1,
+   1,
+   1,
+   5,
+   3,
+   0
+  ],
+  "cpu_s": 24.13,
+  "error_tail": null,
+  "run_dir": "chain:supercell/bin/RUNS/b55c0861d1254e4e9d7bb786ef1a8f8c"
+ },
+ {
+  "hkl": [
+   1,
+   1,
+   1
+  ],
+  "search_range": 6,
+  "rc": 0,
+  "n_molecules": 120,
+  "mnp_used": [
+   -3,
+   2,
+   1,
+   0,
+   -1,
+   1,
+   5,
+   3,
+   2
+  ],
+  "cpu_s": 29.44,
+  "error_tail": null,
+  "run_dir": "chain:supercell/bin/RUNS/ea0be22b81804ded827351b187c20e9e"
+ },
+ {
+  "hkl": [
+   0,
+   1,
+   0
+  ],
+  "search_range": 6,
+  "rc": 0,
+  "n_molecules": 16,
+  "mnp_used": [
+   -1,
+   0,
+   -4,
+   -1,
+   0,
+   0,
+   0,
+   1,
+   0
+  ],
+  "cpu_s": 19.91,
+  "error_tail": null,
+  "run_dir": "chain:supercell/bin/RUNS/97a11ec4e59b426bb4ec136b04958d9a"
+ },
+ {
+  "hkl": [
+   0,
+   2,
+   1
+  ],
+  "search_range": 6,
+  "rc": 0,
+  "n_molecules": 56,
+  "mnp_used": [
+   -1,
+   0,
+   0,
+   1,
+   -2,
+   4,
+   0,
+   3,
+   1
+  ],
+  "cpu_s": 19.01,
+  "error_tail": null,
+  "run_dir": "chain:supercell/bin/RUNS/2acdc66deee94079a04de0a9d8e7c035"
+ }
+]

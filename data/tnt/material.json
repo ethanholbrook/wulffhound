@@ -1,0 +1,19 @@
+{
+ "name": "TNT (2,4,6-trinitrotoluene), monoclinic, Z = 8",
+ "route": "unit cell (chain: surfenergy/examples/tnt001_nonreactive)",
+ "datafile": "chain:surfenergy/examples/tnt001_nonreactive/tnt_unitcell.data",
+ "script": "chain:surfenergy/examples/tnt001_nonreactive/in.tnt-run0.lmp",
+ "supplementary": null,
+ "example_dir": "chain:surfenergy/examples/tnt001_nonreactive",
+ "datafile_md5_recorded": "ede8756c5b71e4c8a1949038d47427bf",
+ "script_md5_recorded": "fd7d9da6814b13e8f8c195abb0b05eb1",
+ "use_reaxff": false,
+ "force_field": "non-reactive TNT force field with full topology: buck + lj/cut + coul/wolf, 11 A cutoff (in.tnt-run0.lmp, in the private chain)",
+ "forcefield_validated": true,
+ "forcefield_note": "a TNT-specific non-reactive force field (validated for TNT in the chain's examples).",
+ "setting_note": "Miller indices are relative to the data-file a, b, c (a along x, b along y, c in xz; beta 110.4 deg). spglib reports P2_1/c (No. 14); in THIS setting the glide is a (h0l absent for h odd), i.e. P2_1/a. Literature (hkl) in P2_1/c (a and c swapped, beta ~110) or in the orthorhombic polymorph (Pca2_1) do NOT apply directly: convert by matching lattice parameters first.",
+ "spacegroup_data_setting": "P2_1/a (No. 14; spglib prints the standard symbol P2_1/c)",
+ "setting_map": null,
+ "source_structure": "TNT unit cell of the private chain (CCDC-derived; not distributed here: the bundle keeps only gamma values, lattice parameters, hkl, costs and provenance ids/md5s)",
+ "files_distributed": false
+}

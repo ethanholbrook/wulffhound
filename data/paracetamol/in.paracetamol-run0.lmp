@@ -1,0 +1,17 @@
+# cif2lammps: P 1 21/n 1, 4 molecules of C8H9NO2, from paracetamol_I_COD2104364.cif, X-H normalised, relaxed (atoms)
+# Static ReaxFF energy (run 0). For supercell: give this script as the LAMMPS input script, the
+# data file below as the data file and the force-field file of pair_coeff as the supplementary file.
+
+units           real
+atom_style      full
+boundary        p p p
+
+read_data       paracetamol_I_COD2104364.data
+
+pair_style      reaxff NULL lgvdw yes checkqeq yes safezone 40.0 mincap 2000 minhbonds 200
+pair_coeff      * * reax-lg-2011.ff C H N O
+fix             qeq all qeq/reaxff 1 0.0 10.0 1.0e-6 reaxff
+
+thermo_style    custom step time etotal ke pe etail evdwl ecoul elong epair emol ebond eangle edihed eimp lx ly lz xy xz yz vol
+thermo          1
+run             0

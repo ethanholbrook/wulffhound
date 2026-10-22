@@ -1,0 +1,33 @@
+name: ci
+on:
+  push:
+  pull_request:
+jobs:
+  replay-selftest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash -el {0}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mamba-org/setup-micromamba@v2
+        with:
+          environment-file: environment.yml
+          cache-environment: true
+      - name: selftest TNT (replay, chain hidden)
+        env:
+          WULFFHOUND_CHAIN_ROOT: /nonexistent
+          WULFFHOUND_PY: python
+        run: ./wh --material tnt selftest
+      - name: selftest paracetamol (replay, chain hidden)
+        env:
+          WULFFHOUND_CHAIN_ROOT: /nonexistent
+          WULFFHOUND_PY: python
+        run: ./wh --material paracetamol selftest
+  hygiene:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: no secrets, no absolute home paths, no force-field files in tracked files
+        run: tools/check_public.sh

@@ -1,0 +1,2461 @@
+{
+ "material": "tnt",
+ "what": "replay bundle: results of the private simulation chain with provenance (built by tools/build_bundle.py)",
+ "built": "2026-10-22T16:12:44-04:00",
+ "notes": [
+  "21 entries from the wulffagent MVP ledger",
+  "0 entries newly imported from the spike devtools/spikes/wulff_tnt (0 skipped)",
+  "0 live wulffhound entries from state/tnt/ledger.json"
+ ],
+ "entries": [
+  {
+   "family": "{1 0 0}",
+   "hkl": [
+    1,
+    0,
+    0
+   ],
+   "search_range": 6,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "chain:surfenergy/examples/tnt001_nonreactive/tnt_unitcell.data",
+   "datafile_md5": "ede8756c5b71e4c8a1949038d47427bf",
+   "script": "chain:surfenergy/examples/tnt001_nonreactive/in.tnt-run0.lmp",
+   "script_md5": "fd7d9da6814b13e8f8c195abb0b05eb1",
+   "source": "import:devtools/spikes/wulff_tnt/facet_runs.jsonl",
+   "cpu_s": 145.39,
+   "wall_s": 141.3,
+   "run_dir": "chain:surfenergy/bin/RUNS/3c1bc43a9feb41bb9d3824ea05203d09",
+   "child_runs": [
+    {
+     "tool": "surfenergy",
+     "run_dir": "chain:surfenergy/bin/RUNS/3c1bc43a9feb41bb9d3824ea05203d09",
+     "inputs": {
+      "temperature": 0.0,
+      "h": 1,
+      "k": 0,
+      "l": 0,
+      "search_range": 6,
+      "n_periods": 2,
+      "termination_mode": "lowest",
+      "termination_index": 0
+     }
+    }
+   ],
+   "level": 2,
+   "ok": true,
+   "d_hkl": 13.979265310727932,
+   "n_molecules_cell": 32,
+   "mnp_used": [
+    0,
+    -1,
+    0,
+    0,
+    0,
+    -1,
+    4,
+    0,
+    1
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 8,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 3.8693,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 136.07889873353423,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 0,
+     "gap": 3.8693,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 136.07889873353423,
+     "sfe_source": "group 0"
+    },
+    {
+     "index": 2,
+     "group": 2,
+     "gap": 1.35,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 161.7214053408846,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 3,
+     "group": 2,
+     "gap": 1.35,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 161.7214053408846,
+     "sfe_source": "group 2"
+    },
+    {
+     "index": 4,
+     "group": 2,
+     "gap": 1.35,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 161.7214053408846,
+     "sfe_source": "group 2"
+    },
+    {
+     "index": 5,
+     "group": 2,
+     "gap": 1.35,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 161.7214053408846,
+     "sfe_source": "group 2"
+    },
+    {
+     "index": 6,
+     "group": 6,
+     "gap": 0.4203,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 212.0066874247078,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 7,
+     "group": 6,
+     "gap": 0.4203,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 212.0066874247078,
+     "sfe_source": "group 6"
+    }
+   ],
+   "notes": [
+    "force field: commands of the input script not used (surfenergy sets the run itself): read_data, run, run_style, thermo, thermo_style, timestep",
+    "slabcutter t2: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces",
+    "slabcutter t6: this termination cuts between molecular layers only 0.42 A apart",
+    "bulk MD: bulk: the cell relaxation at T = 0 did not reach |P_ij| < 25 atm (largest 41 atm after 5 steps)",
+    "temperature 0: energy minimisation (bulk with box relaxation, slab in the relaxed bulk lateral box) instead of MD; errors are 0",
+    "gamma is the excess potential energy of the two surfaces per area, (<E_slab> - N_slab/N_bulk <E_bulk>) / (2 A): not the surface internal energy (kinetic energy left out) and not a surface free energy (no entropy term)"
+   ],
+   "surface_area_static": 125.99897077764,
+   "gamma": 124.11180823482566,
+   "gamma_error": 0.0,
+   "gamma_unrelaxed": 136.07889873353423,
+   "termination_used": 0,
+   "faces_equivalent": true,
+   "molecules_intact": true,
+   "n_molecules_slab": 16,
+   "n_molecules_bulk": 32,
+   "surface_area": 130.26134409908664,
+   "thickness": 27.95853062,
+   "units": "mJ/m^2",
+   "what": "relaxed T = 0 surface energy (surfenergy temperature 0: minimisations), lowest unrelaxed termination; excess potential energy per area",
+   "imported_tag": "calib",
+   "recorded": "2026-10-22T15:12:29-04:00",
+   "material": "tnt",
+   "provenance": "private chain run dir chain:surfenergy/bin/RUNS/3c1bc43a9feb41bb9d3824ea05203d09 (not shipped)"
+  },
+  {
+   "family": "{1 0 0}",
+   "hkl": [
+    1,
+    0,
+    0
+   ],
+   "search_range": 6,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "chain:surfenergy/examples/tnt001_nonreactive/tnt_unitcell.data",
+   "datafile_md5": "ede8756c5b71e4c8a1949038d47427bf",
+   "script": "chain:surfenergy/examples/tnt001_nonreactive/in.tnt-run0.lmp",
+   "script_md5": "fd7d9da6814b13e8f8c195abb0b05eb1",
+   "source": "import:devtools/spikes/wulff_tnt/facet_runs.jsonl (screening step of the level-2 run)",
+   "cpu_s": null,
+   "wall_s": null,
+   "run_dir": "chain:surfenergy/bin/RUNS/3c1bc43a9feb41bb9d3824ea05203d09",
+   "child_runs": [
+    {
+     "tool": "surfenergy",
+     "run_dir": "chain:surfenergy/bin/RUNS/3c1bc43a9feb41bb9d3824ea05203d09",
+     "inputs": {
+      "temperature": 0.0,
+      "h": 1,
+      "k": 0,
+      "l": 0,
+      "search_range": 6,
+      "n_periods": 2,
+      "termination_mode": "lowest",
+      "termination_index": 0
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 13.979265310727932,
+   "n_molecules_cell": 32,
+   "mnp_used": [
+    0,
+    -1,
+    0,
+    0,
+    0,
+    -1,
+    4,
+    0,
+    1
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 8,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 3.8693,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 136.07889873353423,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 0,
+     "gap": 3.8693,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 136.07889873353423,
+     "sfe_source": "group 0"
+    },
+    {
+     "index": 2,
+     "group": 2,
+     "gap": 1.35,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 161.7214053408846,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 3,
+     "group": 2,
+     "gap": 1.35,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 161.7214053408846,
+     "sfe_source": "group 2"
+    },
+    {
+     "index": 4,
+     "group": 2,
+     "gap": 1.35,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 161.7214053408846,
+     "sfe_source": "group 2"
+    },
+    {
+     "index": 5,
+     "group": 2,
+     "gap": 1.35,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 161.7214053408846,
+     "sfe_source": "group 2"
+    },
+    {
+     "index": 6,
+     "group": 6,
+     "gap": 0.4203,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 212.0066874247078,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 7,
+     "group": 6,
+     "gap": 0.4203,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 212.0066874247078,
+     "sfe_source": "group 6"
+    }
+   ],
+   "notes": [
+    "force field: commands of the input script not used (surfenergy sets the run itself): read_data, run, run_style, thermo, thermo_style, timestep",
+    "slabcutter t2: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces",
+    "slabcutter t6: this termination cuts between molecular layers only 0.42 A apart",
+    "bulk MD: bulk: the cell relaxation at T = 0 did not reach |P_ij| < 25 atm (largest 41 atm after 5 steps)",
+    "temperature 0: energy minimisation (bulk with box relaxation, slab in the relaxed bulk lateral box) instead of MD; errors are 0",
+    "gamma is the excess potential energy of the two surfaces per area, (<E_slab> - N_slab/N_bulk <E_bulk>) / (2 A): not the surface internal energy (kinetic energy left out) and not a surface free energy (no entropy term)"
+   ],
+   "surface_area_static": 125.99897077764,
+   "gamma": 136.07889873353423,
+   "gamma_error": 0.0,
+   "termination_used": 0,
+   "faces_equivalent": true,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "imported_tag": "calib",
+   "recorded": "2026-10-22T15:12:29-04:00",
+   "material": "tnt",
+   "provenance": "private chain run dir chain:surfenergy/bin/RUNS/3c1bc43a9feb41bb9d3824ea05203d09 (not shipped)"
+  },
+  {
+   "family": "{0 1 1}",
+   "hkl": [
+    0,
+    -1,
+    1
+   ],
+   "search_range": 3,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "chain:surfenergy/examples/tnt001_nonreactive/tnt_unitcell.data",
+   "datafile_md5": "ede8756c5b71e4c8a1949038d47427bf",
+   "script": "chain:surfenergy/examples/tnt001_nonreactive/in.tnt-run0.lmp",
+   "script_md5": "fd7d9da6814b13e8f8c195abb0b05eb1",
+   "source": "import:devtools/spikes/wulff_tnt/facet_runs.jsonl",
+   "cpu_s": 25.43,
+   "wall_s": 23.9,
+   "run_dir": null,
+   "child_runs": [
+    {
+     "tool": "surfenergy",
+     "run_dir": null,
+     "inputs": {
+      "temperature": 0.0,
+      "h": 0,
+      "k": -1,
+      "l": 1,
+      "search_range": 3,
+      "n_periods": 2,
+      "termination_mode": "lowest",
+      "termination_index": 0
+     }
+    }
+   ],
+   "level": 2,
+   "ok": false,
+   "gamma": null,
+   "error": "mamba/envs/cif2lammps-dev/lib/python3.8/site-packages/papermill/execute.py\", line 131, in execute_notebook\n    raise_for_execution_errors(nb, output_path)\n  File \"~/micromamba/envs/cif2lammps-dev/lib/python3.8/site-packages/papermill/execute.py\", line 251, in raise_for_execution_errors\n    raise error\npapermill.exceptions.PapermillExecutionError: \n---------------------------------------------------------------------------\nException encountered at \"In [8]\":\n---------------------------------------------------------------------------\nValueError                                Traceback (most recent call last)\nCell In[8], line 8\n      5     result = compute_surface_energy(params, out_dir='.', lmp_command=lmp_command)\n      6 except (SurfError, MDError) as exc:\n      7     # one clear line in the run's error message, without a long traceback through the engine\n----> 8     raise ValueError(str(exc)) from None\n     10 print('facet %s, d_hkl %.4f A; %s force field; T = %g K' % (\n     11     result['facet_hkl'], result['d_hkl'], result['forcefield_kind'], result['temperature']))\n     12 print('terminations (unrelaxed surface energy, mJ/m^2; * = copied from its group):')\nValueError: the slabcutter child run failed - ValueError: zero-size array to reduction operation maximum which has no identity (executed notebook: chain:surfenergy/bin/RUNS/553c9f1017fe433396ef3d4dc1552d76/children/RUNS/slabcutter-3fcfd37bcb09401f/slabcutter.ipynb)",
+   "imported_tag": "calib",
+   "recorded": "2026-10-22T15:12:29-04:00",
+   "material": "tnt",
+   "provenance": "private chain run dir None (not shipped)"
+  },
+  {
+   "family": "{2 0 1}",
+   "hkl": [
+    2,
+    0,
+    1
+   ],
+   "search_range": 3,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "chain:surfenergy/examples/tnt001_nonreactive/tnt_unitcell.data",
+   "datafile_md5": "ede8756c5b71e4c8a1949038d47427bf",
+   "script": "chain:surfenergy/examples/tnt001_nonreactive/in.tnt-run0.lmp",
+   "script_md5": "fd7d9da6814b13e8f8c195abb0b05eb1",
+   "source": "import:devtools/spikes/wulff_tnt/facet_runs.jsonl",
+   "cpu_s": 138.43,
+   "wall_s": 135.2,
+   "run_dir": "chain:surfenergy/bin/RUNS/6829605a54f24897a082f7050cc55aab",
+   "child_runs": [
+    {
+     "tool": "surfenergy",
+     "run_dir": "chain:surfenergy/bin/RUNS/6829605a54f24897a082f7050cc55aab",
+     "inputs": {
+      "temperature": 0.0,
+      "h": 2,
+      "k": 0,
+      "l": 1,
+      "search_range": 3,
+      "n_periods": 2,
+      "termination_mode": "lowest",
+      "termination_index": 0
+     }
+    }
+   ],
+   "level": 2,
+   "ok": true,
+   "d_hkl": 5.958644849022299,
+   "n_molecules_cell": 40,
+   "mnp_used": [
+    -1,
+    0,
+    2,
+    0,
+    -1,
+    0,
+    2,
+    0,
+    1
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 2,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 4.1349,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 138.06189199654546,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 1,
+     "gap": 1.8238,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 159.28530378665576,
+     "sfe_source": "computed"
+    }
+   ],
+   "notes": [
+    "force field: commands of the input script not used (surfenergy sets the run itself): read_data, run, run_style, thermo, thermo_style, timestep",
+    "bulk MD: bulk: the cell relaxation at T = 0 did not reach |P_ij| < 25 atm (largest 68 atm after 7 steps)",
+    "temperature 0: energy minimisation (bulk with box relaxation, slab in the relaxed bulk lateral box) instead of MD; errors are 0",
+    "gamma is the excess potential energy of the two surfaces per area, (<E_slab> - N_slab/N_bulk <E_bulk>) / (2 A): not the surface internal energy (kinetic energy left out) and not a surface free energy (no entropy term)"
+   ],
+   "surface_area_static": 295.5996013239203,
+   "gamma": 125.41780841991498,
+   "gamma_error": 0.0,
+   "gamma_unrelaxed": 138.06189199654546,
+   "termination_used": 0,
+   "faces_equivalent": true,
+   "molecules_intact": true,
+   "n_molecules_slab": 16,
+   "n_molecules_bulk": 40,
+   "surface_area": 305.5453507206976,
+   "thickness": 11.917289700000001,
+   "units": "mJ/m^2",
+   "what": "relaxed T = 0 surface energy (surfenergy temperature 0: minimisations), lowest unrelaxed termination; excess potential energy per area",
+   "imported_tag": "calib",
+   "recorded": "2026-10-22T15:12:29-04:00",
+   "material": "tnt",
+   "provenance": "private chain run dir chain:surfenergy/bin/RUNS/6829605a54f24897a082f7050cc55aab (not shipped)"
+  },
+  {
+   "family": "{2 0 1}",
+   "hkl": [
+    2,
+    0,
+    1
+   ],
+   "search_range": 3,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "chain:surfenergy/examples/tnt001_nonreactive/tnt_unitcell.data",
+   "datafile_md5": "ede8756c5b71e4c8a1949038d47427bf",
+   "script": "chain:surfenergy/examples/tnt001_nonreactive/in.tnt-run0.lmp",
+   "script_md5": "fd7d9da6814b13e8f8c195abb0b05eb1",
+   "source": "import:devtools/spikes/wulff_tnt/facet_runs.jsonl (screening step of the level-2 run)",
+   "cpu_s": null,
+   "wall_s": null,
+   "run_dir": "chain:surfenergy/bin/RUNS/6829605a54f24897a082f7050cc55aab",
+   "child_runs": [
+    {
+     "tool": "surfenergy",
+     "run_dir": "chain:surfenergy/bin/RUNS/6829605a54f24897a082f7050cc55aab",
+     "inputs": {
+      "temperature": 0.0,
+      "h": 2,
+      "k": 0,
+      "l": 1,
+      "search_range": 3,
+      "n_periods": 2,
+      "termination_mode": "lowest",
+      "termination_index": 0
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 5.958644849022299,
+   "n_molecules_cell": 40,
+   "mnp_used": [
+    -1,
+    0,
+    2,
+    0,
+    -1,
+    0,
+    2,
+    0,
+    1
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 2,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 4.1349,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 138.06189199654546,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 1,
+     "gap": 1.8238,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 159.28530378665576,
+     "sfe_source": "computed"
+    }
+   ],
+   "notes": [
+    "force field: commands of the input script not used (surfenergy sets the run itself): read_data, run, run_style, thermo, thermo_style, timestep",
+    "bulk MD: bulk: the cell relaxation at T = 0 did not reach |P_ij| < 25 atm (largest 68 atm after 7 steps)",
+    "temperature 0: energy minimisation (bulk with box relaxation, slab in the relaxed bulk lateral box) instead of MD; errors are 0",
+    "gamma is the excess potential energy of the two surfaces per area, (<E_slab> - N_slab/N_bulk <E_bulk>) / (2 A): not the surface internal energy (kinetic energy left out) and not a surface free energy (no entropy term)"
+   ],
+   "surface_area_static": 295.5996013239203,
+   "gamma": 138.06189199654546,
+   "gamma_error": 0.0,
+   "termination_used": 0,
+   "faces_equivalent": true,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "imported_tag": "calib",
+   "recorded": "2026-10-22T15:12:29-04:00",
+   "material": "tnt",
+   "provenance": "private chain run dir chain:surfenergy/bin/RUNS/6829605a54f24897a082f7050cc55aab (not shipped)"
+  },
+  {
+   "family": "{0 1 2}",
+   "hkl": [
+    0,
+    1,
+    -2
+   ],
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "chain:surfenergy/examples/tnt001_nonreactive/tnt_unitcell.data",
+   "datafile_md5": "ede8756c5b71e4c8a1949038d47427bf",
+   "script": "chain:surfenergy/examples/tnt001_nonreactive/in.tnt-run0.lmp",
+   "script_md5": "fd7d9da6814b13e8f8c195abb0b05eb1",
+   "source": "import:devtools/spikes/wulff_tnt/facet_runs.jsonl",
+   "cpu_s": 306.52,
+   "wall_s": 304.5,
+   "run_dir": "chain:surfenergy/bin/RUNS/2b3bc919e25d49608e28dadd7d2b6a2b",
+   "child_runs": [
+    {
+     "tool": "surfenergy",
+     "run_dir": "chain:surfenergy/bin/RUNS/2b3bc919e25d49608e28dadd7d2b6a2b",
+     "inputs": {
+      "temperature": 0.0,
+      "h": 0,
+      "k": 1,
+      "l": -2,
+      "search_range": 4,
+      "n_periods": 2,
+      "termination_mode": "lowest",
+      "termination_index": 0
+     }
+    }
+   ],
+   "level": 2,
+   "ok": true,
+   "d_hkl": 5.136439657012362,
+   "n_molecules_cell": 96,
+   "mnp_used": [
+    -1,
+    -4,
+    -2,
+    -1,
+    0,
+    0,
+    0,
+    4,
+    -1
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 2,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 2.6294,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 152.30442950869397,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 1,
+     "gap": 2.507,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 152.60317135077497,
+     "sfe_source": "computed"
+    }
+   ],
+   "notes": [
+    "force field: commands of the input script not used (surfenergy sets the run itself): read_data, run, run_style, thermo, thermo_style, timestep",
+    "temperature 0: energy minimisation (bulk with box relaxation, slab in the relaxed bulk lateral box) instead of MD; errors are 0",
+    "gamma is the excess potential energy of the two surfaces per area, (<E_slab> - N_slab/N_bulk <E_bulk>) / (2 A): not the surface internal energy (kinetic energy left out) and not a surface free energy (no entropy term)"
+   ],
+   "surface_area_static": 685.8342195146341,
+   "gamma": 141.94472478446076,
+   "gamma_error": 0.0,
+   "gamma_unrelaxed": 152.30442950869397,
+   "termination_used": 0,
+   "faces_equivalent": true,
+   "molecules_intact": true,
+   "n_molecules_slab": 32,
+   "n_molecules_bulk": 96,
+   "surface_area": 661.3769525379771,
+   "thickness": 10.272879313333332,
+   "units": "mJ/m^2",
+   "what": "relaxed T = 0 surface energy (surfenergy temperature 0: minimisations), lowest unrelaxed termination; excess potential energy per area",
+   "imported_tag": "calib",
+   "recorded": "2026-10-22T15:12:29-04:00",
+   "material": "tnt",
+   "provenance": "private chain run dir chain:surfenergy/bin/RUNS/2b3bc919e25d49608e28dadd7d2b6a2b (not shipped)"
+  },
+  {
+   "family": "{0 1 2}",
+   "hkl": [
+    0,
+    1,
+    -2
+   ],
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "chain:surfenergy/examples/tnt001_nonreactive/tnt_unitcell.data",
+   "datafile_md5": "ede8756c5b71e4c8a1949038d47427bf",
+   "script": "chain:surfenergy/examples/tnt001_nonreactive/in.tnt-run0.lmp",
+   "script_md5": "fd7d9da6814b13e8f8c195abb0b05eb1",
+   "source": "import:devtools/spikes/wulff_tnt/facet_runs.jsonl (screening step of the level-2 run)",
+   "cpu_s": null,
+   "wall_s": null,
+   "run_dir": "chain:surfenergy/bin/RUNS/2b3bc919e25d49608e28dadd7d2b6a2b",
+   "child_runs": [
+    {
+     "tool": "surfenergy",
+     "run_dir": "chain:surfenergy/bin/RUNS/2b3bc919e25d49608e28dadd7d2b6a2b",
+     "inputs": {
+      "temperature": 0.0,
+      "h": 0,
+      "k": 1,
+      "l": -2,
+      "search_range": 4,
+      "n_periods": 2,
+      "termination_mode": "lowest",
+      "termination_index": 0
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 5.136439657012362,
+   "n_molecules_cell": 96,
+   "mnp_used": [
+    -1,
+    -4,
+    -2,
+    -1,
+    0,
+    0,
+    0,
+    4,
+    -1
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 2,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 2.6294,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 152.30442950869397,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 1,
+     "gap": 2.507,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 152.60317135077497,
+     "sfe_source": "computed"
+    }
+   ],
+   "notes": [
+    "force field: commands of the input script not used (surfenergy sets the run itself): read_data, run, run_style, thermo, thermo_style, timestep",
+    "temperature 0: energy minimisation (bulk with box relaxation, slab in the relaxed bulk lateral box) instead of MD; errors are 0",
+    "gamma is the excess potential energy of the two surfaces per area, (<E_slab> - N_slab/N_bulk <E_bulk>) / (2 A): not the surface internal energy (kinetic energy left out) and not a surface free energy (no entropy term)"
+   ],
+   "surface_area_static": 685.8342195146341,
+   "gamma": 152.30442950869397,
+   "gamma_error": 0.0,
+   "termination_used": 0,
+   "faces_equivalent": true,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "imported_tag": "calib",
+   "recorded": "2026-10-22T15:12:29-04:00",
+   "material": "tnt",
+   "provenance": "private chain run dir chain:surfenergy/bin/RUNS/2b3bc919e25d49608e28dadd7d2b6a2b (not shipped)"
+  },
+  {
+   "family": "{0 1 1}",
+   "hkl": [
+    0,
+    1,
+    1
+   ],
+   "search_range": 6,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "chain:surfenergy/examples/tnt001_nonreactive/tnt_unitcell.data",
+   "datafile_md5": "ede8756c5b71e4c8a1949038d47427bf",
+   "script": "chain:surfenergy/examples/tnt001_nonreactive/in.tnt-run0.lmp",
+   "script_md5": "fd7d9da6814b13e8f8c195abb0b05eb1",
+   "source": "import:devtools/spikes/wulff_tnt/facet_runs.jsonl",
+   "cpu_s": 404.3,
+   "wall_s": 402.6,
+   "run_dir": "chain:surfenergy/bin/RUNS/ecaa52b933bd4eedb7644fc01597f94c",
+   "child_runs": [
+    {
+     "tool": "surfenergy",
+     "run_dir": "chain:surfenergy/bin/RUNS/ecaa52b933bd4eedb7644fc01597f94c",
+     "inputs": {
+      "temperature": 0.0,
+      "h": 0,
+      "k": 1,
+      "l": 1,
+      "search_range": 6,
+      "n_periods": 2,
+      "termination_mode": "lowest",
+      "termination_index": 0
+     }
+    }
+   ],
+   "level": 2,
+   "ok": true,
+   "d_hkl": 5.766298451308432,
+   "n_molecules_cell": 112,
+   "mnp_used": [
+    -1,
+    0,
+    0,
+    1,
+    -2,
+    2,
+    0,
+    6,
+    1
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 4,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 1.5566,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 169.28986219422396,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 1,
+     "gap": 1.4326,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 144.42484254598196,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 2,
+     "group": 2,
+     "gap": 1.3885,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 162.0691732581528,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 3,
+     "group": 2,
+     "gap": 1.3885,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 162.0691732581528,
+     "sfe_source": "group 2"
+    }
+   ],
+   "notes": [
+    "force field: commands of the input script not used (surfenergy sets the run itself): read_data, run, run_style, thermo, thermo_style, timestep",
+    "slabcutter t2: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces",
+    "temperature 0: energy minimisation (bulk with box relaxation, slab in the relaxed bulk lateral box) instead of MD; errors are 0",
+    "gamma is the excess potential energy of the two surfaces per area, (<E_slab> - N_slab/N_bulk <E_bulk>) / (2 A): not the surface internal energy (kinetic energy left out) and not a surface free energy (no entropy term)"
+   ],
+   "surface_area_static": 610.9198322078939,
+   "gamma": 141.36207840128426,
+   "gamma_error": 0.0,
+   "gamma_unrelaxed": 144.42484254598196,
+   "termination_used": 1,
+   "faces_equivalent": true,
+   "molecules_intact": true,
+   "n_molecules_slab": 32,
+   "n_molecules_bulk": 112,
+   "surface_area": 583.2068611970658,
+   "thickness": 11.532596902857142,
+   "units": "mJ/m^2",
+   "what": "relaxed T = 0 surface energy (surfenergy temperature 0: minimisations), lowest unrelaxed termination; excess potential energy per area",
+   "imported_tag": "calib",
+   "recorded": "2026-10-22T15:12:29-04:00",
+   "material": "tnt",
+   "provenance": "private chain run dir chain:surfenergy/bin/RUNS/ecaa52b933bd4eedb7644fc01597f94c (not shipped)"
+  },
+  {
+   "family": "{0 1 1}",
+   "hkl": [
+    0,
+    1,
+    1
+   ],
+   "search_range": 6,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "chain:surfenergy/examples/tnt001_nonreactive/tnt_unitcell.data",
+   "datafile_md5": "ede8756c5b71e4c8a1949038d47427bf",
+   "script": "chain:surfenergy/examples/tnt001_nonreactive/in.tnt-run0.lmp",
+   "script_md5": "fd7d9da6814b13e8f8c195abb0b05eb1",
+   "source": "import:devtools/spikes/wulff_tnt/facet_runs.jsonl (screening step of the level-2 run)",
+   "cpu_s": null,
+   "wall_s": null,
+   "run_dir": "chain:surfenergy/bin/RUNS/ecaa52b933bd4eedb7644fc01597f94c",
+   "child_runs": [
+    {
+     "tool": "surfenergy",
+     "run_dir": "chain:surfenergy/bin/RUNS/ecaa52b933bd4eedb7644fc01597f94c",
+     "inputs": {
+      "temperature": 0.0,
+      "h": 0,
+      "k": 1,
+      "l": 1,
+      "search_range": 6,
+      "n_periods": 2,
+      "termination_mode": "lowest",
+      "termination_index": 0
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 5.766298451308432,
+   "n_molecules_cell": 112,
+   "mnp_used": [
+    -1,
+    0,
+    0,
+    1,
+    -2,
+    2,
+    0,
+    6,
+    1
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 4,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 1.5566,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 169.28986219422396,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 1,
+     "gap": 1.4326,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 144.42484254598196,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 2,
+     "group": 2,
+     "gap": 1.3885,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 162.0691732581528,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 3,
+     "group": 2,
+     "gap": 1.3885,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 162.0691732581528,
+     "sfe_source": "group 2"
+    }
+   ],
+   "notes": [
+    "force field: commands of the input script not used (surfenergy sets the run itself): read_data, run, run_style, thermo, thermo_style, timestep",
+    "slabcutter t2: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces",
+    "temperature 0: energy minimisation (bulk with box relaxation, slab in the relaxed bulk lateral box) instead of MD; errors are 0",
+    "gamma is the excess potential energy of the two surfaces per area, (<E_slab> - N_slab/N_bulk <E_bulk>) / (2 A): not the surface internal energy (kinetic energy left out) and not a surface free energy (no entropy term)"
+   ],
+   "surface_area_static": 610.9198322078939,
+   "gamma": 144.42484254598196,
+   "gamma_error": 0.0,
+   "termination_used": 1,
+   "faces_equivalent": true,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "imported_tag": "calib",
+   "recorded": "2026-10-22T15:12:29-04:00",
+   "material": "tnt",
+   "provenance": "private chain run dir chain:surfenergy/bin/RUNS/ecaa52b933bd4eedb7644fc01597f94c (not shipped)"
+  },
+  {
+   "family": "{0 0 1}",
+   "hkl": [
+    0,
+    0,
+    1
+   ],
+   "search_range": 6,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "chain:surfenergy/examples/tnt001_nonreactive/tnt_unitcell.data",
+   "datafile_md5": "ede8756c5b71e4c8a1949038d47427bf",
+   "script": "chain:surfenergy/examples/tnt001_nonreactive/in.tnt-run0.lmp",
+   "script_md5": "fd7d9da6814b13e8f8c195abb0b05eb1",
+   "source": "live (wulffagent test screening, 15:05, moved from /tmp)",
+   "cpu_s": 38.4,
+   "wall_s": 41.7,
+   "run_dir": "chain:wulffagent/state/tnt/runs/20261022-150500-L1-001-tmpmv",
+   "child_runs": [
+    {
+     "tool": "supercell",
+     "run_dir": "chain:wulffagent/state/tnt/runs/20261022-150500-L1-001-tmpmv/children/RUNS/supercell-fd7cc2486dc64364",
+     "inputs": {
+      "orientation_mode": "hkl",
+      "h": 0,
+      "k": 0,
+      "l": 1,
+      "search_range": 6,
+      "use_reaxff": false,
+      "RunEnergyCheck": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:wulffagent/state/tnt/runs/20261022-150500-L1-001-tmpmv/children/RUNS/slabcutter-6464e9e8faab4919",
+     "inputs": {
+      "termination_index": 0,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:wulffagent/state/tnt/runs/20261022-150500-L1-001-tmpmv/children/RUNS/slabcutter-43f39c0d990943af",
+     "inputs": {
+      "termination_index": 1,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:wulffagent/state/tnt/runs/20261022-150500-L1-001-tmpmv/children/RUNS/slabcutter-ed79ebf855244cd8",
+     "inputs": {
+      "termination_index": 2,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 19.576297020599995,
+   "n_molecules_cell": 16,
+   "mnp_used": [
+    -1,
+    0,
+    0,
+    0,
+    -1,
+    0,
+    1,
+    0,
+    2
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 4,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 5.0896,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 140.61224407091905,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 1,
+     "gap": 5.0588,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 140.5081539471183,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 2,
+     "group": 2,
+     "gap": 4.714,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 118.23846577275738,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 3,
+     "group": 2,
+     "gap": 4.714,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 118.23846577275738,
+     "sfe_source": "group 2"
+    }
+   ],
+   "notes": [
+    "slabcutter t2: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces"
+   ],
+   "surface_area_static": 89.97478125723603,
+   "gamma": 118.23846577275738,
+   "gamma_error": 0.0,
+   "termination_used": 2,
+   "faces_equivalent": false,
+   "n_molecules_slab": 16,
+   "thickness": 39.15259404,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "recorded": "2026-10-22T15:12:29-04:00",
+   "material": "tnt",
+   "provenance": "private chain run dir chain:wulffagent/state/tnt/runs/20261022-150500-L1-001-tmpmv (not shipped)"
+  },
+  {
+   "family": "{1 1 0}",
+   "hkl": [
+    1,
+    1,
+    0
+   ],
+   "level": 1,
+   "ok": true,
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "chain:surfenergy/examples/tnt001_nonreactive/tnt_unitcell.data",
+   "datafile_md5": "ede8756c5b71e4c8a1949038d47427bf",
+   "script": "chain:surfenergy/examples/tnt001_nonreactive/in.tnt-run0.lmp",
+   "script_md5": "fd7d9da6814b13e8f8c195abb0b05eb1",
+   "source": "import:devtools/spikes/wulff_tnt/level1.jsonl",
+   "cpu_s": 50.1,
+   "wall_s": null,
+   "run_dir": "chain:supercell/bin/RUNS/eab645fdd6b0422aadcc25bfd695bbfb",
+   "child_runs": [
+    {
+     "tool": "supercell",
+     "run_dir": "chain:supercell/bin/RUNS/eab645fdd6b0422aadcc25bfd695bbfb"
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:slabcutter/bin/RUNS/c715c8175ee6494893159206d39e4b31",
+     "inputs": {
+      "termination_index": 0,
+      "n_periods": 2,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:slabcutter/bin/RUNS/f2c6f12981854b2b9940f979cae889f6",
+     "inputs": {
+      "termination_index": 1,
+      "n_periods": 2,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:slabcutter/bin/RUNS/f3ec701d885b4f7ca3c1dfb285f5a1af",
+     "inputs": {
+      "termination_index": 2,
+      "n_periods": 2,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:slabcutter/bin/RUNS/c3e4a99106b94f909f8afc4a26504bd0",
+     "inputs": {
+      "termination_index": 4,
+      "n_periods": 2,
+      "compute_unrelaxed_sfe": true
+     }
+    }
+   ],
+   "gamma": 143.01309616090157,
+   "gamma_error": 0.0,
+   "termination_used": 0,
+   "faces_equivalent": true,
+   "n_terminations": 6,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 2.4779,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 143.01309616090157,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 1,
+     "gap": 1.5334,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 157.08770521480787,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 2,
+     "group": 2,
+     "gap": 0.6388,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 162.95916843061354,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 3,
+     "group": 2,
+     "gap": 0.6388,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 162.95916843061354,
+     "sfe_source": "group 2"
+    },
+    {
+     "index": 4,
+     "group": 4,
+     "gap": 0.1256,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 166.73233034514374,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 5,
+     "group": 4,
+     "gap": 0.1256,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 166.73233034514374,
+     "sfe_source": "group 4"
+    }
+   ],
+   "n_molecules_cell": 160,
+   "mnp_used": [
+    -4,
+    4,
+    -1,
+    0,
+    0,
+    1,
+    1,
+    4,
+    0
+   ],
+   "d_hkl": 5.539948834,
+   "n_molecules_slab": 64,
+   "surface_area_static": 1271.7612339457482,
+   "units": "mJ/m^2",
+   "notes": [
+    "slabcutter t2: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces",
+    "slabcutter t4: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces",
+    "slabcutter t4: this termination cuts between molecular layers only 0.13 A apart"
+   ],
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "recorded": "2026-10-22T15:18:33-04:00",
+   "material": "tnt",
+   "provenance": "private chain run dir chain:supercell/bin/RUNS/eab645fdd6b0422aadcc25bfd695bbfb (not shipped)"
+  },
+  {
+   "family": "{1 1 1}",
+   "hkl": [
+    1,
+    1,
+    1
+   ],
+   "level": 1,
+   "ok": true,
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "chain:surfenergy/examples/tnt001_nonreactive/tnt_unitcell.data",
+   "datafile_md5": "ede8756c5b71e4c8a1949038d47427bf",
+   "script": "chain:surfenergy/examples/tnt001_nonreactive/in.tnt-run0.lmp",
+   "script_md5": "fd7d9da6814b13e8f8c195abb0b05eb1",
+   "source": "import:devtools/spikes/wulff_tnt/level1.jsonl",
+   "cpu_s": 57.3,
+   "wall_s": null,
+   "run_dir": "chain:supercell/bin/RUNS/5c3bcbd870614931b4a15ae943855d39",
+   "child_runs": [
+    {
+     "tool": "supercell",
+     "run_dir": "chain:supercell/bin/RUNS/5c3bcbd870614931b4a15ae943855d39"
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:slabcutter/bin/RUNS/de5c4ad8f54649fcbe8bdb63fffe4bb2",
+     "inputs": {
+      "termination_index": 0,
+      "n_periods": 2,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:slabcutter/bin/RUNS/82a240f43ec94b48af0e1cc3d8e3480e",
+     "inputs": {
+      "termination_index": 1,
+      "n_periods": 2,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:slabcutter/bin/RUNS/603febf2fa6744b9a91b72ad7088914f",
+     "inputs": {
+      "termination_index": 3,
+      "n_periods": 2,
+      "compute_unrelaxed_sfe": true
+     }
+    }
+   ],
+   "gamma": 139.61268774426853,
+   "gamma_error": 0.0,
+   "termination_used": 0,
+   "faces_equivalent": true,
+   "n_terminations": 5,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 3.9423,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 139.61268774426853,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 1,
+     "gap": 0.4861,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 160.36684326722838,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 2,
+     "group": 1,
+     "gap": 0.4861,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 160.36684326722838,
+     "sfe_source": "group 1"
+    },
+    {
+     "index": 3,
+     "group": 3,
+     "gap": 0.1167,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 157.22214531132113,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 4,
+     "group": 3,
+     "gap": 0.1167,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 157.22214531132113,
+     "sfe_source": "group 3"
+    }
+   ],
+   "n_molecules_cell": 528,
+   "mnp_used": [
+    -3,
+    -1,
+    4,
+    2,
+    -3,
+    1,
+    1,
+    4,
+    1
+   ],
+   "d_hkl": 5.147840733333333,
+   "n_molecules_slab": 176,
+   "surface_area_static": 3763.7340508861116,
+   "units": "mJ/m^2",
+   "notes": [
+    "slabcutter t1: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces",
+    "slabcutter t1: this termination cuts between molecular layers only 0.49 A apart",
+    "slabcutter t3: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces",
+    "slabcutter t3: this termination cuts between molecular layers only 0.12 A apart"
+   ],
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "recorded": "2026-10-22T15:18:33-04:00",
+   "material": "tnt",
+   "provenance": "private chain run dir chain:supercell/bin/RUNS/5c3bcbd870614931b4a15ae943855d39 (not shipped)"
+  },
+  {
+   "family": "{1 1 -1}",
+   "hkl": [
+    1,
+    1,
+    -1
+   ],
+   "level": 1,
+   "ok": true,
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "chain:surfenergy/examples/tnt001_nonreactive/tnt_unitcell.data",
+   "datafile_md5": "ede8756c5b71e4c8a1949038d47427bf",
+   "script": "chain:surfenergy/examples/tnt001_nonreactive/in.tnt-run0.lmp",
+   "script_md5": "fd7d9da6814b13e8f8c195abb0b05eb1",
+   "source": "import:devtools/spikes/wulff_tnt/level1.jsonl",
+   "cpu_s": 52.3,
+   "wall_s": null,
+   "run_dir": "chain:supercell/bin/RUNS/6a55d1da93794c8cbb7de38d7cfba567",
+   "child_runs": [
+    {
+     "tool": "supercell",
+     "run_dir": "chain:supercell/bin/RUNS/6a55d1da93794c8cbb7de38d7cfba567"
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:slabcutter/bin/RUNS/5401663f353446589bc6d5ea7492e2e6",
+     "inputs": {
+      "termination_index": 0,
+      "n_periods": 2,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:slabcutter/bin/RUNS/7896f7621c1f4658b5d706fdd439b0d0",
+     "inputs": {
+      "termination_index": 1,
+      "n_periods": 2,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:slabcutter/bin/RUNS/a77abd22f8d948079a03f775571a4154",
+     "inputs": {
+      "termination_index": 2,
+      "n_periods": 2,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:slabcutter/bin/RUNS/ce8a5a5fbd544590a3cb3545884f150e",
+     "inputs": {
+      "termination_index": 4,
+      "n_periods": 2,
+      "compute_unrelaxed_sfe": true
+     }
+    }
+   ],
+   "gamma": 149.70444034501847,
+   "gamma_error": 0.0,
+   "termination_used": 0,
+   "faces_equivalent": true,
+   "n_terminations": 6,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 2.9707,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 149.70444034501847,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 1,
+     "gap": 1.378,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 175.4934760547947,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 2,
+     "group": 2,
+     "gap": 0.4674,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 155.87713185061241,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 3,
+     "group": 2,
+     "gap": 0.4674,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 155.87713185061241,
+     "sfe_source": "group 2"
+    },
+    {
+     "index": 4,
+     "group": 4,
+     "gap": 0.1254,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 179.38329034790823,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 5,
+     "group": 4,
+     "gap": 0.1254,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 179.38329034790823,
+     "sfe_source": "group 4"
+    }
+   ],
+   "n_molecules_cell": 160,
+   "mnp_used": [
+    -3,
+    4,
+    1,
+    1,
+    0,
+    1,
+    1,
+    4,
+    0
+   ],
+   "d_hkl": 5.534336892000001,
+   "n_molecules_slab": 64,
+   "surface_area_static": 1273.0508286261515,
+   "units": "mJ/m^2",
+   "notes": [
+    "slabcutter t2: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces",
+    "slabcutter t2: this termination cuts between molecular layers only 0.47 A apart",
+    "slabcutter t4: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces",
+    "slabcutter t4: this termination cuts between molecular layers only 0.13 A apart"
+   ],
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "recorded": "2026-10-22T15:18:33-04:00",
+   "material": "tnt",
+   "provenance": "private chain run dir chain:supercell/bin/RUNS/6a55d1da93794c8cbb7de38d7cfba567 (not shipped)"
+  },
+  {
+   "family": "{1 1 -2}",
+   "hkl": [
+    1,
+    1,
+    -2
+   ],
+   "level": 1,
+   "ok": true,
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "chain:surfenergy/examples/tnt001_nonreactive/tnt_unitcell.data",
+   "datafile_md5": "ede8756c5b71e4c8a1949038d47427bf",
+   "script": "chain:surfenergy/examples/tnt001_nonreactive/in.tnt-run0.lmp",
+   "script_md5": "fd7d9da6814b13e8f8c195abb0b05eb1",
+   "source": "import:devtools/spikes/wulff_tnt/level1.jsonl",
+   "cpu_s": 41.6,
+   "wall_s": null,
+   "run_dir": "chain:supercell/bin/RUNS/85ab13c6a26b46759d589fa804e493a7",
+   "child_runs": [
+    {
+     "tool": "supercell",
+     "run_dir": "chain:supercell/bin/RUNS/85ab13c6a26b46759d589fa804e493a7"
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:slabcutter/bin/RUNS/6d2e8c6166294727a0d97fed6acdaf8d",
+     "inputs": {
+      "termination_index": 0,
+      "n_periods": 2,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:slabcutter/bin/RUNS/2867c423aa9c4a50a18f571a6b1246c4",
+     "inputs": {
+      "termination_index": 2,
+      "n_periods": 2,
+      "compute_unrelaxed_sfe": true
+     }
+    }
+   ],
+   "gamma": 151.6871333337214,
+   "gamma_error": 0.0,
+   "termination_used": 0,
+   "faces_equivalent": false,
+   "n_terminations": 3,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 2.0454,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 151.6871333337214,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 0,
+     "gap": 2.0454,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 151.6871333337214,
+     "sfe_source": "group 0"
+    },
+    {
+     "index": 2,
+     "group": 2,
+     "gap": 1.0435,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 156.6753527403855,
+     "sfe_source": "computed"
+    }
+   ],
+   "n_molecules_cell": 480,
+   "mnp_used": [
+    -4,
+    -2,
+    -3,
+    -2,
+    4,
+    1,
+    0,
+    4,
+    -1
+   ],
+   "d_hkl": 5.134365231666666,
+   "n_molecules_slab": 160,
+   "surface_area_static": 3430.5565785334816,
+   "units": "mJ/m^2",
+   "notes": [
+    "slabcutter t0: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces"
+   ],
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "recorded": "2026-10-22T15:18:33-04:00",
+   "material": "tnt",
+   "provenance": "private chain run dir chain:supercell/bin/RUNS/85ab13c6a26b46759d589fa804e493a7 (not shipped)"
+  },
+  {
+   "family": "{2 0 -1}",
+   "hkl": [
+    2,
+    0,
+    -1
+   ],
+   "search_range": 6,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "chain:surfenergy/examples/tnt001_nonreactive/tnt_unitcell.data",
+   "datafile_md5": "ede8756c5b71e4c8a1949038d47427bf",
+   "script": "chain:surfenergy/examples/tnt001_nonreactive/in.tnt-run0.lmp",
+   "script_md5": "fd7d9da6814b13e8f8c195abb0b05eb1",
+   "source": "live",
+   "cpu_s": 9.7,
+   "wall_s": 7.9,
+   "run_dir": "chain:wulffagent/state/tnt/runs/20261022-151853-L1-20m1-95f9ac",
+   "child_runs": [],
+   "level": 1,
+   "ok": false,
+   "gamma": null,
+   "error": "SurfError: the supercell child run failed - RuntimeError: gen.out would overrun its molecule arrays: it collects 39 molecule images but sizes its arrays for nmolEST = 4*molperunit*int(newvol/oldvol) = 32 (GCCM_GenerateCrystal.f90 line 392). This happens for small cells (|det(mnp)| = 2). Rerun in mnp mode with m1..p3 = -1 0 -2 0 1 0 2 0 0 (this cell with (m3,n3,p3) doubled), or change search_range / angle_dev so that GCCM picks another cell. (executed notebook: chain:wulffagent/state/tnt/runs/20261022-151853-L1-20m1-95f9ac/children/RUNS/supercell-26e1dccf17a34139/supercell.ipynb)",
+   "estimate_minutes": 0.8,
+   "recorded": "2026-10-22T15:19:01-04:00",
+   "material": "tnt",
+   "provenance": "private chain run dir chain:wulffagent/state/tnt/runs/20261022-151853-L1-20m1-95f9ac (not shipped)"
+  },
+  {
+   "family": "{2 0 -1}",
+   "hkl": [
+    -2,
+    0,
+    1
+   ],
+   "search_range": 4,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "chain:surfenergy/examples/tnt001_nonreactive/tnt_unitcell.data",
+   "datafile_md5": "ede8756c5b71e4c8a1949038d47427bf",
+   "script": "chain:surfenergy/examples/tnt001_nonreactive/in.tnt-run0.lmp",
+   "script_md5": "fd7d9da6814b13e8f8c195abb0b05eb1",
+   "source": "live",
+   "cpu_s": 55.9,
+   "wall_s": 59.1,
+   "run_dir": "chain:wulffagent/state/tnt/runs/20261022-153023-L1-m201-085ebc",
+   "child_runs": [
+    {
+     "tool": "supercell",
+     "run_dir": "chain:wulffagent/state/tnt/runs/20261022-153023-L1-m201-085ebc/children/RUNS/supercell-4cfc36560a1a4d4d",
+     "inputs": {
+      "orientation_mode": "hkl",
+      "h": -2,
+      "k": 0,
+      "l": 1,
+      "search_range": 4,
+      "use_reaxff": false,
+      "RunEnergyCheck": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:wulffagent/state/tnt/runs/20261022-153023-L1-m201-085ebc/children/RUNS/slabcutter-4f74c7d72b9b4aa4",
+     "inputs": {
+      "termination_index": 0,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:wulffagent/state/tnt/runs/20261022-153023-L1-m201-085ebc/children/RUNS/slabcutter-5d1a8acfe5a5475b",
+     "inputs": {
+      "termination_index": 2,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:wulffagent/state/tnt/runs/20261022-153023-L1-m201-085ebc/children/RUNS/slabcutter-7cb022c3c009431e",
+     "inputs": {
+      "termination_index": 3,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 7.455302772494031,
+   "n_molecules_cell": 16,
+   "mnp_used": [
+    -1,
+    0,
+    -2,
+    0,
+    -1,
+    0,
+    -1,
+    0,
+    0
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 4,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 2.2936,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 146.0696788079404,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 0,
+     "gap": 2.2936,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 146.0696788079404,
+     "sfe_source": "group 0"
+    },
+    {
+     "index": 2,
+     "group": 2,
+     "gap": 1.4782,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 171.14453275730975,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 3,
+     "group": 3,
+     "gap": 1.3899,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 172.391091264277,
+     "sfe_source": "computed"
+    }
+   ],
+   "notes": [
+    "slabcutter t0: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces"
+   ],
+   "surface_area_static": 236.2577477181667,
+   "gamma": 146.0696788079404,
+   "gamma_error": 0.0,
+   "termination_used": 0,
+   "faces_equivalent": false,
+   "n_molecules_slab": 16,
+   "thickness": 14.91060554,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "estimate_minutes": 0.6,
+   "recorded": "2026-10-22T15:31:23-04:00",
+   "material": "tnt",
+   "provenance": "private chain run dir chain:wulffagent/state/tnt/runs/20261022-153023-L1-m201-085ebc (not shipped)"
+  },
+  {
+   "family": "{1 0 -1}",
+   "hkl": [
+    1,
+    0,
+    -1
+   ],
+   "search_range": 6,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "chain:surfenergy/examples/tnt001_nonreactive/tnt_unitcell.data",
+   "datafile_md5": "ede8756c5b71e4c8a1949038d47427bf",
+   "script": "chain:surfenergy/examples/tnt001_nonreactive/in.tnt-run0.lmp",
+   "script_md5": "fd7d9da6814b13e8f8c195abb0b05eb1",
+   "source": "live",
+   "cpu_s": 35.1,
+   "wall_s": 32.9,
+   "run_dir": "chain:wulffagent/state/tnt/runs/20261022-153140-L1-10m1-addaff",
+   "child_runs": [
+    {
+     "tool": "supercell",
+     "run_dir": "chain:wulffagent/state/tnt/runs/20261022-153140-L1-10m1-addaff/children/RUNS/supercell-aaa9354dad2c4069",
+     "inputs": {
+      "orientation_mode": "hkl",
+      "h": 1,
+      "k": 0,
+      "l": -1,
+      "search_range": 6,
+      "use_reaxff": false,
+      "RunEnergyCheck": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:wulffagent/state/tnt/runs/20261022-153140-L1-10m1-addaff/children/RUNS/slabcutter-055bb1e251ad469e",
+     "inputs": {
+      "termination_index": 0,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:wulffagent/state/tnt/runs/20261022-153140-L1-10m1-addaff/children/RUNS/slabcutter-8db923e261ad47e2",
+     "inputs": {
+      "termination_index": 2,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:wulffagent/state/tnt/runs/20261022-153140-L1-10m1-addaff/children/RUNS/slabcutter-4f1370661c344bcb",
+     "inputs": {
+      "termination_index": 6,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 13.889826536834306,
+   "n_molecules_cell": 32,
+   "mnp_used": [
+    -1,
+    0,
+    -1,
+    0,
+    1,
+    0,
+    3,
+    0,
+    -1
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 8,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 3.7732,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 136.90489323815305,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 0,
+     "gap": 3.7732,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 136.90489323815305,
+     "sfe_source": "group 0"
+    },
+    {
+     "index": 2,
+     "group": 2,
+     "gap": 1.3304,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 161.14099350741034,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 3,
+     "group": 2,
+     "gap": 1.3304,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 161.14099350741034,
+     "sfe_source": "group 2"
+    },
+    {
+     "index": 4,
+     "group": 2,
+     "gap": 1.3304,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 161.14099350741034,
+     "sfe_source": "group 2"
+    },
+    {
+     "index": 5,
+     "group": 2,
+     "gap": 1.3304,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 161.14099350741034,
+     "sfe_source": "group 2"
+    },
+    {
+     "index": 6,
+     "group": 6,
+     "gap": 0.5108,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 209.64203995863375,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 7,
+     "group": 6,
+     "gap": 0.5108,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 209.64203995863375,
+     "sfe_source": "group 6"
+    }
+   ],
+   "notes": [
+    "slabcutter t2: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces"
+   ],
+   "surface_area_static": 126.81029794172325,
+   "gamma": 136.90489323815305,
+   "gamma_error": 0.0,
+   "termination_used": 0,
+   "faces_equivalent": true,
+   "n_molecules_slab": 16,
+   "thickness": 27.779653075,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "estimate_minutes": 0.6,
+   "recorded": "2026-10-22T15:32:13-04:00",
+   "material": "tnt",
+   "provenance": "private chain run dir chain:wulffagent/state/tnt/runs/20261022-153140-L1-10m1-addaff (not shipped)"
+  },
+  {
+   "family": "{2 0 -3}",
+   "hkl": [
+    2,
+    0,
+    -3
+   ],
+   "search_range": 3,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "chain:surfenergy/examples/tnt001_nonreactive/tnt_unitcell.data",
+   "datafile_md5": "ede8756c5b71e4c8a1949038d47427bf",
+   "script": "chain:surfenergy/examples/tnt001_nonreactive/in.tnt-run0.lmp",
+   "script_md5": "fd7d9da6814b13e8f8c195abb0b05eb1",
+   "source": "live",
+   "cpu_s": 54.3,
+   "wall_s": 52.4,
+   "run_dir": "chain:wulffagent/state/tnt/runs/20261022-154237-L1-20m3-8e5da3",
+   "child_runs": [
+    {
+     "tool": "supercell",
+     "run_dir": "chain:wulffagent/state/tnt/runs/20261022-154237-L1-20m3-8e5da3/children/RUNS/supercell-8146d1d7b5d8437f",
+     "inputs": {
+      "orientation_mode": "hkl",
+      "h": 2,
+      "k": 0,
+      "l": -3,
+      "search_range": 3,
+      "use_reaxff": false,
+      "RunEnergyCheck": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:wulffagent/state/tnt/runs/20261022-154237-L1-20m3-8e5da3/children/RUNS/slabcutter-f82ae5bd94be40e8",
+     "inputs": {
+      "termination_index": 0,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:wulffagent/state/tnt/runs/20261022-154237-L1-20m3-8e5da3/children/RUNS/slabcutter-29aac13c2e9f4cb8",
+     "inputs": {
+      "termination_index": 1,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:wulffagent/state/tnt/runs/20261022-154237-L1-20m3-8e5da3/children/RUNS/slabcutter-65781002bc9d4935",
+     "inputs": {
+      "termination_index": 2,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 5.903472161486582,
+   "n_molecules_cell": 40,
+   "mnp_used": [
+    -3,
+    0,
+    -2,
+    0,
+    1,
+    0,
+    1,
+    0,
+    -1
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 4,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 3.9344,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 138.58331038005647,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 1,
+     "gap": 1.6819,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 159.1830721356549,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 2,
+     "group": 2,
+     "gap": 0.1436,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 179.78170451579666,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 3,
+     "group": 2,
+     "gap": 0.1436,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 179.78170451579666,
+     "sfe_source": "group 2"
+    }
+   ],
+   "notes": [
+    "slabcutter t2: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces",
+    "slabcutter t2: this termination cuts between molecular layers only 0.14 A apart"
+   ],
+   "surface_area_static": 298.362216958633,
+   "gamma": 138.58331038005647,
+   "gamma_error": 0.0,
+   "termination_used": 0,
+   "faces_equivalent": true,
+   "n_molecules_slab": 16,
+   "thickness": 11.806944324,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "estimate_minutes": 0.6,
+   "recorded": "2026-10-22T15:43:30-04:00",
+   "material": "tnt",
+   "provenance": "private chain run dir chain:wulffagent/state/tnt/runs/20261022-154237-L1-20m3-8e5da3 (not shipped)"
+  },
+  {
+   "family": "{1 0 1}",
+   "hkl": [
+    1,
+    0,
+    1
+   ],
+   "search_range": 6,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "chain:surfenergy/examples/tnt001_nonreactive/tnt_unitcell.data",
+   "datafile_md5": "ede8756c5b71e4c8a1949038d47427bf",
+   "script": "chain:surfenergy/examples/tnt001_nonreactive/in.tnt-run0.lmp",
+   "script_md5": "fd7d9da6814b13e8f8c195abb0b05eb1",
+   "source": "live",
+   "cpu_s": 39.0,
+   "wall_s": 36.6,
+   "run_dir": "chain:wulffagent/state/tnt/runs/20261022-154337-L1-101-922b43",
+   "child_runs": [
+    {
+     "tool": "supercell",
+     "run_dir": "chain:wulffagent/state/tnt/runs/20261022-154337-L1-101-922b43/children/RUNS/supercell-b2e87c19708947dd",
+     "inputs": {
+      "orientation_mode": "hkl",
+      "h": 1,
+      "k": 0,
+      "l": 1,
+      "search_range": 6,
+      "use_reaxff": false,
+      "RunEnergyCheck": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:wulffagent/state/tnt/runs/20261022-154337-L1-101-922b43/children/RUNS/slabcutter-4e83dcf817ee40c8",
+     "inputs": {
+      "termination_index": 0,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:wulffagent/state/tnt/runs/20261022-154337-L1-101-922b43/children/RUNS/slabcutter-5fed856e831a4227",
+     "inputs": {
+      "termination_index": 2,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:wulffagent/state/tnt/runs/20261022-154337-L1-101-922b43/children/RUNS/slabcutter-e10682f9d7654391",
+     "inputs": {
+      "termination_index": 6,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 9.867744153439485,
+   "n_molecules_cell": 64,
+   "mnp_used": [
+    -1,
+    0,
+    1,
+    0,
+    -1,
+    0,
+    5,
+    0,
+    3
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 8,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 2.8467,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 150.14954497679634,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 0,
+     "gap": 2.8467,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 150.14954497679634,
+     "sfe_source": "group 0"
+    },
+    {
+     "index": 2,
+     "group": 2,
+     "gap": 0.9607,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 145.0945099553339,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 3,
+     "group": 2,
+     "gap": 0.9607,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 145.0945099553339,
+     "sfe_source": "group 2"
+    },
+    {
+     "index": 4,
+     "group": 2,
+     "gap": 0.9607,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 145.0945099553339,
+     "sfe_source": "group 2"
+    },
+    {
+     "index": 5,
+     "group": 2,
+     "gap": 0.9607,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 145.0945099553339,
+     "sfe_source": "group 2"
+    },
+    {
+     "index": 6,
+     "group": 6,
+     "gap": 0.1658,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 157.6418446651927,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 7,
+     "group": 6,
+     "gap": 0.1658,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 157.6418446651927,
+     "sfe_source": "group 6"
+    }
+   ],
+   "notes": [
+    "slabcutter t2: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces",
+    "slabcutter t6: this termination cuts between molecular layers only 0.17 A apart"
+   ],
+   "surface_area_static": 178.49804515577657,
+   "gamma": 145.0945099553339,
+   "gamma_error": 0.0,
+   "termination_used": 2,
+   "faces_equivalent": false,
+   "n_molecules_slab": 16,
+   "thickness": 19.7354883075,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "estimate_minutes": 0.7,
+   "recorded": "2026-10-22T15:44:14-04:00",
+   "material": "tnt",
+   "provenance": "private chain run dir chain:wulffagent/state/tnt/runs/20261022-154337-L1-101-922b43 (not shipped)"
+  },
+  {
+   "family": "{1 0 -2}",
+   "hkl": [
+    1,
+    0,
+    -2
+   ],
+   "search_range": 6,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "chain:surfenergy/examples/tnt001_nonreactive/tnt_unitcell.data",
+   "datafile_md5": "ede8756c5b71e4c8a1949038d47427bf",
+   "script": "chain:surfenergy/examples/tnt001_nonreactive/in.tnt-run0.lmp",
+   "script_md5": "fd7d9da6814b13e8f8c195abb0b05eb1",
+   "source": "live",
+   "cpu_s": 40.5,
+   "wall_s": 38.2,
+   "run_dir": "chain:wulffagent/state/tnt/runs/20261022-154751-L1-10m2-ff2b52",
+   "child_runs": [
+    {
+     "tool": "supercell",
+     "run_dir": "chain:wulffagent/state/tnt/runs/20261022-154751-L1-10m2-ff2b52/children/RUNS/supercell-c61bb830e3a14e3f",
+     "inputs": {
+      "orientation_mode": "hkl",
+      "h": 1,
+      "k": 0,
+      "l": -2,
+      "search_range": 6,
+      "use_reaxff": false,
+      "RunEnergyCheck": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:wulffagent/state/tnt/runs/20261022-154751-L1-10m2-ff2b52/children/RUNS/slabcutter-7058ed91949d4970",
+     "inputs": {
+      "termination_index": 0,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:wulffagent/state/tnt/runs/20261022-154751-L1-10m2-ff2b52/children/RUNS/slabcutter-5c3c4285e16c402b",
+     "inputs": {
+      "termination_index": 2,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:wulffagent/state/tnt/runs/20261022-154751-L1-10m2-ff2b52/children/RUNS/slabcutter-cea72289326b4367",
+     "inputs": {
+      "termination_index": 6,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 9.77381602497662,
+   "n_molecules_cell": 64,
+   "mnp_used": [
+    -2,
+    0,
+    -1,
+    0,
+    1,
+    0,
+    2,
+    0,
+    -3
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 8,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 2.9005,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 150.15167626653755,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 0,
+     "gap": 2.9005,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 150.15167626653755,
+     "sfe_source": "group 0"
+    },
+    {
+     "index": 2,
+     "group": 2,
+     "gap": 0.9285,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 145.12372820078355,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 3,
+     "group": 2,
+     "gap": 0.9285,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 145.12372820078355,
+     "sfe_source": "group 2"
+    },
+    {
+     "index": 4,
+     "group": 2,
+     "gap": 0.9285,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 145.12372820078355,
+     "sfe_source": "group 2"
+    },
+    {
+     "index": 5,
+     "group": 2,
+     "gap": 0.9285,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 145.12372820078355,
+     "sfe_source": "group 2"
+    },
+    {
+     "index": 6,
+     "group": 6,
+     "gap": 0.1294,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 157.23594089849567,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 7,
+     "group": 6,
+     "gap": 0.1294,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 157.23594089849567,
+     "sfe_source": "group 6"
+    }
+   ],
+   "notes": [
+    "slabcutter t2: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces",
+    "slabcutter t6: this termination cuts between molecular layers only 0.13 A apart"
+   ],
+   "surface_area_static": 180.21344345053348,
+   "gamma": 145.12372820078355,
+   "gamma_error": 0.0,
+   "termination_used": 2,
+   "faces_equivalent": false,
+   "n_molecules_slab": 16,
+   "thickness": 19.54763205,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "estimate_minutes": 0.8,
+   "recorded": "2026-10-22T15:48:30-04:00",
+   "material": "tnt",
+   "provenance": "private chain run dir chain:wulffagent/state/tnt/runs/20261022-154751-L1-10m2-ff2b52 (not shipped)"
+  },
+  {
+   "family": "{2 1 -1}",
+   "hkl": [
+    2,
+    1,
+    -1
+   ],
+   "search_range": 6,
+   "n_periods": 2,
+   "temperature": 0.0,
+   "datafile": "chain:surfenergy/examples/tnt001_nonreactive/tnt_unitcell.data",
+   "datafile_md5": "ede8756c5b71e4c8a1949038d47427bf",
+   "script": "chain:surfenergy/examples/tnt001_nonreactive/in.tnt-run0.lmp",
+   "script_md5": "fd7d9da6814b13e8f8c195abb0b05eb1",
+   "source": "live",
+   "cpu_s": 34.7,
+   "wall_s": 32.3,
+   "run_dir": "chain:wulffagent/state/tnt/runs/20261022-154835-L1-21m1-850052",
+   "child_runs": [
+    {
+     "tool": "supercell",
+     "run_dir": "chain:wulffagent/state/tnt/runs/20261022-154835-L1-21m1-850052/children/RUNS/supercell-2bb26144ab7b4943",
+     "inputs": {
+      "orientation_mode": "hkl",
+      "h": 2,
+      "k": 1,
+      "l": -1,
+      "search_range": 6,
+      "use_reaxff": false,
+      "RunEnergyCheck": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:wulffagent/state/tnt/runs/20261022-154835-L1-21m1-850052/children/RUNS/slabcutter-4f6e07c8b7fb4231",
+     "inputs": {
+      "termination_index": 0,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:wulffagent/state/tnt/runs/20261022-154835-L1-21m1-850052/children/RUNS/slabcutter-0f8248fff1d34927",
+     "inputs": {
+      "termination_index": 2,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    },
+    {
+     "tool": "slabcutter",
+     "run_dir": "chain:wulffagent/state/tnt/runs/20261022-154835-L1-21m1-850052/children/RUNS/slabcutter-19ae9f8b6b2b4154",
+     "inputs": {
+      "termination_index": 3,
+      "n_periods": 2,
+      "vacuum": 30.0,
+      "compute_unrelaxed_sfe": true
+     }
+    }
+   ],
+   "level": 1,
+   "ok": true,
+   "d_hkl": 4.690278563066608,
+   "n_molecules_cell": 80,
+   "mnp_used": [
+    -1,
+    0,
+    -2,
+    -1,
+    2,
+    0,
+    1,
+    3,
+    0
+   ],
+   "solution_pick_used": "smallest",
+   "n_terminations": 4,
+   "terminations": [
+    {
+     "index": 0,
+     "group": 0,
+     "gap": 1.4429,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 168.34842120569672,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 1,
+     "group": 0,
+     "gap": 1.4429,
+     "faces_equivalent": false,
+     "sfe_unrelaxed": 168.34842120569672,
+     "sfe_source": "group 0"
+    },
+    {
+     "index": 2,
+     "group": 2,
+     "gap": 0.9581,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 163.87287511646016,
+     "sfe_source": "computed"
+    },
+    {
+     "index": 3,
+     "group": 3,
+     "gap": 0.8463,
+     "faces_equivalent": true,
+     "sfe_unrelaxed": 160.76614819232404,
+     "sfe_source": "computed"
+    }
+   ],
+   "notes": [
+    "slabcutter t0: the top and bottom faces of this slab differ (non-centrosymmetric stacking along the normal): a surface energy from it is the average of the two faces"
+   ],
+   "surface_area_static": 751.0739577308922,
+   "gamma": 160.76614819232404,
+   "gamma_error": 0.0,
+   "termination_used": 3,
+   "faces_equivalent": true,
+   "n_molecules_slab": 32,
+   "thickness": 9.380557128,
+   "units": "mJ/m^2",
+   "what": "unrelaxed surface energy, lowest of all terminations (slabcutter run 0)",
+   "estimate_minutes": 1.0,
+   "recorded": "2026-10-22T15:49:08-04:00",
+   "material": "tnt",
+   "provenance": "private chain run dir chain:wulffagent/state/tnt/runs/20261022-154835-L1-21m1-850052 (not shipped)"
+  }
+ ]
+}

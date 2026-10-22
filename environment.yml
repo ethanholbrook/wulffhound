@@ -1,0 +1,15 @@
+# The wulffhound env (what runs the MCP server, the engine and the reports). Versions as in the dev env
+# (wulff-dev, 2026-10-22). The simulation chain (LAMMPS, GCCM, the Sim2L tools) is NOT part of it.
+#   micromamba create -n wulffhound -f environment.yml && micromamba activate wulffhound && ./wh selftest
+name: wulffhound
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11.17
+  - pymatgen=2026.9.24
+  - spglib=2.8.0
+  - mcp=2.3.0
+  - plotly=7.1.0
+  - matplotlib-base=3.11.2
+  - numpy=2.4.6
+  - scipy=1.17.1

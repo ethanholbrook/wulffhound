@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+# local state: the ledger cache, sessions, run folders and the big self-contained reports (~5 MB, plotly.js inlined)
+state/
+*.tmp
+# reports and transcripts are generated; docs/ keeps the small committed ones
+*.html
+!docs/*.html
+*.jsonl

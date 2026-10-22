@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# wulffhound launcher (run from anywhere). Material: --material tnt|paracetamol (or WULFFHOUND_MATERIAL; default tnt).
+#   ./wh [--material M] server               the MCP server on stdio (what mcp.example.json starts)
+#   ./wh [--material M] selftest             every MCP tool called from Python, replay only (no live run): "ALL OK"
+#   ./wh [--material M] baseline [--cached-only] [--budget 30]   deterministic policy, no LLM -> state/M/baseline/
+#   ./wh [--material M] compare [--cached-only]   after an agent session: baseline --fair (the agent's budget and
+#                                        live-run allowance; the agent's live runs count as live), then the agent report
+#   ./wh [--material M] report [best|0|1|2]   rebuild state/M/report.html (agent session) from the ledger
+#   ./wh [--material M] snapshot         state/M/report_light.html: the agent report with plotly.js from its CDN (small)
+#   ./wh [--material M] reset [SESSION]  start the agent session afresh (keeps the ledger = the cache of runs)
+#   ./wh transcript IN.jsonl OUT.txt     readable transcript of a `claude -p --output-format stream-json` run
+#   ./wh import [MATERIAL...]            rebuild the replay bundle data/*/ from the simulation chain (needs the chain)
+#   ./wh py ARGS...                      python in the wulff env
+# Env: WULFFHOUND_PY (default: $CONDA_PREFIX/bin/python if it has pymatgen, else ~/micromamba/envs/wulff-dev/bin/python,
+# else python3), WULFFHOUND_CHAIN_ROOT, WULFFHOUND_CHAIN_ENV (wulffhound/config.py), WULFFHOUND_BUDGET_MIN (agent CPU
+# budget, default 30), WULFFHOUND_SESSION (agent), WULFFHOUND_LIVE_RUNS / _LIVE_LEVEL / _LIVE_MAX_MIN (live-run allowance).
+set -euo pipefail
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PKG="$HERE/wulffhound"
+if [ -z "${WULFFHOUND_PY:-}" ]; then
+  if [ -n "${CONDA_PREFIX:-}" ] && [ -x "$CONDA_PREFIX/bin/python" ] && "$CONDA_PREFIX/bin/python" -I -c 'import pymatgen.core' 2>/dev/null; then
+    WULFFHOUND_PY="$CONDA_PREFIX/bin/python"
+  elif [ -x "$HOME/micromamba/envs/wulff-dev/bin/python" ]; then
+    WULFFHOUND_PY="$HOME/micromamba/envs/wulff-dev/bin/python"
+  else
+    WULFFHOUND_PY="$(command -v python3)"
+  fi
+fi
+PY="$WULFFHOUND_PY"
+if [ "${1:-}" = "--material" ]; then export WULFFHOUND_MATERIAL="$2"; shift 2; fi
+MAT="${WULFFHOUND_MATERIAL:-tnt}"
+export WULFFHOUND_MATERIAL="$MAT"
+run() { env -u PYTHONPATH -u PYTHONHOME "$PY" -I "$@"; }
+eng() { run -c "import sys, json; sys.path.insert(0, '$PKG'); from engine import Engine; $1"; }
+cmd="${1:-help}"; [ $# -gt 0 ] && shift
+case "$cmd" in
+  server)   exec env -u PYTHONPATH -u PYTHONHOME "$PY" -I "$PKG/mcp_server.py" "$@" ;;
+  selftest) run "$PKG/selftest.py" --material "$MAT" "$@" ;;
+  baseline) run "$PKG/baseline.py" --material "$MAT" "$@" ;;
+  report)   lv="${1:-best}"; eng "lv='$lv'; print(json.dumps(Engine.from_session('$MAT').write_report(level=lv if lv == 'best' else int(lv))))" ;;
+  compare)  run "$PKG/baseline.py" --material "$MAT" --fair "$@" >/dev/null && eng "e = Engine.from_session('$MAT'); r = e.write_report(); \
+b = json.load(open(e.dir + '/baseline/summary.json')); \
+print(json.dumps({'agent': {'budget': e.budget(), 'on_shape': e._last.get('on_shape'), 'converged': e._last['convergence']['converged']}, \
+'baseline': {k: b[k] for k in ('mode', 'budget', 'on_shape', 'converged')}, 'agent_report': r}, indent=1))" ;;
+  snapshot) WULFFHOUND_REPORT_PLOTLY=cdn eng "e = Engine.from_session('$MAT'); print(json.dumps(e.write_report(path=e.dir + '/report_light.html')))" ;;
+  transcript) run "$PKG/render_transcript.py" "$@" ;;
+  reset)    s="${1:-agent}"; eng "Engine('$MAT', session='$s').reset_session(); print('$MAT: session $s reset (acquisitions, decisions, literature); the ledger cache is kept')" ;;
+  import)   run "$HERE/tools/build_bundle.py" "$@" ;;
+  py)       run "$@" ;;
+  *)        sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//' ;;
+esac
