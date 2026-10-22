@@ -15,11 +15,36 @@ The split is strict. **The physics is in deterministic tools. The LLM decides, r
 produces a number.** Every γ in the report comes from a run with provenance: run id, inputs, md5 of the data file
 and script, cached or live.
 
-![TNT: computed T = 0 Wulff shape (replay of the 22 Oct 2026 agent session)](docs/tnt_wulff.png)
+## Results
 
-*TNT, T = 0 Wulff shape built from the agent session's acquisitions (15 families, 4 relaxed). BFDH, for
-comparison, puts 59 % of the area on {0 0 1}; the energy-based shape is much more isotropic (22 %), and {1 1 1}
-becomes the second face. BFDH view: [docs/tnt_bfdh.png](docs/tnt_bfdh.png).*
+![Paracetamol form I: BFDH shape, the agent's T = 0 Wulff shape, and area per family](docs/headline_paracetamol.png)
+
+**Paracetamol form I.** The four observed growth faces from the literature are four of the five largest
+computed families: {1 1 -1}, {0 1 1}, {1 0 1} and {1 0 -1} in our P2_1/n setting, which are (0 1 1), (1 1 0),
+(2 0 -1) and (0 0 1) in P2_1/a. BFDH gives {1 1 -1} = (0 1 1)_a almost no area (0.0079). On the T = 0 shape it is
+the largest family (0.3987). These numbers are screening-level (see below), and the shape is not converged.
+Regenerate the figure with `./wh py tools/make_headline.py`, a replay of the demo session.
+
+**TNT.** The T = 0 shape is compact and has many facets (15 families). {0 0 1} is still the largest, but at 22 %
+of the area, against 59 % on the BFDH plate ([shape](docs/tnt_wulff.png), [BFDH](docs/tnt_bfdh.png)).
+
+**Cost of the demo sessions.** These numbers are CPU charged, live / cached.
+- Paracetamol: 18.2 min (0.9 / 17.3), 32 turns, USD 1.03.
+- TNT: 23.6 min (1.9 / 21.7), 40 turns, USD 1.59.
+
+## What the agent adds (and what it does not)
+
+- **The deterministic baseline is the control.** It runs under the same budget and live-run allowance. On allocation
+  it reached the same on-shape families as the agent did (TNT: the agent also has a 0.0002 sliver of {2 1 0}), and
+  the agent used 5-11 CPU min less. So choosing facets is not where the LLM shows its value here.
+- **What the LLM adds:**
+  - Literature grounding through Bond, with the Miller indices converted between settings.
+  - Reading the consistency guard and the failures, and explaining them.
+  - A written report that cites its sources.
+- **The shapes are not converged.** The demo did not allow live level-2 runs. The expensive runs come from a
+  precomputed cache, and the agent decides which of them to use.
+- **Paracetamol's force field (ReaxFF-lg 2011) is not validated** for paracetamol, so its results are
+  screening-level.
 
 ## What it does
 
@@ -196,6 +221,7 @@ at 5-11 CPU min less.
 | `AGENT.md`, `PROMPT_*.md`, `mcp.example.json`, `mcp.nobond.json`, `wh` | agent instructions, task prompts, Claude Code MCP configs, launcher |
 | `tools/build_bundle.py`, `tools/check_public.sh` | bundle builder (needs the chain); secret / path / licence check (CI) |
 | `tools/publish_demo.sh`, `docs/demo/` | copy an agent session (sanitised paths) into `docs/demo/`; the 22 Oct 2026 demo sessions |
+| `tools/make_headline.py` | the README headline figure (`docs/headline_paracetamol.png`), a replay of the paracetamol demo session that checks its area fractions |
 
 Not included: the TNT unit cell and its LAMMPS script (CCDC-derived; they stay in the private chain), and the
 ReaxFF-lg force-field file. The paracetamol live route needs the private chain anyway.
