@@ -640,5 +640,29 @@
   "cpu_s": 19.01,
   "error_tail": null,
   "run_dir": "chain:supercell/bin/RUNS/2acdc66deee94079a04de0a9d8e7c035"
+ },
+ {
+  "hkl": [
+   1,
+   0,
+   -3
+  ],
+  "search_range": 4,
+  "rc": 0,
+  "n_molecules": 60,
+  "mnp_used": [
+   -3,
+   0,
+   -1,
+   0,
+   1,
+   0,
+   3,
+   0,
+   -4
+  ],
+  "cpu_s": 31.27,
+  "error_tail": null,
+  "run_dir": "chain:supercell/bin/RUNS/149e4e2a41d54b29a845ab779c9d9fb6"
  }
 ]

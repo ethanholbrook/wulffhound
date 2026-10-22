@@ -145,7 +145,8 @@ result is compared with; it is never used as a γ.
   (124.1 vs 121.6) relax *above* their unrelaxed γ, so the consistency guard excludes them and only {1 0 1}
   enters the shape at level 2. The paracetamol cache covers 19 families at level 1: 3 from the study plus 16
   live screenings made here (cells of 4-156 molecules, at most 61 CPU s each). Two more, {0 1 3} and {1 1 -3},
-  failed in supercell at search_range 4 and are recorded as failures.
+  failed in supercell at search_range 4 and are recorded as failures. The study's own level-1 screens of
+  {1 1 0} and {1 1 1} reproduce our live values (158.06 and 179.10 mJ/m²).
 - Level 2 relaxes only the termination with the lowest unrelaxed energy. Slabs are 2 periods thick; a slab whose
   top and bottom faces differ gives the average of the two (flagged).
 - Cost estimates come from a small calibration. Facets with no known oriented cell get a ROUGH estimate (flagged).

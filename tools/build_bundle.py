@@ -175,6 +175,9 @@ def build(material):
                     led.entries.append(dict(e))
                     nl += 1
         notes.append('%d live wulffhound entries from state/%s/ledger.json' % (nl, material))
+        for e in led.entries:
+            if str(e.get('source', '')).startswith('import:'):
+                chainify(e)          # spike paths are relative to the chain root
         entries = scrub(led.entries, croot)
         for e in entries:
             e.pop('cached', None)
