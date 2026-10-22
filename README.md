@@ -136,6 +136,31 @@ result is compared with; it is never used as a γ.
   false for paracetamol, and the report header says so.
 - **Every decision is logged** (`log_decision`, with expected cost and outcome), and every skip is costed.
 
+## Demo runs (22 Oct 2026, headless Claude Code + MCP Bond)
+
+`docs/demo/<material>/` holds one headless `claude -p` session per material, run with Bond and a small
+live-run allowance (`WULFFHOUND_LIVE_RUNS=2 WULFFHOUND_LIVE_LEVEL=1 WULFFHOUND_LIVE_MAX_MIN=1.5`, budget 30 CPU
+min), so most results are cached replays. Each folder has the readable transcript (`agent_transcript.txt`; Bond
+results are cut to 600 characters because they carry third-party abstracts), the final answer, the report
+(`report.html`, plotly from its CDN), the decision log, the literature log and `./wh compare` against the
+deterministic baseline. `tools/publish_demo.sh MATERIAL` regenerates a folder from `state/`.
+
+| | TNT | paracetamol form I |
+|---|---|---|
+| largest families (area fraction) | {0 0 1} 0.219, {1 1 1} 0.142, {1 0 0} 0.099, {1 0 -1} 0.097 | {1 1 -1} 0.399, {0 1 1} 0.266, {1 0 1} 0.133, {1 0 -1} 0.074, {0 0 1} 0.065 |
+| families on the shape | 15 | 13 |
+| CPU charged (live / cached) | 23.6 min (1.9 / 21.7) | 18.2 min (0.9 / 17.3) |
+| live runs | {1 1 2} 148.16, {2 1 -2} 160.53 mJ/m² | {0 1 3}, {1 1 -3}: both failed (chain crash, recorded) |
+| literature via Bond | 5 entries, no indexed faces for pure monoclinic TNT | 9 entries, every (hkl) converted P2_1/a -> P2_1/n |
+| turns, cost | 40 turns, USD 1.59, 5 min wall | 32 turns, USD 1.03, 4 min wall |
+
+Both sessions stop with `converged: false` and say why (no live level-2 runs allowed). Every decimal in both final
+answers is in a tool result. The paracetamol session reports the unvalidated force field, the guard's rejection
+of {1 0 -1} at level 2 and the superseded raw {0 0 1} value. Its four observed growth faces in our setting
+({1 1 -1}, {0 1 1}, {1 0 1}, {1 0 -1}) are four of its five largest computed families, while BFDH gives {1 1 -1}
+almost no area. The agent's shapes match the baseline's on-shape sets (TNT: plus a 0.0002 sliver of {2 1 0})
+at 5-11 CPU min less.
+
 ## Honest limits
 
 - **T = 0 only**: static surface energies, the standard Wulff input. No entropy and no finite-temperature shape.
@@ -170,6 +195,7 @@ result is compared with; it is never used as a γ.
 | `data/paracetamol/` | also the COD 2104364 CIF (CC0), its cif2lammps unit cell and the run-0 script (no force-field file) |
 | `AGENT.md`, `PROMPT_*.md`, `mcp.example.json`, `mcp.nobond.json`, `wh` | agent instructions, task prompts, Claude Code MCP configs, launcher |
 | `tools/build_bundle.py`, `tools/check_public.sh` | bundle builder (needs the chain); secret / path / licence check (CI) |
+| `tools/publish_demo.sh`, `docs/demo/` | copy an agent session (sanitised paths) into `docs/demo/`; the 22 Oct 2026 demo sessions |
 
 Not included: the TNT unit cell and its LAMMPS script (CCDC-derived; they stay in the private chain), and the
 ReaxFF-lg force-field file. The paracetamol live route needs the private chain anyway.

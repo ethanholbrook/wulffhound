@@ -1,0 +1,73 @@
+{
+ "agent": {
+  "budget": {
+   "session": "agent",
+   "spent_cpu_min": 23.59,
+   "n_acquired": 21,
+   "budget_cpu_min": 30.0,
+   "remaining_cpu_min": 6.41,
+   "live_cpu_min": 1.9,
+   "cached_replay_cpu_min": 21.69,
+   "live_runs_used": 2,
+   "live_runs_allowed": 2,
+   "live_level_max": 1,
+   "live_max_min_per_run": 1.5
+  },
+  "on_shape": [
+   "{0 0 1}",
+   "{1 1 1}",
+   "{1 0 0}",
+   "{1 0 -1}",
+   "{1 1 0}",
+   "{1 1 -2}",
+   "{2 0 -3}",
+   "{0 1 1}",
+   "{2 0 1}",
+   "{1 1 -1}",
+   "{1 1 2}",
+   "{2 1 -2}",
+   "{2 1 -1}",
+   "{0 1 2}",
+   "{2 1 0}"
+  ],
+  "converged": false
+ },
+ "baseline": {
+  "mode": "fair: agent session of 2026-10-22T16:32:03-04:00, its budget 30.0 CPU min, live runs <= 2 (level <= 1, <= 1.5 min each); runs made live after the agent started count as live here",
+  "budget": {
+   "session": "baseline",
+   "spent_cpu_min": 28.72,
+   "n_acquired": 21,
+   "budget_cpu_min": 30.0,
+   "remaining_cpu_min": 1.28,
+   "live_cpu_min": 1.9,
+   "cached_replay_cpu_min": 26.83,
+   "live_runs_used": 2,
+   "live_runs_allowed": 2,
+   "live_level_max": 1,
+   "live_max_min_per_run": 1.5
+  },
+  "on_shape": [
+   "{0 0 1}",
+   "{1 1 1}",
+   "{1 0 0}",
+   "{1 0 -1}",
+   "{1 1 0}",
+   "{1 1 -2}",
+   "{2 0 -3}",
+   "{2 0 1}",
+   "{1 1 -1}",
+   "{0 1 2}",
+   "{2 1 -2}",
+   "{1 1 2}",
+   "{0 1 1}",
+   "{2 1 -1}"
+  ],
+  "converged": false
+ },
+ "agent_report": {
+  "report": "state/tnt/report.html",
+  "bytes": 5095058,
+  "baseline_comparison_stale": false
+ }
+}
