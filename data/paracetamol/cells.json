@@ -664,5 +664,91 @@
   "cpu_s": 31.27,
   "error_tail": null,
   "run_dir": "chain:supercell/bin/RUNS/149e4e2a41d54b29a845ab779c9d9fb6"
+ },
+ {
+  "hkl": [
+   2,
+   1,
+   -2
+  ],
+  "search_range": 4,
+  "rc": 1,
+  "n_molecules": null,
+  "mnp_used": null,
+  "cpu_s": 10.05,
+  "error_tail": "Note: The following floating-point exceptions are signalling: IEEE_INVALID_FLAG",
+  "run_dir": null
+ },
+ {
+  "hkl": [
+   1,
+   2,
+   -2
+  ],
+  "search_range": 4,
+  "rc": 0,
+  "n_molecules": 120,
+  "mnp_used": [
+   -4,
+   1,
+   -1,
+   0,
+   1,
+   1,
+   3,
+   4,
+   -2
+  ],
+  "cpu_s": 15.4,
+  "error_tail": null,
+  "run_dir": "chain:supercell/bin/RUNS/6156f3ccb1e8411ba55142e4b71a957f"
+ },
+ {
+  "hkl": [
+   1,
+   2,
+   -1
+  ],
+  "search_range": 4,
+  "rc": 0,
+  "n_molecules": 96,
+  "mnp_used": [
+   -3,
+   2,
+   1,
+   1,
+   0,
+   1,
+   3,
+   4,
+   -1
+  ],
+  "cpu_s": 15.27,
+  "error_tail": null,
+  "run_dir": "chain:supercell/bin/RUNS/6f3c670b8cac463096cac74ccf9a68a0"
+ },
+ {
+  "hkl": [
+   2,
+   1,
+   -2
+  ],
+  "search_range": 6,
+  "rc": 0,
+  "n_molecules": 612,
+  "mnp_used": [
+   -6,
+   2,
+   -5,
+   -1,
+   6,
+   2,
+   3,
+   1,
+   -1
+  ],
+  "cpu_s": 27.83,
+  "error_tail": null,
+  "run_dir": "chain:supercell/bin/RUNS/309bbefab6634027a9e0879aa79454d7"
  }
 ]

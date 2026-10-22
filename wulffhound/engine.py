@@ -569,6 +569,11 @@ class Engine:
         if notes:
             out['notes'] = [n[:240] for n in notes[:6]]
         good, why = consistency(e)
+        if e.get('gamma_surfenergy_raw') is not None:
+            rg, rwhy = consistency(dict(e, gamma=e['gamma_surfenergy_raw']))
+            if not rg:
+                out['raw_value_rejected'] = ('surfenergy\'s own value failed the guard (%s); superseded by %s'
+                                             % (rwhy, e.get('gamma_basis') or 'a corrected value'))
         if not good:
             out['consistent'] = False
             out['inconsistent_reason'] = why
@@ -733,6 +738,16 @@ class Engine:
         rej = self.rejected_level2()
         if rej:
             res['rejected_level2_runs'] = rej
+        raw = []
+        for f in fams:
+            e = tab[f]['entry'] if tab[f]['level'] == 2 else None
+            if e is not None and e.get('gamma_surfenergy_raw') is not None:
+                rg, rwhy = consistency(dict(e, gamma=e['gamma_surfenergy_raw']))
+                if not rg:
+                    raw.append({'family': f, 'gamma_surfenergy_raw': round(float(e['gamma_surfenergy_raw']), 2),
+                                'reason': rwhy, 'used': 'corrected value %.2f (%s)' % (e['gamma'], e.get('gamma_basis'))})
+        if raw:
+            res['superseded_raw_values'] = raw
         if not self.mat.get('forcefield_validated'):
             res['warnings'].append('force field not validated for %s: %s' % (self.material,
                                                                              self.mat.get('forcefield_note') or ''))

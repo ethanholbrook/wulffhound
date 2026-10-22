@@ -126,8 +126,12 @@ result is compared with; it is never used as a γ.
 - **A deterministic consistency guard** covers every material. A level-2 result whose relaxed γ exceeds its
   unrelaxed γ by more than 1 mJ/m² (a T = 0 minimisation cannot raise the energy), or whose molecules did not
   stay intact, is marked inconsistent. It is left out of `build_wulff` by default: the level-1 value is used and
-  flagged, and the agent gets the reason. Example: paracetamol {0 0 1}, relaxed 247.2 vs unrelaxed 169.2 mJ/m².
-  A non-positive γ is rejected too.
+  flagged, and the agent gets the reason. A non-positive γ is rejected too. Examples from paracetamol:
+  - surfenergy's own {0 0 1} value, relaxed 247.2 vs unrelaxed 169.2 mJ/m², fails the guard. It is reported as
+    superseded, and the FIRE re-relaxation of the same run (167.4) is used.
+  - {1 0 -1}, relaxed 124.0 vs unrelaxed 121.6 mJ/m² even after FIRE, is excluded, and its level-1 value is
+    used (flagged).
+  - A 3-period thickness check of {1 0 -1} (surfenergy value -4.8) is listed as a rejected run.
 - **The force-field status is part of the result.** `material_info.forcefield_validated` is true for TNT and
   false for paracetamol, and the report header says so.
 - **Every decision is logged** (`log_decision`, with expected cost and outcome), and every skip is costed.
@@ -140,10 +144,10 @@ result is compared with; it is never used as a γ.
 - **TNT**: a validated non-reactive force field. **Paracetamol**: ReaxFF-lg 2011 is parametrised for nitramine
   energetic crystals and not validated for hydrogen-bonded pharmaceuticals, so the paracetamol numbers are
   screening-level and the facet ranking matters more than absolute γ. Its T = 0 ReaxFF relaxations are
-  minimiser-limited. Where the chain's paracetamol study re-relaxed a run with FIRE, the bundle uses that value
-  and keeps surfenergy's own value as `gamma_surfenergy_raw`. Even so, {0 0 1} (247.2 vs 169.2) and {1 0 -1}
-  (124.1 vs 121.6) relax *above* their unrelaxed γ, so the consistency guard excludes them and only {1 0 1}
-  enters the shape at level 2. The paracetamol cache covers 19 families at level 1: 3 from the study plus 16
+  minimiser-limited. Where the chain's paracetamol study re-relaxed a run with FIRE (fixed box), the bundle uses
+  that value and keeps surfenergy's own value as `gamma_surfenergy_raw`. After FIRE, {0 0 1} (167.4) and
+  {1 0 1} (151.8) are used at level 2. {1 0 -1} (124.0 vs unrelaxed 121.6) still relaxes *above* its unrelaxed
+  γ, so the guard excludes it. The paracetamol cache covers 19 families at level 1: 3 from the study plus 16
   live screenings made here (cells of 4-156 molecules, at most 61 CPU s each). Two more, {0 1 3} and {1 1 -3},
   failed in supercell at search_range 4 and are recorded as failures. The study's own level-1 screens of
   {1 1 0} and {1 1 1} reproduce our live values (158.06 and 179.10 mJ/m²).

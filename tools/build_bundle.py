@@ -84,14 +84,20 @@ def fire_corrections(led, spike):
     gamma_surfenergy_raw."""
     import glob
     notes = []
+    srcs = []
     for p in sorted(glob.glob(os.path.join(spike, 'results_runner*.json'))):
         try:
             d = json.load(open(p))
         except ValueError:
             continue
-        if 'gamma_relaxed' not in str(d.get('gamma_for_wulff', '')):
-            continue
-        for r in d.get('results') or []:
+        if 'gamma_relaxed' in str(d.get('gamma_for_wulff', '')):
+            srcs.append((p, d.get('results') or []))
+    sp = os.path.join(spike, 'summary.json')          # the study's final values win (applied last)
+    if os.path.isfile(sp):
+        d = json.load(open(sp))
+        srcs.append((sp, [f for f in d.get('facets') or [] if f.get('level') == 2]))
+    for p, recs in srcs:
+        for r in recs:
             if r.get('gamma_relaxed') is None or not r.get('run_dir'):
                 continue
             rid = os.path.basename(r['run_dir'].rstrip('/'))
@@ -102,10 +108,11 @@ def fire_corrections(led, spike):
                     e['gamma'] = float(r['gamma_relaxed'])
                     if r.get('molecules_intact') is not None:
                         e['molecules_intact'] = bool(r['molecules_intact'])
-                    e['gamma_basis'] = ('FIRE-continued T = 0 relaxation at fixed box of the same run (spike %s, '
-                                        'gamma_relaxed_converged); surfenergy\'s own minimiser-limited value %.2f is '
-                                        'kept as gamma_surfenergy_raw' % (os.path.basename(p), e['gamma_surfenergy_raw']))
-                    e.setdefault('notes', []).append(e['gamma_basis'])
+                    e['gamma_basis'] = ('FIRE-continued T = 0 relaxation at fixed box of the same run (spike %s); '
+                                        'surfenergy\'s own minimiser-limited value %.2f is kept as gamma_surfenergy_raw'
+                                        % (os.path.basename(p), e['gamma_surfenergy_raw']))
+                    e['notes'] = [n for n in e.get('notes') or [] if not n.startswith('FIRE-continued')] + \
+                        [e['gamma_basis']]
                     notes.append('%s %s n_periods %s: gamma %.2f (FIRE) replaces %.2f (surfenergy)' % (
                         e['family'], e['hkl'], e.get('n_periods'), e['gamma'], e['gamma_surfenergy_raw']))
     return notes

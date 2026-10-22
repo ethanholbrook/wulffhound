@@ -176,6 +176,10 @@ def write(eng, res, path, title=None):
     if res and res.get('inconsistent'):
         parts.append('<p class="warn"><b>Consistency guard:</b> %s</p>' % '; '.join(
             '%s excluded (%s; %s)' % (esc(x['family']), esc(x['reason']), esc(x['used'])) for x in res['inconsistent']))
+    if res and res.get('superseded_raw_values'):
+        parts.append('<p class="warn"><b>Superseded raw values:</b> %s</p>' % '; '.join(
+            '%s: surfenergy gave %s (%s); used: %s' % (esc(x['family']), esc(x['gamma_surfenergy_raw']), esc(x['reason']),
+                                                       esc(x['used'])) for x in res['superseded_raw_values']))
     if res and res.get('rejected_level2_runs'):
         parts.append('<p class="warn"><b>Rejected level-2 runs:</b> %s</p>' % '; '.join(
             '%s (n_periods %s, gamma %s, run %s): %s; used: %s' % (esc(x['family']), esc(x['n_periods']), esc(x['gamma']),

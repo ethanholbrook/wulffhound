@@ -80,7 +80,7 @@ else:
          and o['spacegroup_data_setting'].startswith('P2_1/n') and o['forcefield_validated'] is False
          and 'h_n = -l_a' in o['setting_map']['explicit'] and o['setting_map']['M_basis_a_to_n'])
     call('list_candidate_facets', lambda o: o['candidates'][0]['family'] == '{0 1 1}'
-         and any(c.get('level2_inconsistent') for c in o['candidates'] if c['family'] == '{0 0 1}'), n=12)
+         and any(c.get('level2_inconsistent') for c in o['candidates'] if c['family'] == '{1 0 -1}'), n=12)
     allc = json.loads(S.list_candidate_facets(n=60).text)['candidates']
     new = [x['family'] for x in allc if not x['in_cache'] and not x.get('failures')][0]
     call('estimate_cost', lambda o: o['est_minutes'] > 0 and not o['cached'], family=new, level=1)
@@ -91,8 +91,9 @@ else:
     call('screen_facet', lambda o: not o['ok'] and ('cached-only' in o['error'] or 'chain' in o['error']), family=new)
     call('relax_facet', lambda o: o['ok'] and o['cached'] and o['consistent'] is False and 'gamma_basis' in o,
          family='{1 0 -1}')     # FIRE-continued 124.1 > unrelaxed 121.6 + 1: inconsistent
-    r001 = call('relax_facet', lambda o: o['ok'] and o['cached'] and o['consistent'] is False
-                and 'relaxed gamma 247.2 > unrelaxed gamma 169.2' in o['inconsistent_reason'], family='{0 0 1}')
+    # surfenergy's own {0 0 1} value 247.2 > unrelaxed 169.2 fails the guard; the FIRE re-relaxation (167.4) is used
+    r001 = call('relax_facet', lambda o: o['ok'] and o['cached'] and o.get('consistent', True)
+                and 'relaxed gamma 247.2 > unrelaxed gamma 169.2' in o['raw_value_rejected'], family='{0 0 1}')
     call('relax_facet', lambda o: o['ok'] and o['cached'], family='{1 0 1}')
 
 w0 = call('build_wulff', lambda o: o['level'] == 0 and o['checks']['orbits_equal_laue_class'], level='0')
@@ -102,14 +103,16 @@ call('build_wulff', lambda o: 'ok' in o, level='2', n_samples=10)
 if MAT == 'paracetamol':
     lv = {r['family']: r['level'] for r in w['facets']}
     bad = {x['family'] for x in w.get('inconsistent', [])}
-    check('consistency guard', '{0 0 1}' in bad and lv.get('{0 0 1}') == 1
-          and any('not validated' in x for x in w['warnings']),
-          '{0 0 1} excluded (247.2 > 169.2), level-1 value used, FF warning; inconsistent: %s' % sorted(bad))
+    raw = {x['family']: x for x in w.get('superseded_raw_values', [])}
+    check('consistency guard', '{1 0 -1}' in bad and lv.get('{1 0 -1}') == 1 and lv.get('{0 0 1}') == 2
+          and '{0 0 1}' in raw and any('not validated' in x for x in w['warnings']),
+          '{1 0 -1} excluded (124.0 > 121.6 + 1), level-1 used; {0 0 1} raw 247.2 flagged, FIRE value used; '
+          'inconsistent: %s' % sorted(bad))
     check('guard per family', all(lv.get(f) == 1 for f in bad) and lv.get('{1 0 1}') == 2
           and all(x['reason'] for x in w.get('rejected_level2_runs', [])),
           'every inconsistent family at level 1, {1 0 1} (consistent) at level 2; %d rejected run(s) listed'
           % len(w.get('rejected_level2_runs', [])))
-    wi = call('build_wulff', lambda o: o['ok'] and [r for r in o['facets'] if r['family'] == '{0 0 1}'][0]['level'] == 2,
+    wi = call('build_wulff', lambda o: o['ok'] and [r for r in o['facets'] if r['family'] == '{1 0 -1}'][0]['level'] == 2,
               level='best', n_samples=10, include_inconsistent=True)
 call('log_decision', lambda o: o['action'] == 'selftest', action='selftest', why='tool smoke test',
      expected_cost_minutes=0)

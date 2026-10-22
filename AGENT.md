@@ -42,7 +42,9 @@ search over ~44.5 M papers.
    force field is validated for the material (TNT: yes; paracetamol: **no**, ReaxFF-lg 2011 is
    nitramine-tuned): when false, call the result **screening-level** in your answer and give the ranking of
    facets more weight than absolute gammas. A level-2 result may carry `gamma_basis` (e.g. paracetamol: a FIRE
-   re-relaxation replaced surfenergy's minimiser-limited value, kept as `gamma_surfenergy_raw`): quote the basis.
+   re-relaxation replaced surfenergy's minimiser-limited value, kept as `gamma_surfenergy_raw`; when that raw value
+   itself failed the guard, the result says `raw_value_rejected` and `build_wulff.superseded_raw_values` lists
+   it): quote the basis.
    `build_wulff.rejected_level2_runs` lists every rejected run (also thickness checks); mention them.
 6. **Replay mode.** Without the simulation chain (`material_info.mode` = "replay") only the cached results in
    the ledger can be acquired; a run that is not cached is refused with a clear message. Say which facets
