@@ -13,3 +13,5 @@ dependencies:
   - matplotlib-base=3.11.2
   - numpy=2.4.6
   - scipy=1.17.1
+  - pyyaml=6.0.3        # campaign specs (campaigns/*.yaml)
+  - jsonschema=4.26.0   # spec and dataset validation (campaign driver, tools/export_dataset.py)

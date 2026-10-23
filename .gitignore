@@ -9,3 +9,4 @@ state/
 *.jsonl
 !dashboard/*.html
 !dataset/*.jsonl
+!dataset/campaigns/*.jsonl

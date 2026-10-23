@@ -25,6 +25,11 @@ jobs:
           WULFFHOUND_CHAIN_ROOT: /nonexistent
           WULFFHOUND_PY: python
         run: ./wh --material paracetamol selftest
+      - name: campaign driver unit tests (chain hidden, fake backend)
+        env:
+          WULFFHOUND_CHAIN_ROOT: /nonexistent
+          WULFFHOUND_PY: python
+        run: ./wh py -W ignore -m unittest discover -s tests -v
   hygiene:
     runs-on: ubuntu-latest
     steps:

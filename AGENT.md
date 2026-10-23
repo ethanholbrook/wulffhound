@@ -92,3 +92,11 @@ search over ~44.5 M papers.
 T = 0 only (static surface energies; no entropy); TNT with a validated non-reactive force field, paracetamol
 with ReaxFF-lg 2011 (not validated: screening-level); molecular crystals of H, C, N, O; the Wulff shape is the equilibrium shape, not the growth habit, so differences from observed
 habits are expected and are a finding, not an error.
+
+## Campaigns (several materials, the dataset)
+
+`campaign_plan(spec)` plans a campaign file (`campaigns/*.yaml`) or inline YAML: the jobs it would run with their
+estimated CPU, and what it skips because the dataset already has it (with the record ids), because it failed before,
+or because it is over the per-run cap or the budget. Look at it before proposing runs on materials other than the
+session's. `campaign_status(spec)` shows what a campaign has done (gamma, gamma_flags, errors). Both only read; a
+campaign is run by the user (`./wh campaign run SPEC`). Quote the plan's numbers, never estimate your own.

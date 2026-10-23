@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ethanholbrook/wulffhound/schema/campaign.schema.json",
+  "title": "wulffhound campaign spec",
+  "description": "A campaign = materials x facets x levels x temperatures under one force-field route, protocol, budget and policy. The planner (wulffhound/campaign.py) expands it into jobs, skips what the dataset already has, estimates the CPU, orders and cuts at the budget; the executor (campaign_exec.py) runs the jobs through a backend; ingest (campaign_ingest.py) turns finished jobs into surface_energy records. Written as YAML or JSON. Every field except campaign and materials has a default (shown).",
+  "type": "object",
+  "required": ["campaign", "materials"],
+  "additionalProperties": false,
+  "properties": {
+    "campaign": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_.-]*$", "description": "name: the journal (state/campaigns/<name>/) and the dataset store (dataset/campaigns/<name>.jsonl)"},
+    "description": {"type": "string"},
+    "materials": {
+      "type": "array", "minItems": 1,
+      "description": "a string is a name, material_id or InChIKey: a wulffhound bundle material (tnt, paracetamol) first, then a CIF-zoo entry of the chain (naphthalene, benzoic-acid, ...). An object can name a CIF (run through cif2lammps first) or a chain example folder.",
+      "items": {
+        "oneOf": [
+          {"type": "string"},
+          {"type": "object", "additionalProperties": false,
+           "properties": {
+             "name": {"type": "string"}, "inchikey": {"type": "string"}, "material_id": {"type": "string"},
+             "cif": {"type": "string", "description": "path of a CIF (relative to the spec, the repository or the chain; chain:... allowed)"},
+             "example": {"type": "string", "description": "a chain example folder with inputs.yaml, e.g. chain:surfenergy/examples/tnt001_nonreactive"},
+             "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$", "description": "material_id for a material the dataset does not know yet"},
+             "polymorph": {"type": "string"}, "licence": {"type": "string"}, "structure_id": {"type": "string"},
+             "forcefield": {"$ref": "#/$defs/forcefield"}
+           }}
+        ]
+      }
+    },
+    "forcefield": {"$ref": "#/$defs/forcefield"},
+    "facets": {
+      "description": "a list of families / hkl ('{0 1 1}', [1, 0, 0]); or 'bfdh_top_N'; or 'max_index K'; or 'on_shape' (families on the material's current shape in the dataset); or an object",
+      "oneOf": [
+        {"type": "array", "items": {"oneOf": [{"type": "string"}, {"type": "array", "items": {"type": "integer"}, "minItems": 3, "maxItems": 3}]}},
+        {"type": "string"},
+        {"type": "object", "additionalProperties": false,
+         "properties": {
+           "select": {"enum": ["explicit", "bfdh_top", "max_index", "on_shape"]},
+           "families": {"type": "array"},
+           "n": {"type": "integer", "minimum": 1, "description": "bfdh_top: how many families (default 4)"},
+           "k": {"type": "integer", "minimum": 1, "description": "max_index: largest |h|, |k|, |l| (default 2)"},
+           "shape_level": {"enum": ["best", "1", "2"], "description": "on_shape: which shape (default best)"},
+           "min_area": {"type": "number", "description": "on_shape: area fraction above which a family is on the shape (default 1e-4)"},
+           "limit_new": {"type": "integer", "minimum": 1, "description": "at most this many new jobs per material and level for this campaign (after the dataset look-up and the per-run cap), in selection order; jobs the campaign already ran count towards it"}
+         }}
+      ]
+    },
+    "levels": {"type": "array", "items": {"enum": [1, 2, 3]}, "minItems": 1, "description": "1 unrelaxed screening (supercell + slabcutter), 2 relaxed T = 0 (surfenergy temperature 0), 3 MD at T > 0 (surfenergy with the md lengths). Default [1]"},
+    "temperatures": {"type": "array", "items": {"type": "number", "minimum": 0}, "description": "K; levels 1 and 2 are T = 0, level 3 runs every T > 0 here. Default [0]"},
+    "md": {"type": "object", "additionalProperties": false, "description": "level 3 only (surfenergy inputs)",
+      "properties": {"equilibration_ps": {"type": "number", "minimum": 0}, "production_ps": {"type": "number", "exclusiveMinimum": 0},
+                     "n_blocks": {"type": "integer", "minimum": 2}, "timestep": {"type": "number", "minimum": 0}}},
+    "protocol": {"type": "object", "additionalProperties": false, "description": "overrides; null = the tool's own default",
+      "properties": {
+        "n_periods": {"type": "integer", "minimum": 1, "description": "slab thickness in periods (default 2, as every dataset record so far)"},
+        "search_range": {"type": ["integer", "null"], "minimum": 1, "description": "null: bundle materials use the engine's smallest known cell, others 4"},
+        "slab_from": {"enum": ["relaxed_bulk", "static_cut", null], "description": "levels 2-3; null = surfenergy's default (relaxed_bulk since R3)"},
+        "vacuum": {"type": ["number", "null"], "description": "angstrom (default 30)"},
+        "angle_dev": {"type": ["number", "null"]}, "s_tol": {"type": ["number", "null"]}
+      }},
+    "budget": {"type": "object", "additionalProperties": false,
+      "properties": {"cpu_minutes": {"type": "number", "exclusiveMinimum": 0, "description": "total estimated CPU of the jobs that run (default 30)"},
+                     "per_run_cap_minutes": {"type": "number", "exclusiveMinimum": 0, "description": "a job estimated above this is not run (default 6)"}}},
+    "policy": {"enum": ["exhaustive", "baseline", "agent"], "description": "exhaustive: the spec's order; baseline: the deterministic greedy policy (level 1 in BFDH order, then relevance / cost); agent: plan only, the queue is left for the MCP agent. Default baseline"},
+    "executor": {"type": "object", "additionalProperties": false,
+      "properties": {
+        "backend": {"enum": ["local", "nanohub", "aura"], "description": "local: the chain through chain_runner (works now); nanohub: simtool Run against installed revisions; aura: the AURA MCP run_sim2l. The last two need the Sim2Ls installed on nanoHUB"},
+        "workers": {"type": "integer", "minimum": 1, "description": "parallel jobs (default 1; capped at 2)"},
+        "timeout_factor": {"type": "number", "minimum": 1, "description": "a job is stopped after max(300 s, factor x its estimate + 120 s) (default 3)"},
+        "nanohub": {"type": "object", "description": "revision: {tool: revision number}, venue (e.g. a cluster queue), walltime_minutes, ncpus"},
+        "aura": {"type": "object", "description": "revision: {tool: revision number}, trace_id"}
+      }},
+    "dedup": {"type": "object", "additionalProperties": false,
+      "properties": {"retry_failed": {"type": "boolean", "description": "run a job whose exact key failed before (default false: failures are never retried blindly)"}}}
+  },
+  "$defs": {
+    "forcefield": {
+      "type": "object", "additionalProperties": false,
+      "description": "route: 'auto' (the material's own: ReaxFF for CIF/zoo materials, the bundle's for tnt/paracetamol), 'reaxff' (ffield file), 'nonreactive' (a typed data file with full topology + its run-0 script); further routes register in campaign.FORCEFIELD_ROUTES",
+      "properties": {
+        "route": {"type": "string"},
+        "ffield": {"type": "string"}, "datafile": {"type": "string"}, "script": {"type": "string"},
+        "supplementary": {"type": "string"},
+        "name": {"type": "string"}, "version": {"type": "string"}, "validated": {"type": "boolean"}, "note": {"type": "string"}
+      }
+    }
+  }
+}

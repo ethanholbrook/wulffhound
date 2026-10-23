@@ -3,13 +3,13 @@
   "$id": "https://github.com/ethanholbrook/wulffhound/schema/surface_energy.schema.json",
   "title": "wulffhound surface-energy dataset",
   "description": "Two record types, one per line of dataset/*.jsonl. 'surface_energy': the unit of record, one computed surface energy (one material, force field, facet, termination and protocol) with its result and provenance. 'wulff_shape': a derived record, the Wulff shape of one material x force field x temperature x level x facet set, built from surface_energy records (listed by id). Units: gamma in mJ/m^2, lengths in angstrom, temperatures in K, density in g/cm^3, masses in g/mol. Miller indices are always in the setting of the record's own cell (facet.setting); two structures of one material can use different settings. Flagged records are kept; their flags say what is wrong and how severe it is.",
-  "schema_version": "0.1.0",
+  "schema_version": "0.1.1",
   "oneOf": [
     {"$ref": "#/$defs/surface_energy"},
     {"$ref": "#/$defs/wulff_shape"}
   ],
   "$defs": {
-    "schema_version": {"type": "string", "const": "0.1.0"},
+    "schema_version": {"type": "string", "enum": ["0.1.0", "0.1.1"], "description": "0.1.1 (additive): provenance source campaign (the campaign driver), flag code sim2l_flag"},
     "hkl": {"type": "array", "items": {"type": "integer"}, "minItems": 3, "maxItems": 3},
     "md5": {"type": ["string", "null"], "pattern": "^[0-9a-f]{32}$"},
     "matrix3": {"type": "array", "minItems": 3, "maxItems": 3,
@@ -24,10 +24,10 @@
           "gamma_not_positive", "relaxed_above_unrelaxed", "minimisation_not_converged", "molecules_not_intact",
           "run_failed", "faces_not_equivalent", "force_field_not_validated", "unrelaxed_screening",
           "raw_value_superseded", "not_stationary", "no_run_id", "protocol_superseded", "energy_check_skipped",
-          "shape_not_converged", "level1_used_for_inconsistent_level2", "ratio_scaled_level1"]},
+          "shape_not_converged", "level1_used_for_inconsistent_level2", "ratio_scaled_level1", "sim2l_flag"]},
         "severity": {"type": "string", "enum": ["error", "warning", "info"]},
         "detail": {"type": "string"},
-        "by": {"type": "string", "description": "who raised it: surfenergy (its gamma_flags guard), wulffhound-guard (engine.consistency), exporter (this dataset's curation), engine"}
+        "by": {"type": "string", "description": "who raised it: surfenergy (its gamma_flags guard), wulffhound-guard (engine.consistency), exporter (this dataset's curation), engine, campaign driver"}
       }
     },
     "material": {
@@ -196,7 +196,7 @@
       "required": ["source", "source_ref", "sim2l", "date"],
       "additionalProperties": false,
       "properties": {
-        "source": {"type": "string", "enum": ["wulffhound-ledger", "cif-zoo", "surfenergy-regression", "surfenergy-notes", "surfenergy-run"]},
+        "source": {"type": "string", "enum": ["wulffhound-ledger", "cif-zoo", "surfenergy-regression", "surfenergy-notes", "surfenergy-run", "campaign"], "description": "campaign: a job of the campaign driver (dataset/campaigns/<name>.jsonl)"},
         "source_ref": {"type": "string", "description": "where the value is recorded: file and entry (e.g. data/tnt/ledger.json#entries[3])"},
         "sim2l": {"type": "object", "required": ["name"], "additionalProperties": false,
           "properties": {"name": {"type": "string", "enum": ["supercell+slabcutter", "slabcutter", "surfenergy"]},

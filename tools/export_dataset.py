@@ -12,14 +12,21 @@ Sources (schema/surface_energy.schema.json, schema_version 0.1.0):
      SIM2L_DEV_ROOT, --chain-root or --zoo); only the exported records are written here.
   3. surfenergy's pinned regression values and documented runs (TNT and HMX), transcribed below with their
      protocol (no run folder id is recorded for them: flagged no_run_id).
+  4. The campaign driver's stores, dataset/campaigns/<campaign>.jsonl (wulffhound/campaign_ingest.py): records made
+     by `./wh campaign run`, already schema-valid, with their run ids. A campaign level-2 record of a bundle material
+     (TNT, paracetamol) enters that material's shape (a newer run wins over the ledger's, as in the engine), and a
+     ledger record it refreshes gets the refreshing record's id in its protocol_superseded flag.
 Every record is validated against the schema (the export fails on an invalid record); flagged records are kept.
 Derived wulff_shape records: TNT and paracetamol at level 'best' and level 1, built with the wulffhound engine
 (pymatgen WulffShape on the data-file lattice, symprec 1e-5 <= 1e-3, orbits asserted equal to the Laue class 2/m).
-The zoo has two facet families per material, which is not a Wulff shape: its facet energies are recorded, no shape.
+Materials without a bundle get a level-1 shape built from their records (wulffhound/shapes.py) once >= 3 families
+are computed and they enclose a bounded shape; with fewer (the zoo's two per crystal) only the facet energies are
+recorded.
 No atomic coordinates are exported: only gamma values, hkl, lattice parameters and metadata.
 """
 import argparse
 import datetime
+import glob
 import hashlib
 import json
 import math
@@ -35,7 +42,7 @@ import numpy as np
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, 'wulffhound'))
 
-SCHEMA_VERSION = '0.1.0'
+SCHEMA_VERSION = '0.1.1'
 SCHEMA_PATH = os.path.join(ROOT, 'schema', 'surface_energy.schema.json')
 MASS = {'C': 12.011, 'H': 1.008, 'N': 14.007, 'O': 15.999}
 REAX_FF = {'name': 'ReaxFF-lg', 'version': 'reax-lg-2011 (Liu, Liu, Zybin & Goddard, J. Phys. Chem. A 115, 11016 (2011))',
@@ -567,12 +574,39 @@ def surfenergy_records(mats, wh_tnt_material, chain_root):
 
 
 # ---------------------------------------------------------------------------------------------- Wulff shapes
-def build_shapes(mat, entry_records, led, n_samples=40, seed=0):
+def campaign_entries(mat, campaign_recs):
+    """Engine ledger entries for the campaign records of a bundle material (lowest termination, T = 0, ok, levels 1-2),
+    so that its shape uses them exactly as the engine would use a newer run. Each names its record (dataset_record_id)."""
+    mid = WH_MATERIALS[mat]['material_id']
+    out = []
+    for r in campaign_recs:
+        P, R = r['protocol'], r['result']
+        if r['material']['material_id'] != mid or R['status'] != 'ok' or P['level'] > 2 or P['temperature_K'] != 0 \
+                or not r['termination'].get('is_lowest'):
+            continue
+        out.append({'family': r['facet']['family'], 'hkl': r['facet']['hkl'], 'level': P['level'], 'ok': True,
+                    'gamma': R['gamma'], 'gamma_error': R.get('gamma_error') or 0.0, 'gamma_unrelaxed': R.get('gamma_unrelaxed'),
+                    'termination_used': r['termination']['index'], 'faces_equivalent': r['termination'].get('faces_equivalent'),
+                    'molecules_intact': R.get('molecules_intact'), 'n_periods': P['n_periods'],
+                    'search_range': P['search_range'], 'temperature': 0.0, 'slab_from': P.get('slab_from'),
+                    'datafile_md5': r['provenance']['input_md5'].get('datafile'),
+                    'script_md5': r['provenance']['input_md5'].get('script'), 'recorded': r['provenance']['date'],
+                    'cpu_s': r['provenance'].get('cpu_s'), 'n_molecules_cell': P.get('n_molecules_cell'),
+                    'source': 'campaign: ' + r['provenance']['source_ref'], 'run_dir': r['provenance'].get('run_ref'),
+                    'dataset_record_id': r['record_id'], 'units': 'mJ/m^2'})
+    return out
+
+
+def build_shapes(mat, entry_records, led, n_samples=40, seed=0, campaign_recs=(), rec_by_id=None):
     from engine import Engine, AREA_ON, consistency
     from pymatgen.core import Lattice
     import pymatgen
     tmp = tempfile.mkdtemp(prefix='wh-export-')
     eng = Engine(mat, state_dir=tmp, import_cached=True, session='export')
+    extra = campaign_entries(mat, campaign_recs)
+    if extra:
+        eng.ledger.entries.extend(extra)
+        eng.ledger.save()
     # acquire every successful family at every level (the full cache)
     for lv in (1, 2):
         for fam in eng.ledger.families(level=lv):
@@ -594,6 +628,8 @@ def build_shapes(mat, entry_records, led, n_samples=40, seed=0):
     index_of = {key(e): i for i, e in enumerate(led_entries)}
 
     def rec_for(entry):
+        if entry.get('dataset_record_id'):
+            return rec_by_id[entry['dataset_record_id']], None
         i = index_of.get(key(entry))
         if i is None:
             raise RuntimeError('ledger entry not found in the bundle: %s' % entry.get('family'))
@@ -631,8 +667,9 @@ def build_shapes(mat, entry_records, led, n_samples=40, seed=0):
             rec, i = rec_for(t['entry'])
             fl = []
             if t.get('inconsistent_level2') and level == 'best':
-                bad = [x['record_id'] for k in entry_records for x in entry_records[k]
-                       if x['facet']['family'] == f and x['protocol']['level'] == 2 and
+                bad = [x['record_id'] for x in [y for k in entry_records for y in entry_records[k]] + list(campaign_recs)
+                       if x['material']['material_id'] == WH_MATERIALS[mat]['material_id'] and
+                       x['facet']['family'] == f and x['protocol']['level'] == 2 and
                        any(fl_['severity'] == 'error' for fl_ in x['result']['gamma_flags'])]
                 fl.append(flag('level1_used_for_inconsistent_level2', 'warning', 'level-2 result(s) %s fail the consistency '
                                'guard (%s); the level-1 value is used' % (', '.join(bad), t['inconsistent_level2']), by='engine'))
@@ -695,8 +732,17 @@ def build_shapes(mat, entry_records, led, n_samples=40, seed=0):
                                        % (level, pymatgen.__version__ if hasattr(pymatgen, '__version__') else
                                           __import__('importlib.metadata').metadata.version('pymatgen')),
                            'date': datetime.date.today().isoformat(), 'area_on_threshold': AREA_ON,
-                           'ledger': 'data/%s/ledger.json' % mat}})
+                           'ledger': 'data/%s/ledger.json' % mat,
+                           'campaign_records_offered': [e['dataset_record_id'] for e in extra]}})
     return shapes
+
+
+def load_campaigns(d):
+    """Records of the campaign driver's stores (dataset/campaigns/*.jsonl), by campaign name."""
+    out = {}
+    for p in sorted(glob.glob(os.path.join(d, '*.jsonl'))):
+        out[os.path.splitext(os.path.basename(p))[0]] = [json.loads(l) for l in open(p) if l.strip()]
+    return out
 
 
 # ---------------------------------------------------------------------------------------------- main
@@ -732,16 +778,52 @@ def main():
     se += zr
     counts['cif-zoo'] = len(zr)
     skipped += ['cif-zoo: ' + s for s in zskip]
+    camp = load_campaigns(os.path.join(args.out, 'campaigns'))
+    camp_recs = []
+    for name, recs in camp.items():
+        camp_recs += recs
+        counts['campaign:%s' % name] = len(recs)
     tnt_mat = next(r['material'] for r in se if r['material']['material_id'] == 'tnt-monoclinic'
                    and r['provenance']['source'] == 'wulffhound-ledger')
     sr, sskip = surfenergy_records(mats, tnt_mat, chain)
     se += sr
     counts['surfenergy'] = len(sr)
     skipped += ['surfenergy: ' + s for s in sskip]
+    # campaign records: the newest protocol refreshes a ledger record (same material, family, level, T)
+    for r in se:
+        P = r['protocol']
+        for f_ in r['result']['gamma_flags']:
+            if f_['code'] != 'protocol_superseded':
+                continue
+            new = [c for c in camp_recs if c['result']['status'] == 'ok' and c['material']['material_id'] == r['material']['material_id']
+                   and c['facet']['family'] == r['facet']['family'] and c['protocol']['level'] == P['level']
+                   and c['protocol']['temperature_K'] == P['temperature_K'] and c['protocol'].get('slab_from') == 'relaxed_bulk'
+                   and c['termination'].get('is_lowest')]
+            if new:
+                f_['detail'] += '; refreshed by campaign record %s (gamma %.4f, slab_from relaxed_bulk, %s)' % (
+                    new[0]['record_id'], new[0]['result']['gamma'], new[0]['provenance']['source_ref'].split('#')[0])
+    se += camp_recs
+    rec_by_id = {r['record_id']: r for r in se}
     for mat in ('tnt', 'paracetamol'):
         er, led = entry_recs[mat]
-        shapes += build_shapes(mat, er, led)
-    zoo_no_shape = sorted({r['material']['material_id'] for r in zr})
+        shapes += build_shapes(mat, er, led, campaign_recs=camp_recs, rec_by_id=rec_by_id)
+    # materials without a bundle: a level-1 shape from their records once they have enough families
+    from shapes import level1_shape
+    have_shape = {s['material_id'] for s in shapes}
+    by_mat = {}
+    for r in se:
+        by_mat.setdefault((r['material']['material_id'], r['force_field']['name']), []).append(r)
+    no_shape = {}
+    for (mid, ffn), recs in sorted(by_mat.items()):
+        if mid in have_shape:
+            continue
+        s_, why = level1_shape(recs, flag=flag, rid=rid, schema_version=SCHEMA_VERSION)
+        if s_:
+            shapes.append(s_)
+            have_shape.add(mid)
+        else:
+            no_shape[mid] = why
+    zoo_no_shape = sorted(m for m in no_shape if m not in have_shape)
 
     # validate
     ids = set()
@@ -808,8 +890,12 @@ def main():
                         'materials': len(materials)},
              'materials': sorted(materials.values(), key=lambda d: d['material_id']),
              'no_shape': {'materials': zoo_no_shape,
-                          'why': 'the CIF zoo computed two facet families per material: two families are not a Wulff '
-                                 'shape (every other facet is missing), so only the facet energies are recorded'},
+                          'why': 'fewer than 3 computed facet families (the CIF zoo computed two per material): that is '
+                                 'not a Wulff shape (every other facet is missing), so only the facet energies are recorded',
+                          'by_material': {m: no_shape[m] for m in zoo_no_shape}},
+             'campaigns': {name: {'records': len(recs), 'store': 'campaigns/%s.jsonl' % name,
+                                  'materials': sorted({r['material']['material_id'] for r in recs})}
+                           for name, recs in camp.items()},
              'skipped': skipped,
              'limits': ['prototype (schema 0.1.0)', 'zoo values are unrelaxed ReaxFF-lg screening cuts, not validated surface energies',
                         'TNT: validated non-reactive force field', 'paracetamol: ReaxFF-lg, not validated (screening-level)']}
@@ -820,7 +906,7 @@ def main():
                                                                                           len(s['facets'])) for s in shapes)))
     print('all records valid against schema %s' % SCHEMA_VERSION)
     print('parquet: %s' % parquet)
-    print('no shape (2 families only): %d zoo materials' % len(zoo_no_shape))
+    print('no shape (< 3 families or not bounded): %d materials' % len(zoo_no_shape))
     print('skipped: %d' % len(skipped))
     for s in skipped:
         print('  - ' + s[:160])

@@ -186,5 +186,57 @@ def get_report_path(material: str = '', level: str = 'best') -> TextContent:
     return _out(f)
 
 
+def _spec(spec):
+    """A spec path (relative to the repository, e.g. campaigns/zoo_screen.yaml) or inline YAML / JSON text."""
+    import campaign
+    root = os.path.dirname(HERE)
+    p = spec if os.path.isabs(spec) else os.path.join(root, spec)
+    return campaign.load_spec(p if os.path.isfile(p) else spec)
+
+
+def _job_row(j):
+    keep = ('job_id', 'material_id', 'family', 'level', 'temperature_K', 'hkl', 'search_range', 'est_minutes',
+            'cum_est_minutes', 'est_surfenergy_minutes', 'relevance', 'score', 'reason', 'why')
+    r = {k: j[k] for k in keep if j.get(k) is not None}
+    if j.get('near_duplicates'):
+        r['refreshes'] = ['%s %s (%s differs)' % (d['record_id'], d['gamma'], ', '.join(d['differs_in']))
+                          for d in j['near_duplicates'][:3]]
+    return r
+
+
+@mcp.tool()
+def campaign_plan(spec: str) -> TextContent:
+    """Plan a campaign (dry run, nothing is run): spec = a campaign file (e.g. "campaigns/zoo_screen.yaml") or inline
+    YAML/JSON (schema/campaign.schema.json). Returns the jobs in run order with their estimated CPU minutes, what is
+    skipped and why (already in the dataset with its record ids, failed before, over the per-run cap, over the
+    budget), and near-duplicates (a job that refreshes a record made with another protocol). With policy "agent"
+    the plan is your queue: run its facets with screen_facet / relax_facet (TNT, paracetamol) or ask the user to
+    run `./wh campaign run SPEC`."""
+    def f():
+        import campaign
+        s = _spec(spec)
+        p = campaign.plan(s)
+        return {'campaign': p['campaign'], 'policy': p['policy'], 'backend': p['backend'], 'budget_cpu_min': p['budget_cpu_min'],
+                'per_run_cap_min': p['per_run_cap_min'], 'chain': p['chain'], 'materials': p['materials'],
+                'totals': p['totals'], 'jobs': [_job_row(j) for j in p['jobs']],
+                'skipped': [_job_row(j) for j in p['skipped']], 'notes': p['notes']}
+    return _out(f)
+
+
+@mcp.tool()
+def campaign_status(spec: str) -> TextContent:
+    """The journal of a campaign: the last event of every job (started / done with gamma and gamma_flags / failed with
+    the tool's error / skipped with the reason), the CPU spent, and the planned jobs not started yet."""
+    def f():
+        import campaign
+        import campaign_exec
+        s = _spec(spec)
+        st = campaign_exec.status(s, campaign.plan(s))
+        st['jobs'] = [{k: e.get(k) for k in ('job_id', 'event', 'material_id', 'family', 'level', 'gamma', 'gamma_flags',
+                                             'cpu_s', 'error', 'why', 'time') if e.get(k) is not None} for e in st['jobs']]
+        return st
+    return _out(f)
+
+
 if __name__ == '__main__':
     mcp.run()

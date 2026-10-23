@@ -10,6 +10,7 @@
 #   ./wh [--material M] reset [SESSION]  start the agent session afresh (keeps the ledger = the cache of runs)
 #   ./wh transcript IN.jsonl OUT.txt     readable transcript of a `claude -p --output-format stream-json` run
 #   ./wh import [MATERIAL...]            rebuild the replay bundle data/*/ from the simulation chain (needs the chain)
+#   ./wh campaign plan|run|status|ingest SPEC   the campaign driver (campaigns/*.yaml; see README 'Campaign driver')
 #   ./wh py ARGS...                      python in the wulff env
 # Env: WULFFHOUND_PY (default: $CONDA_PREFIX/bin/python if it has pymatgen, else ~/micromamba/envs/wulff-dev/bin/python,
 # else python3), WULFFHOUND_CHAIN_ROOT, WULFFHOUND_CHAIN_ENV (wulffhound/config.py), WULFFHOUND_BUDGET_MIN (agent CPU
@@ -46,6 +47,7 @@ print(json.dumps({'agent': {'budget': e.budget(), 'on_shape': e._last.get('on_sh
   transcript) run "$PKG/render_transcript.py" "$@" ;;
   reset)    s="${1:-agent}"; eng "Engine('$MAT', session='$s').reset_session(); print('$MAT: session $s reset (acquisitions, decisions, literature); the ledger cache is kept')" ;;
   import)   run "$HERE/tools/build_bundle.py" "$@" ;;
+  campaign) run "$PKG/campaign_cli.py" "$@" ;;
   py)       run "$@" ;;
-  *)        sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//' ;;
+  *)        sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//' ;;
 esac

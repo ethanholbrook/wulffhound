@@ -8,6 +8,15 @@ The engine (wulff-dev) launches this as a subprocess (with a timeout) and reads 
            surfenergy_core.ChildRunner, exactly the screening step of surfenergy (no MD, no minimisation).
   level 2  relaxed T = 0 gamma: one surfenergy run (temperature 0, termination_mode lowest) through
            devtools/run_sim2l.py of the chain.
+  level 3  MD at T > 0: the same surfenergy run at req['temperature'] with the MD lengths of req['overrides']
+           (campaign driver only).
+
+Optional request keys (campaign driver; the engine sends none of them, so its runs are unchanged):
+  overrides    surfenergy inputs passed through as given: slab_from, vacuum, angle_dev, s_tol, equilibration_ps,
+               production_ps, n_blocks, timestep (absent = surfenergy's own default, e.g. slab_from relaxed_bulk)
+  temperature  level 3 only
+A material without an example_dir (a CIF-zoo or cif2lammps unit cell) gets an inputs.yaml written into the work
+dir (material_source unitcell, the data file, script and supplementary file by absolute path).
 
     SIM2L_DEV_ROOT=<chain> SIM2L_ENV_PREFIX=<chain env> <chain>/devtools/sim2l-env \
         python wulffhound/chain_runner.py request.json result.json
@@ -30,7 +39,12 @@ REPO = os.environ.get('SIM2L_DEV_ROOT', '')
 KEEP2 = ('gamma', 'gamma_error', 'gamma_unrelaxed', 'termination_used', 'n_terminations', 'terminations_screened',
          'results_all', 'facet_hkl', 'd_hkl', 'temperature', 'surface_area', 'surface_area_static', 'lateral_strain',
          'thickness', 'n_molecules_slab', 'n_molecules_bulk', 'n_molecules_cell', 'bulk_pe_per_molecule', 'slab_pe',
-         'faces_equivalent', 'molecules_intact', 'mnp_used', 'solution_pick_used', 'notes')
+         'faces_equivalent', 'molecules_intact', 'mnp_used', 'solution_pick_used', 'notes',
+         # kept for the campaign driver (ignored by the engine's ledger)
+         'gamma_flags', 'minimization', 'slab_from', 'slab_start', 'stationary', 'gamma_error_block',
+         'gamma_equipartition_term', 'timestep_used', 'forcefield_kind', 'molecular_formula', 'inchikey',
+         'bulk_temperature_mean', 'bulk_pressure_mean', 'child_runs')
+OVERRIDES = ('slab_from', 'vacuum', 'angle_dev', 's_tol', 'equilibration_ps', 'production_ps', 'n_blocks', 'timestep')
 
 
 def cpu_children():
@@ -49,6 +63,11 @@ def level1(req, mat):
         files['supplementaryfilename'] = mat['supplementary']
     values = {'orientation_mode': 'hkl', 'h': h, 'k': k, 'l': l, 'search_range': req['search_range'],
               'use_reaxff': bool(mat.get('use_reaxff')), 'RunEnergyCheck': not mat.get('use_reaxff')}
+    ov = req.get('overrides') or {}
+    for k, name in (('angle_dev', 'angle_dev'), ('s_tol', 's_tol')):
+        if ov.get(k) is not None:
+            values[name] = ov[k]
+    vacuum = float(ov['vacuum']) if ov.get('vacuum') is not None else 30.0
     notes = []
     s = child.run('supercell', values, files)
     cell = s.file('DataFileOutput')
@@ -64,7 +83,7 @@ def level1(req, mat):
     runs = {}
 
     def cut(t):
-        v = {'termination_index': int(t), 'n_periods': req['n_periods'], 'vacuum': 30.0, 'compute_unrelaxed_sfe': True}
+        v = {'termination_index': int(t), 'n_periods': req['n_periods'], 'vacuum': vacuum, 'compute_unrelaxed_sfe': True}
         f = {'datafilename': cell, 'inputfilename': mat['script']}
         if mat.get('supplementary'):
             f['supplementaryfilename'] = mat['supplementary']
@@ -106,12 +125,30 @@ def level1(req, mat):
     return out, child_runs, work
 
 
+def unitcell_example(req, mat):
+    """An inputs.yaml for a material that has no surfenergy example folder (unit-cell route, absolute paths)."""
+    d = os.path.join(req['work_dir'], 'example')
+    os.makedirs(d, exist_ok=True)
+    f = lambda p: json.dumps('file://' + os.path.abspath(p)) if p else 'null'
+    with open(os.path.join(d, 'inputs.yaml'), 'w') as fh:
+        fh.write('# written by wulffhound chain_runner for a campaign job\n'
+                 'material_source: unitcell\ndatafilename: %s\ninputfilename: %s\nsupplementaryfilename: %s\n'
+                 'ciffile: null\nuse_reaxff: %s\n' % (f(mat['datafile']), f(mat['script']), f(mat.get('supplementary')),
+                                                       'true' if mat.get('use_reaxff') else 'false'))
+    return d
+
+
 def level2(req, mat):
-    sets = {'temperature': 0.0, 'h': req['hkl'][0], 'k': req['hkl'][1], 'l': req['hkl'][2],
+    T = float(req.get('temperature') or 0.0) if req['level'] == 3 else 0.0
+    sets = {'temperature': T, 'h': req['hkl'][0], 'k': req['hkl'][1], 'l': req['hkl'][2],
             'search_range': req['search_range'], 'n_periods': req['n_periods'], 'termination_mode': 'lowest',
             'termination_index': 0}
+    for k in OVERRIDES:
+        if (req.get('overrides') or {}).get(k) is not None:
+            sets[k] = req['overrides'][k]
+    example = mat.get('example_dir') or unitcell_example(req, mat)
     cmd = [sys.executable, os.path.join(REPO, 'devtools', 'run_sim2l.py'), os.path.join(REPO, 'surfenergy'),
-           mat['example_dir']]
+           example]
     for k, v in sets.items():
         cmd += ['--set', '%s=%s' % (k, v)]
     p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=REPO,
