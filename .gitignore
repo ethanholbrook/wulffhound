@@ -7,3 +7,5 @@ state/
 *.html
 !docs/*.html
 *.jsonl
+!dashboard/*.html
+!dataset/*.jsonl

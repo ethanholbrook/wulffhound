@@ -1,0 +1,345 @@
+{
+ "schema_version": "0.1.0",
+ "schema": "schema/surface_energy.schema.json",
+ "built": "2026-10-23T02:16:33-04:00",
+ "built_by": "tools/export_dataset.py",
+ "files": {
+  "surface_energy": "surface_energy.jsonl",
+  "wulff_shape": "wulff_shape.jsonl"
+ },
+ "parquet": "skipped: pyarrow is not installed in this environment (JSON Lines only)",
+ "counts": {
+  "surface_energy": 259,
+  "wulff_shape": 4,
+  "by_source": {
+   "wulffhound-ledger:tnt": 55,
+   "wulffhound-ledger:paracetamol": 84,
+   "cif-zoo": 117,
+   "surfenergy": 3
+  },
+  "status_failed": 6,
+  "with_warning_or_error_flags": 225,
+  "with_error_flags": 8,
+  "materials": 21
+ },
+ "materials": [
+  {
+   "material_id": "anthracene",
+   "name": "anthracene",
+   "inchikey": "MWPLVEDNUUSJAV-UHFFFAOYSA-N",
+   "formula": "C14H10",
+   "structures": [
+    "cod-4513302"
+   ],
+   "force_fields": [
+    "ReaxFF-lg"
+   ],
+   "n_records": 3
+  },
+  {
+   "material_id": "aspirin-i",
+   "name": "aspirin (form I)",
+   "inchikey": "BSYNRYMUTXBXSQ-UHFFFAOYSA-N",
+   "formula": "C9H8O4",
+   "structures": [
+    "cod-4506597"
+   ],
+   "force_fields": [
+    "ReaxFF-lg"
+   ],
+   "n_records": 6
+  },
+  {
+   "material_id": "benzoic-acid",
+   "name": "benzoic acid",
+   "inchikey": "WPYMKLBDIGXBTP-UHFFFAOYSA-N",
+   "formula": "C7H6O2",
+   "structures": [
+    "cod-7210454"
+   ],
+   "force_fields": [
+    "ReaxFF-lg"
+   ],
+   "n_records": 6
+  },
+  {
+   "material_id": "carbamazepine-iii",
+   "name": "carbamazepine (form III)",
+   "inchikey": "FFGPTBGBLSHEPO-UHFFFAOYSA-N",
+   "formula": "C15H12N2O",
+   "structures": [
+    "cod-4510733"
+   ],
+   "force_fields": [
+    "ReaxFF-lg"
+   ],
+   "n_records": 8
+  },
+  {
+   "material_id": "cytosine-ii",
+   "name": "cytosine (form II)",
+   "inchikey": "OPTASPLRGRRNAP-UHFFFAOYSA-N",
+   "formula": "C4H5N3O",
+   "structures": [
+    "cod-2019803"
+   ],
+   "force_fields": [
+    "ReaxFF-lg"
+   ],
+   "n_records": 16
+  },
+  {
+   "material_id": "glycine-alpha",
+   "name": "glycine (alpha, zwitterion)",
+   "inchikey": "DHMQDGOQFOQNFH-UHFFFAOYSA-N",
+   "formula": "C2H5NO2",
+   "structures": [
+    "cod-2103307"
+   ],
+   "force_fields": [
+    "ReaxFF-lg"
+   ],
+   "n_records": 8
+  },
+  {
+   "material_id": "hmx-beta",
+   "name": "beta-HMX",
+   "inchikey": "UZGLIIJVICEWHF-UHFFFAOYSA-N",
+   "formula": "C4H8N8O8",
+   "structures": [
+    "cod-4110146",
+    "ccdc-1225494"
+   ],
+   "force_fields": [
+    "ReaxFF-lg"
+   ],
+   "n_records": 3
+  },
+  {
+   "material_id": "naphthalene",
+   "name": "naphthalene",
+   "inchikey": "UFWIBTONFRDIAS-UHFFFAOYSA-N",
+   "formula": "C10H8",
+   "structures": [
+    "cod-2311090"
+   ],
+   "force_fields": [
+    "ReaxFF-lg"
+   ],
+   "n_records": 2
+  },
+  {
+   "material_id": "nicotinamide",
+   "name": "nicotinamide",
+   "inchikey": "DFPAKSUCGFBDDF-UHFFFAOYSA-N",
+   "formula": "C6H6N2O",
+   "structures": [
+    "cod-4511296"
+   ],
+   "force_fields": [
+    "ReaxFF-lg"
+   ],
+   "n_records": 8
+  },
+  {
+   "material_id": "oxalic-acid-alpha",
+   "name": "oxalic acid (alpha)",
+   "inchikey": "MUBZPKHOEPUJKR-UHFFFAOYSA-N",
+   "formula": "C2H2O4",
+   "structures": [
+    "cod-7241393"
+   ],
+   "force_fields": [
+    "ReaxFF-lg"
+   ],
+   "n_records": 3
+  },
+  {
+   "material_id": "paracetamol-i",
+   "name": "paracetamol (acetaminophen)",
+   "inchikey": "RZVAJINKPMORJF-UHFFFAOYSA-N",
+   "formula": "C8H9NO2",
+   "structures": [
+    "cod-2104364"
+   ],
+   "force_fields": [
+    "ReaxFF-lg"
+   ],
+   "n_records": 90
+  },
+  {
+   "material_id": "pentaerythritol",
+   "name": "pentaerythritol",
+   "inchikey": "WXZMFSXDPGVJKK-UHFFFAOYSA-N",
+   "formula": "C5H12O4",
+   "structures": [
+    "cod-2100483"
+   ],
+   "force_fields": [
+    "ReaxFF-lg"
+   ],
+   "n_records": 2
+  },
+  {
+   "material_id": "petn-i",
+   "name": "PETN-I",
+   "inchikey": "TZRXHJWUDPFEEY-UHFFFAOYSA-N",
+   "formula": "C5H8N4O12",
+   "structures": [
+    "cod-4111071"
+   ],
+   "force_fields": [
+    "ReaxFF-lg"
+   ],
+   "n_records": 2
+  },
+  {
+   "material_id": "pyrazine",
+   "name": "pyrazine",
+   "inchikey": "KYQCOXFCLRTKLS-UHFFFAOYSA-N",
+   "formula": "C4H4N2",
+   "structures": [
+    "cod-4516572"
+   ],
+   "force_fields": [
+    "ReaxFF-lg"
+   ],
+   "n_records": 3
+  },
+  {
+   "material_id": "rdx-alpha",
+   "name": "alpha-RDX",
+   "inchikey": "XTFIVUDBNACUBN-UHFFFAOYSA-N",
+   "formula": "C3H6N6O6",
+   "structures": [
+    "cod-5000148"
+   ],
+   "force_fields": [
+    "ReaxFF-lg"
+   ],
+   "n_records": 5
+  },
+  {
+   "material_id": "salicylic-acid",
+   "name": "salicylic acid",
+   "inchikey": "YGSDEFSMJLZEOE-UHFFFAOYSA-N",
+   "formula": "C7H6O3",
+   "structures": [
+    "cod-2100548"
+   ],
+   "force_fields": [
+    "ReaxFF-lg"
+   ],
+   "n_records": 5
+  },
+  {
+   "material_id": "succinic-acid-beta",
+   "name": "succinic acid (beta)",
+   "inchikey": "KDYFGRWQOYBRFD-UHFFFAOYSA-N",
+   "formula": "C4H6O4",
+   "structures": [
+    "cod-4507998"
+   ],
+   "force_fields": [
+    "ReaxFF-lg"
+   ],
+   "n_records": 3
+  },
+  {
+   "material_id": "theophylline-ii",
+   "name": "theophylline (form II)",
+   "inchikey": "ZFXYFBGIUFBOJW-UHFFFAOYSA-N",
+   "formula": "C7H8N4O2",
+   "structures": [
+    "cod-4505533"
+   ],
+   "force_fields": [
+    "ReaxFF-lg"
+   ],
+   "n_records": 6
+  },
+  {
+   "material_id": "tnt-monoclinic",
+   "name": "TNT (2,4,6-trinitrotoluene)",
+   "inchikey": "SPSSULHKWOKEEL-UHFFFAOYSA-N",
+   "formula": "C7H5N3O6",
+   "structures": [
+    "chain-tnt-unitcell",
+    "cod-4505729"
+   ],
+   "force_fields": [
+    "TNT non-reactive (buck + lj/cut + coul/wolf, 11 A)",
+    "ReaxFF-lg"
+   ],
+   "n_records": 65
+  },
+  {
+   "material_id": "tnt-orthorhombic",
+   "name": "TNT (orthorhombic Pca21)",
+   "inchikey": "SPSSULHKWOKEEL-UHFFFAOYSA-N",
+   "formula": "C7H5N3O6",
+   "structures": [
+    "cod-5000107"
+   ],
+   "force_fields": [
+    "ReaxFF-lg"
+   ],
+   "n_records": 12
+  },
+  {
+   "material_id": "urea",
+   "name": "urea",
+   "inchikey": "XSQUKJJJFZCRTK-UHFFFAOYSA-N",
+   "formula": "CH4N2O",
+   "structures": [
+    "cod-9017318"
+   ],
+   "force_fields": [
+    "ReaxFF-lg"
+   ],
+   "n_records": 3
+  }
+ ],
+ "no_shape": {
+  "materials": [
+   "anthracene",
+   "aspirin-i",
+   "benzoic-acid",
+   "carbamazepine-iii",
+   "cytosine-ii",
+   "glycine-alpha",
+   "hmx-beta",
+   "naphthalene",
+   "nicotinamide",
+   "oxalic-acid-alpha",
+   "paracetamol-i",
+   "pentaerythritol",
+   "petn-i",
+   "pyrazine",
+   "rdx-alpha",
+   "salicylic-acid",
+   "succinic-acid-beta",
+   "theophylline-ii",
+   "tnt-monoclinic",
+   "tnt-orthorhombic",
+   "urea"
+  ],
+  "why": "the CIF zoo computed two facet families per material: two families are not a Wulff shape (every other facet is missing), so only the facet energies are recorded"
+ },
+ "skipped": [
+  "cif-zoo: pyrazole (COD 1511994): cif2lammps rejected it as expected: partial occupancy on 4 site(s) (H1, H2, H11, H12): disordered structures are not supported. Choose an ordered model of t",
+  "cif-zoo: benzoic_disordered (COD 7252065): cif2lammps rejected it as expected: partial occupancy on 2 site(s) (H1, H2): disordered structures are not supported. Choose an ordered model of the structu",
+  "cif-zoo: caffeine (COD 4504310): cif2lammps rejected it as expected: partial occupancy on 72 site(s) (N101, C102, N103, C104, C105, C106, N107, C108): disordered structures are not supporte",
+  "cif-zoo: thymine (COD 1518688): cif2lammps rejected it as expected: the molecules found are C5N2O2 but the CIF formula (_chemical_formula_sum) is C5H6N2O2: hydrogen atoms are missing from ",
+  "surfenergy: tnt_300 / hmx_300 short test-length MD (0.5 + 1 ps and 0.1 + 0.2 ps): e.g. 99.83 +- 23.32 and 178.89 +- 19.25 mJ/m^2, flagged not stationary by surfenergy, re-run at every protocol change, no run id: test settings, not results",
+  "surfenergy: older protocol values of the same cases (hmx_T0 226.45 / 225.22 / 228.24, tnt_T0 104.0965 static cut, the pre-fix 300 K values of SURFENERGY_E2E.md): superseded by the pinned values above",
+  "surfenergy: TNT 300 K example defaults (1 + 2 ps): 101.0 +- 13.9 / 121.7 +- 14.9, not stationary, no run id",
+  "surfenergy: HMX 300 K at production length: never run (needs a cluster venue)"
+ ],
+ "limits": [
+  "prototype (schema 0.1.0)",
+  "zoo values are unrelaxed ReaxFF-lg screening cuts, not validated surface energies",
+  "TNT: validated non-reactive force field",
+  "paracetamol: ReaxFF-lg, not validated (screening-level)"
+ ]
+}

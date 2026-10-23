@@ -1,0 +1,320 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ethanholbrook/wulffhound/schema/surface_energy.schema.json",
+  "title": "wulffhound surface-energy dataset",
+  "description": "Two record types, one per line of dataset/*.jsonl. 'surface_energy': the unit of record, one computed surface energy (one material, force field, facet, termination and protocol) with its result and provenance. 'wulff_shape': a derived record, the Wulff shape of one material x force field x temperature x level x facet set, built from surface_energy records (listed by id). Units: gamma in mJ/m^2, lengths in angstrom, temperatures in K, density in g/cm^3, masses in g/mol. Miller indices are always in the setting of the record's own cell (facet.setting); two structures of one material can use different settings. Flagged records are kept; their flags say what is wrong and how severe it is.",
+  "schema_version": "0.1.0",
+  "oneOf": [
+    {"$ref": "#/$defs/surface_energy"},
+    {"$ref": "#/$defs/wulff_shape"}
+  ],
+  "$defs": {
+    "schema_version": {"type": "string", "const": "0.1.0"},
+    "hkl": {"type": "array", "items": {"type": "integer"}, "minItems": 3, "maxItems": 3},
+    "md5": {"type": ["string", "null"], "pattern": "^[0-9a-f]{32}$"},
+    "matrix3": {"type": "array", "minItems": 3, "maxItems": 3,
+      "items": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"type": "number"}}},
+    "flag": {
+      "type": "object",
+      "description": "One flag on a gamma or a shape. severity 'error': the value is not usable as a surface energy (kept, marked, left out of shapes); 'warning': usable with care; 'info': context a reader needs.",
+      "required": ["code", "severity", "detail", "by"],
+      "additionalProperties": false,
+      "properties": {
+        "code": {"type": "string", "enum": [
+          "gamma_not_positive", "relaxed_above_unrelaxed", "minimisation_not_converged", "molecules_not_intact",
+          "run_failed", "faces_not_equivalent", "force_field_not_validated", "unrelaxed_screening",
+          "raw_value_superseded", "not_stationary", "no_run_id", "protocol_superseded", "energy_check_skipped",
+          "shape_not_converged", "level1_used_for_inconsistent_level2", "ratio_scaled_level1"]},
+        "severity": {"type": "string", "enum": ["error", "warning", "info"]},
+        "detail": {"type": "string"},
+        "by": {"type": "string", "description": "who raised it: surfenergy (its gamma_flags guard), wulffhound-guard (engine.consistency), exporter (this dataset's curation), engine"}
+      }
+    },
+    "material": {
+      "type": "object",
+      "required": ["material_id", "name", "inchikey", "formula", "polymorph", "structure", "space_group", "cell"],
+      "additionalProperties": false,
+      "properties": {
+        "material_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]*$", "description": "one crystal form of one compound (compound + polymorph); several structures (sources, settings) may share it"},
+        "name": {"type": "string"},
+        "inchikey": {"type": ["string", "null"], "pattern": "^[A-Z]{14}-[A-Z]{10}-[A-Z]$"},
+        "smiles": {"type": ["string", "null"]},
+        "formula": {"type": "string", "description": "molecular formula, Hill order"},
+        "molecular_mass": {"type": ["number", "null"]},
+        "polymorph": {"type": "string"},
+        "category": {"type": ["string", "null"]},
+        "pubchem_cid": {"type": ["integer", "null"]},
+        "structure": {
+          "type": "object",
+          "required": ["structure_id", "source", "licence", "distributed"],
+          "additionalProperties": false,
+          "properties": {
+            "structure_id": {"type": "string", "description": "the structure the cells were built from, e.g. cod-2104364 or ccdc-1225494"},
+            "source": {"type": "string"},
+            "database": {"type": ["string", "null"], "enum": ["COD", "CCDC", null]},
+            "database_id": {"type": ["string", "null"]},
+            "licence": {"type": "string"},
+            "citation": {"type": ["string", "null"]},
+            "doi": {"type": ["string", "null"]},
+            "url": {"type": ["string", "null"]},
+            "sha256": {"type": ["string", "null"]},
+            "md5": {"$ref": "#/$defs/md5"},
+            "measurement_T_K": {"type": ["number", "null"]},
+            "distributed": {"type": "boolean", "description": "true when the structure file itself is in this repository (CC0 only); the dataset never carries atomic coordinates"}
+          }
+        },
+        "space_group": {
+          "type": "object",
+          "required": ["symbol_data_setting", "number"],
+          "additionalProperties": false,
+          "properties": {
+            "symbol_data_setting": {"type": "string"},
+            "number": {"type": ["integer", "null"], "minimum": 1, "maximum": 230},
+            "laue_class": {"type": ["string", "null"]}
+          }
+        },
+        "cell": {
+          "type": "object",
+          "required": ["a", "b", "c", "alpha", "beta", "gamma", "Z"],
+          "additionalProperties": false,
+          "properties": {
+            "a": {"type": "number"}, "b": {"type": "number"}, "c": {"type": "number"},
+            "alpha": {"type": "number"}, "beta": {"type": "number"}, "gamma": {"type": "number"},
+            "volume": {"type": ["number", "null"]},
+            "Z": {"type": ["integer", "null"]},
+            "density": {"type": ["number", "null"], "description": "g/cm^3 from Z, the formula and the cell volume"},
+            "lattice_matrix": {"$ref": "#/$defs/matrix3", "description": "rows a, b, c in Cartesian angstrom, the data-file orientation (a along x, b in the xy plane)"},
+            "note": {"type": ["string", "null"]}
+          }
+        }
+      }
+    },
+    "force_field": {
+      "type": "object",
+      "required": ["name", "kind", "validated_for_material"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {"type": "string"},
+        "version": {"type": ["string", "null"]},
+        "kind": {"type": "string", "enum": ["reactive", "non-reactive"]},
+        "md5": {"$ref": "#/$defs/md5", "description": "md5 of the force-field file (ReaxFF) or of the LAMMPS script that defines it (non-reactive)"},
+        "file": {"type": ["string", "null"]},
+        "validated_for_material": {"type": "boolean"},
+        "note": {"type": ["string", "null"]}
+      }
+    },
+    "facet": {
+      "type": "object",
+      "required": ["hkl", "family", "setting"],
+      "additionalProperties": false,
+      "properties": {
+        "hkl": {"$ref": "#/$defs/hkl", "description": "the member of the family that was cut"},
+        "family": {"type": "string", "pattern": "^\\{-?\\d+ -?\\d+ -?\\d+\\}$"},
+        "family_representative": {"$ref": "#/$defs/hkl"},
+        "family_members": {"type": "array", "items": {"$ref": "#/$defs/hkl"}, "description": "the orbit of the family under the Laue class of the data-file setting"},
+        "multiplicity": {"type": ["integer", "null"]},
+        "d_hkl": {"type": ["number", "null"]},
+        "d_eff": {"type": ["number", "null"], "description": "d_hkl divided by the extinction factor (BFDH)"},
+        "setting": {
+          "type": "object",
+          "required": ["description"],
+          "additionalProperties": false,
+          "properties": {
+            "description": {"type": "string"},
+            "structure_id": {"type": "string"},
+            "other_settings": {"type": ["string", "null"]}
+          }
+        }
+      }
+    },
+    "termination": {
+      "type": "object",
+      "required": ["index", "label"],
+      "additionalProperties": false,
+      "properties": {
+        "index": {"type": ["integer", "null"]},
+        "label": {"type": "string"},
+        "group": {"type": ["integer", "null"]},
+        "equivalent_indices": {"type": "array", "items": {"type": "integer"}, "description": "terminations of the same group (same cut by symmetry); their gamma is this record's"},
+        "gap": {"type": ["number", "null"], "description": "z gap of the cut, angstrom"},
+        "faces_equivalent": {"type": ["boolean", "null"], "description": "false when the top and bottom faces of the slab differ: gamma is then their average"},
+        "n_terminations": {"type": ["integer", "null"]},
+        "is_lowest": {"type": ["boolean", "null"], "description": "true for the lowest unrelaxed gamma of the facet in its run (the one a level-1 facet value and a level-2 relaxation use)"}
+      }
+    },
+    "protocol": {
+      "type": "object",
+      "required": ["level", "level_name", "temperature_K"],
+      "additionalProperties": false,
+      "properties": {
+        "level": {"type": "integer", "enum": [1, 2, 3], "description": "1 unrelaxed cut (screening), 2 relaxed at T = 0 (energy minimisation), 3 MD at T > 0"},
+        "level_name": {"type": "string", "enum": ["unrelaxed", "relaxed_T0", "md"]},
+        "temperature_K": {"type": "number", "minimum": 0},
+        "n_periods": {"type": ["integer", "null"]},
+        "vacuum_A": {"type": ["number", "null"]},
+        "search_range": {"type": ["integer", "null"]},
+        "slab_from": {"type": ["string", "null"], "enum": ["static_cut", "relaxed_bulk", null]},
+        "minimiser": {"type": ["string", "null"]},
+        "timestep_fs": {"type": ["number", "null"]},
+        "equilibration_ps": {"type": ["number", "null"]},
+        "production_ps": {"type": ["number", "null"]},
+        "n_blocks": {"type": ["integer", "null"]},
+        "mnp": {"type": ["array", "null"], "items": {"type": "integer"}, "description": "supercell's oriented-cell matrix m1..p3"},
+        "n_molecules_cell": {"type": ["integer", "null"]},
+        "n_molecules_slab": {"type": ["integer", "null"]},
+        "n_molecules_bulk": {"type": ["integer", "null"]},
+        "surface_area_A2": {"type": ["number", "null"]},
+        "thickness_A": {"type": ["number", "null"]},
+        "energy_check": {"type": ["boolean", "null"], "description": "supercell's oriented-cell energy check was run"}
+      }
+    },
+    "result": {
+      "type": "object",
+      "required": ["status", "gamma", "units", "gamma_flags"],
+      "additionalProperties": false,
+      "properties": {
+        "status": {"type": "string", "enum": ["ok", "failed"]},
+        "gamma": {"type": ["number", "null"], "description": "excess potential energy of the two surfaces per area (mJ/m^2); null when the run failed"},
+        "gamma_error": {"type": ["number", "null"]},
+        "error_method": {"type": ["string", "null"]},
+        "units": {"type": "string", "const": "mJ/m^2"},
+        "stationary": {"type": ["boolean", "null"]},
+        "gamma_unrelaxed": {"type": ["number", "null"], "description": "level 2/3: the unrelaxed gamma of the same termination"},
+        "gamma_raw": {"type": ["number", "null"], "description": "the value the Sim2L itself reported when this record's gamma replaces it (see gamma_basis)"},
+        "gamma_basis": {"type": ["string", "null"]},
+        "gamma_flags": {"type": "array", "items": {"$ref": "#/$defs/flag"}},
+        "molecules_intact": {"type": ["boolean", "null"]},
+        "minimisation": {"type": ["object", "null"]},
+        "error_message": {"type": ["string", "null"]}
+      },
+      "allOf": [
+        {"if": {"properties": {"status": {"const": "ok"}}}, "then": {"properties": {"gamma": {"type": "number"}}}}
+      ]
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["source", "source_ref", "sim2l", "date"],
+      "additionalProperties": false,
+      "properties": {
+        "source": {"type": "string", "enum": ["wulffhound-ledger", "cif-zoo", "surfenergy-regression", "surfenergy-notes"]},
+        "source_ref": {"type": "string", "description": "where the value is recorded: file and entry (e.g. data/tnt/ledger.json#entries[3])"},
+        "sim2l": {"type": "object", "required": ["name"], "additionalProperties": false,
+          "properties": {"name": {"type": "string", "enum": ["supercell+slabcutter", "slabcutter", "surfenergy"]},
+                         "revision": {"type": ["string", "null"], "description": "chain git revision or nanoHUB revision"}}},
+        "run_id": {"type": ["string", "null"], "description": "the run folder id (simtool run hash or wulffhound run name)"},
+        "run_ref": {"type": ["string", "null"], "description": "portable reference of the run folder (chain:..., state:...); not shipped"},
+        "resultsdb_id": {"type": ["string", "null"]},
+        "child_run_ids": {"type": "array", "items": {"type": "string"}},
+        "input_md5": {"type": "object", "additionalProperties": {"$ref": "#/$defs/md5"}},
+        "input_sha256": {"type": "object", "additionalProperties": {"type": "string"}},
+        "date": {"type": "string", "description": "ISO date or date-time of the run (or of the record when the run time is not known)"},
+        "venue": {"type": ["string", "null"]},
+        "cpu_s": {"type": ["number", "null"]},
+        "wall_s": {"type": ["number", "null"]},
+        "reproduce": {"type": ["string", "null"]},
+        "notes": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "surface_energy": {
+      "type": "object",
+      "required": ["schema_version", "record_type", "record_id", "material", "force_field", "facet", "termination",
+                   "protocol", "result", "provenance"],
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {"$ref": "#/$defs/schema_version"},
+        "record_type": {"const": "surface_energy"},
+        "record_id": {"type": "string", "pattern": "^se-[0-9a-f]{12}$"},
+        "material": {"$ref": "#/$defs/material"},
+        "force_field": {"$ref": "#/$defs/force_field"},
+        "facet": {"$ref": "#/$defs/facet"},
+        "termination": {"$ref": "#/$defs/termination"},
+        "protocol": {"$ref": "#/$defs/protocol"},
+        "result": {"$ref": "#/$defs/result"},
+        "provenance": {"$ref": "#/$defs/provenance"}
+      }
+    },
+    "shape_facet": {
+      "type": "object",
+      "required": ["family", "representative", "members", "gamma", "level", "area_fraction", "on_shape", "input_record_ids"],
+      "additionalProperties": false,
+      "properties": {
+        "family": {"type": "string"},
+        "representative": {"$ref": "#/$defs/hkl"},
+        "members": {"type": "array", "items": {"$ref": "#/$defs/hkl"}},
+        "d_eff": {"type": ["number", "null"]},
+        "gamma": {"type": "number", "description": "the gamma used in the build (may be a level-1 value scaled by the relaxed/unrelaxed ratio, see basis)"},
+        "gamma_record": {"type": ["number", "null"], "description": "the gamma of the input record"},
+        "sigma": {"type": ["number", "null"]},
+        "level": {"type": "integer"},
+        "basis": {"type": ["string", "null"]},
+        "termination_label": {"type": ["string", "null"]},
+        "area_fraction": {"type": "number", "minimum": 0, "maximum": 1},
+        "on_shape": {"type": "boolean"},
+        "area_mean": {"type": ["number", "null"]},
+        "area_std": {"type": ["number", "null"]},
+        "area_p05": {"type": ["number", "null"]},
+        "area_p95": {"type": ["number", "null"]},
+        "p_on_shape": {"type": ["number", "null"]},
+        "bfdh_area_fraction": {"type": ["number", "null"], "description": "BFDH (gamma ~ 1/d_eff) area fraction over the same facet set"},
+        "flags": {"type": "array", "items": {"$ref": "#/$defs/flag"}},
+        "input_record_ids": {"type": "array", "items": {"type": "string", "pattern": "^se-[0-9a-f]{12}$"}, "minItems": 1}
+      }
+    },
+    "wulff_shape": {
+      "type": "object",
+      "required": ["schema_version", "record_type", "shape_id", "material_id", "structure_id", "force_field",
+                   "temperature_K", "level", "facets", "shape_metrics", "sensitivity", "lattice_matrix", "checks",
+                   "input_record_ids", "provenance"],
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {"$ref": "#/$defs/schema_version"},
+        "record_type": {"const": "wulff_shape"},
+        "shape_id": {"type": "string", "pattern": "^ws-[0-9a-f]{12}$"},
+        "material_id": {"type": "string"},
+        "material_name": {"type": "string"},
+        "structure_id": {"type": "string"},
+        "force_field": {"type": "string"},
+        "force_field_validated": {"type": "boolean"},
+        "temperature_K": {"type": "number"},
+        "level": {"type": "string", "enum": ["1", "2", "best"], "description": "1: unrelaxed values only; 2: relaxed only; best: relaxed where available, else level 1 scaled by the mean relaxed/unrelaxed ratio (wulffhound engine)"},
+        "level_description": {"type": "string"},
+        "facet_set": {"type": "array", "items": {"type": "string"}},
+        "facets": {"type": "array", "items": {"$ref": "#/$defs/shape_facet"}},
+        "shape_metrics": {
+          "type": "object",
+          "required": ["shape_factor", "anisotropy", "weighted_surface_energy", "n_on_shape"],
+          "additionalProperties": false,
+          "properties": {
+            "shape_factor": {"type": "number"},
+            "anisotropy": {"type": "number"},
+            "weighted_surface_energy": {"type": "number"},
+            "volume": {"type": ["number", "null"], "description": "in (gamma units)^3: the shape is scaled by gamma"},
+            "surface_area": {"type": ["number", "null"]},
+            "effective_radius": {"type": ["number", "null"]},
+            "aspect_ratios": {"type": ["object", "null"], "description": "extents along the principal axes of the vertex cloud, e1 >= e2 >= e3: e2/e1 and e3/e1"},
+            "n_on_shape": {"type": "integer"},
+            "relax_ratio": {"type": ["number", "null"]}
+          }
+        },
+        "sensitivity": {
+          "type": "object",
+          "required": ["method", "n_samples"],
+          "additionalProperties": false,
+          "properties": {
+            "method": {"type": "string"},
+            "n_samples": {"type": "integer"},
+            "seed": {"type": ["integer", "null"]},
+            "max_area_std": {"type": ["number", "null"]},
+            "sigma_rules": {"type": ["string", "null"]}
+          }
+        },
+        "lattice_matrix": {"$ref": "#/$defs/matrix3"},
+        "checks": {"type": "object", "description": "the conventions checks: pymatgen keeps the data-file a, b, c and its reciprocal-lattice symmetry gives the Laue orbits (2/m asserted)"},
+        "flags": {"type": "array", "items": {"$ref": "#/$defs/flag"}},
+        "convergence": {"type": ["object", "null"]},
+        "input_record_ids": {"type": "array", "items": {"type": "string", "pattern": "^se-[0-9a-f]{12}$"}},
+        "provenance": {"type": "object", "required": ["built_by", "date"], "additionalProperties": true}
+      }
+    }
+  }
+}
