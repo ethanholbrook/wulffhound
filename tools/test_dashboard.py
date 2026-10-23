@@ -8,6 +8,8 @@ Firefox (selenium + geckodriver) and checks
      every shape in the dataset, and the BFDH ones too;
   4. moving the what-if slider changes the shape (area fractions and face geometry);
   5. phone width (390 px): no horizontal page scroll;
+  6. campaign driver: a driver-ingested record (provenance.source campaign) has its record page, and a material whose
+     shape a campaign completed renders it, with the campaign record linked in its facet table;
 and saves small screenshots under docs/dashboard/ (--screenshots).
 
     python tools/test_dashboard.py [--screenshots] [--port 8766]
@@ -213,6 +215,31 @@ def main():
             if 'UZGLIIJVICEWHF' in h:
                 nm = js('return document.querySelectorAll(".cov .name").length')
                 check(nm >= 1, 'InChIKey search finds HMX (%d rows)' % nm)
+        # campaign driver: a driver-ingested record (provenance.source campaign) is in the dashboard, its record page
+        # shows it, and a material that got its shape from a campaign renders it with that record in its facet table
+        allrecs = [json.loads(l) for l in open(os.path.join(ROOT, 'dataset', 'surface_energy.jsonl')) if l.strip()]
+        camp = [r for r in allrecs if r['provenance']['source'] == 'campaign' and r['result']['status'] == 'ok']
+        if check(bool(camp), 'dataset has campaign-driver records (%d)' % len(camp)):
+            c0 = camp[0]
+            goto('#/record/' + c0['record_id'], 1.0)
+            body = js('return document.body.textContent')
+            check(c0['record_id'] in js('return document.querySelector("h1").textContent') and 'campaign' in body
+                  and c0['provenance']['run_id'] in body and not errors(),
+                  'campaign record page %s (source campaign, run id %s, %s)' % (c0['record_id'], c0['provenance']['run_id'],
+                                                                             c0['provenance']['sim2l']['revision']))
+            withshape = {s['material_id'] for s in shapes}
+            cm = sorted([r for r in camp if r['material']['material_id'] in withshape and r['protocol']['level'] == 1
+                         and r['termination']['is_lowest']], key=lambda r: r['material']['material_id'] != 'naphthalene')
+            if check(bool(cm), 'a campaign material has a shape'):
+                m = cm[0]['material']['material_id']
+                goto('#/m/' + m, 2.0)
+                ntr = js('var p=document.getElementById("plot3d"); return p && p.data ? p.data.filter(function(t){return t.type==="mesh3d"}).length : 0')
+                lk = js('var id=arguments[0]; return Array.from(document.querySelectorAll("table tbody a")).filter(function(a){return a.getAttribute("href")==="#/record/"+id}).length', cm[0]['record_id'])
+                sc = js('var e=document.getElementById("selfcheck"); return e ? e.textContent : ""')
+                check(ntr > 3 and lk >= 1 and 'agree to 3 decimals' in sc and not errors(),
+                      '%s (shape from a campaign) renders: %d mesh3d faces, the campaign record %s linked in the facet '
+                      'table, self-check: %s' % (m, ntr, cm[0]['record_id'], sc.strip()[:80]))
+                shot('campaign_material', 1280, 1500)
         rid = js('return document.querySelector(".cov a") ? null : null')
         first = json.loads(open(os.path.join(ROOT, 'dataset', 'surface_energy.jsonl')).readline())
         goto('#/record/' + first['record_id'], 1.0)

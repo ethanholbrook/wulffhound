@@ -129,6 +129,9 @@ def job_records(job, ev, res, mat, spec, X, mats, revision, dirty):
     if mat.meta.get('cif_md5'):
         in_md5['cif'] = mat.meta['cif_md5']
     run_dir = res.get('run_dir')
+    if not run_dir and not res.get('ok'):
+        m = re.search(r'run dir (\S+?)\)', res.get('error') or '')     # chain_runner names the failed run's folder
+        run_dir = m.group(1) if m and m.group(1) != 'None' else None
     run_id = os.path.basename(str(run_dir).rstrip('/')) if run_dir else job['job_id']
     if lv == 1:
         child = [os.path.basename(str(c.get('run_dir')).rstrip('/')) for c in res.get('child_runs') or [] if c.get('run_dir')]

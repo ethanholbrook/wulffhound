@@ -1,0 +1,15 @@
+# Level 1 (unrelaxed screening, ReaxFF-lg) of the next two BFDH families of three CIF-zoo crystals, so that each
+# reaches four computed families and gets a (screening-level) Wulff shape. The zoo computed the first two BFDH
+# families of every crystal; the dataset look-up skips them, limit_new keeps two new ones per material, and
+# families with no oriented cell at search_range 4 (surfenergy's estimator) or over the cap are passed over.
+#   ./wh campaign plan campaigns/zoo_screen.yaml
+campaign: zoo_screen
+description: CIF zoo, level 1 for two more BFDH families of naphthalene, anthracene and benzoic acid
+materials: [naphthalene, anthracene, benzoic-acid]
+forcefield: {route: auto}          # the zoo's ReaxFF route (reax-lg-2011.ff, cif2lammps unit cells)
+facets: {select: bfdh_top, n: 6, limit_new: 2}
+levels: [1]
+protocol: {n_periods: 2, search_range: 4}
+budget: {cpu_minutes: 15, per_run_cap_minutes: 3}
+policy: baseline
+executor: {backend: local, workers: 2}

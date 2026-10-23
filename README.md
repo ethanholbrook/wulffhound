@@ -193,21 +193,23 @@ it only reads exported data, and the simulation chain and the agent are unchange
 
 ![TNT material page: facet table, the Wulff shape computed in the browser with the BFDH overlay, what-if slider](docs/dashboard/tnt_whatif_bfdh.png)
 
-**What is in it** (`dataset/`, built by `tools/export_dataset.py`, schema 0.1.0):
+**What is in it** (`dataset/`, built by `tools/export_dataset.py`, schema 0.1.1):
 
 | Source | Records | What |
 |---|---|---|
 | wulffhound ledgers, `data/tnt` and `data/paracetamol` | 55 + 84 | level 1 (one record per computed termination group) and level 2, with the failed runs |
 | the chain's CIF zoo (`notes/validation/cif_zoo.json`, read from the private chain) | 117 | 21 COD crystals x 2 facet families, the unrelaxed gamma of every termination (ReaxFF-lg), 2 failed facets |
 | surfenergy's pinned values and notes | 3 | TNT (0 0 1) T = 0 (104.02) and 300 K (96.8 +- 5.7, default MD length), beta-HMX (0 1 0) T = 0 on the COD 4110146 cell (226.07, with its run id) |
-| derived Wulff shapes | 4 | TNT and paracetamol at level `best` and level 1 (pymatgen, the wulffhound engine) |
+| campaign driver, `dataset/campaigns/*.jsonl` (see [Campaign driver](#campaign-driver)) | 5 + 8 | TNT level 2 with the R3 slab start (4 values, 1 failed run); level 1 of two more families of naphthalene, anthracene and benzoic acid |
+| derived Wulff shapes | 7 | TNT and paracetamol at level `best` and level 1 (pymatgen, the wulffhound engine); naphthalene, anthracene and benzoic acid at level 1 (built from their records, `wulffhound/shapes.py`) |
 
-In all: 259 surface-energy records for 21 materials. 6 are failed runs and 2 are level-2 results that the
+In all: 272 surface-energy records for 21 materials. 7 are failed runs and 2 are level-2 results that the
 consistency guard rejects. They are kept, with their flags. Parquet is skipped because pyarrow is not installed
 in the dev env (`dataset/index.json` says so). `index.json` lists what was not taken: the short test-length MD
 values of surfenergy (not stationary, no run id), the older-protocol pins, and the 4 zoo CIFs that cif2lammps
 rejects as expected. The zoo has only two facet families per material, which is not a Wulff shape, so for those
-materials the dataset records the facet energies and no shape, and the dashboard says so.
+materials the dataset records the facet energies and no shape, and the dashboard says so; a material gets a
+level-1 shape once it has three or more families that enclose a bounded shape (the three campaign crystals).
 
 **Schema** (`schema/surface_energy.schema.json`, JSON Schema 2020-12). The unit of record is one surface energy:
 
@@ -264,6 +266,130 @@ changes the shape: {1 0 0} at 0.8 gamma goes from 0.103 to 0.254. There is no ho
 - No atomic coordinates are exported. The CCDC-derived TNT and HMX cells contribute only gamma, hkl, lattice
   parameters and metadata.
 
+## Campaign driver
+
+The driver runs **campaigns**: materials x facets x levels x temperatures, under one force-field route, protocol,
+CPU budget and policy. It plans, runs the chain, and turns every finished job into dataset records. It is an
+opt-in layer. **The core force-field routes stay the defaults and work exactly as before.** These are ReaxFF
+(`reaxff`, a ReaxFF file, e.g. reax-lg-2011 through cif2lammps) and the non-reactive typed route (`nonreactive`, a
+data file with full topology plus its run-0 script, as for TNT). The driver only calls them, with the inputs the
+tools already accept. An override is passed only when the spec gives it; otherwise each tool's own default applies.
+
+```bash
+./wh campaign plan   campaigns/zoo_screen.yaml   # dry run: jobs, est. CPU, what is skipped and why
+./wh campaign run    campaigns/zoo_screen.yaml   # plan, run (journal, resumable), ingest, rebuild dataset/
+./wh campaign status campaigns/zoo_screen.yaml   # the journal: gamma, gamma_flags, errors, CPU
+./wh campaign ingest campaigns/zoo_screen.yaml   # journal -> dataset/campaigns/<name>.jsonl -> tools/export_dataset.py
+./wh py -W ignore -m unittest discover -s tests  # 29 unit tests (planner, executor, ingest, shapes), no chain needed
+```
+
+**Spec** (YAML or JSON, `schema/campaign.schema.json`):
+
+```yaml
+campaign: zoo_screen
+materials: [naphthalene, anthracene, benzoic-acid]   # name / material_id / InChIKey, {cif: PATH}, {example: DIR}
+forcefield: {route: auto}           # auto | reaxff (ffield) | nonreactive (datafile + script); more routes register
+facets: {select: bfdh_top, n: 6, limit_new: 2}       # or a list, 'bfdh_top_N', 'max_index K', on_shape
+levels: [1]                         # 1 unrelaxed, 2 relaxed T = 0, 3 MD at T (md: equilibration_ps, production_ps, n_blocks)
+temperatures: [0]
+protocol: {n_periods: 2, search_range: 4}            # also slab_from, vacuum, angle_dev, s_tol
+budget: {cpu_minutes: 15, per_run_cap_minutes: 3}
+policy: baseline                    # exhaustive | baseline (greedy) | agent (plan only: the MCP agent's queue)
+executor: {backend: local, workers: 2}               # local | nanohub | aura; workers capped at 2
+```
+
+**Planner** (`wulffhound/campaign.py`):
+
+- *Materials.* A material resolves to a wulffhound bundle (tnt, paracetamol), a CIF-zoo crystal of the chain, a
+  chain example folder, or a CIF. A CIF goes through cif2lammps with surfenergy's CIF defaults, cached; if the unit
+  cell is one the dataset knows, it maps to that material.
+- *Force-field routes.* `FORCEFIELD_ROUTES` holds `reaxff` and `nonreactive`. A future route (e.g. OpenFF)
+  registers one more function with `register_route` and changes neither of these.
+- *Look before you run.* A job is skipped when its exact key is already in the dataset or in this campaign's
+  journal, and the record ids are named. The key is material, structure, force field, family, level, T,
+  n_periods, slab_from, vacuum and MD lengths. A record with the same material, family and level but another
+  protocol is reported as a near-duplicate, and the job runs as a refresh. A key that failed before is not
+  retried unless `dedup.retry_failed` or `--retry-failed` says so.
+- *Cost.* Bundle materials use the engine's calibrated model, on measured cells. Every job also gets surfenergy's
+  own estimate (its GUI model, `wulffhound/chain_estimate.py` in the chain env). For other materials that estimate
+  is used, and it picks the family member with the smallest oriented cell. Jobs over the per-run cap, or with no
+  oriented cell at the search range, are skipped.
+- *Order and budget.* `exhaustive` runs in the spec's order. `baseline` is the deterministic greedy policy: level 1
+  in BFDH order, then the higher levels by (area on the current shape) / (CPU). The plan is then cut at the budget.
+
+**Executor** (`wulffhound/campaign_exec.py`):
+
+- *Backends.* `local` runs the chain through `chain_runner.py`, the engine's live-run mechanism. `nanohub` would
+  call `simtool.Run` on installed revisions, with venue and cluster options. `aura` would call the AURA MCP's
+  `run_sim2l`. Both are documented, tested stubs. The Sim2Ls are not on nanoHUB yet, so they raise
+  `BackendNotAvailable`, list what is needed, and show the exact call through `describe(job)`.
+- *Workers.* Default 1, at most 2.
+- *Journal.* `state/campaigns/<name>/journal.jsonl`. A job left `started` by a crash is recovered from its
+  `result.json` (the chain runs in its own session and finishes), or else run again.
+- *Failures.* A failed job is recorded with the tool's error text and is not run again. A gamma that surfenergy
+  flags keeps its `gamma_flags`.
+- *Recalibration.* Estimates are recalibrated while the campaign runs: once jobs of a level have finished, later
+  estimates are scaled by the median measured/estimated CPU (only upwards). The per-run cap and the budget are
+  checked again on the scaled value.
+
+**Ingest** (`wulffhound/campaign_ingest.py`):
+
+- *Records.* Every done or failed job becomes schema-valid `surface_energy` records (provenance source
+  `campaign`) in `dataset/campaigns/<name>.jsonl`. Each record has:
+  - the run id (surfenergy's run hash, or the job folder for a level-1 screen) and the child run ids;
+  - the revision `chain <short sha>`, marked `+dirty` when the chain's tools had uncommitted changes;
+  - the md5 of the data file, script and force-field file, and the CPU and wall time;
+  - the reproduce line (`./wh campaign run SPEC --only JOB_ID ...` plus the chain call);
+  - surfenergy's `gamma_flags`, mapped to dataset flags, and the wulffhound consistency guard.
+- *Dataset.* `tools/export_dataset.py` reads the stores. A campaign level-2 value of a bundle material enters that
+  material's `best` shape: the newer run wins, as in the engine. A refreshed ledger record names the record that
+  refreshes it in its `protocol_superseded` flag. Other materials get a level-1 shape from their records
+  (`wulffhound/shapes.py`) once they have three or more families that enclose a bounded shape and whose Laue
+  orbits equal pymatgen's lattice symmetry. The dashboard picks all of it up, and `tools/test_dashboard.py` checks
+  a campaign record and a campaign-completed shape.
+- *MCP.* `campaign_plan(spec)` and `campaign_status(spec)` in `mcp_server.py` let the agent plan with the driver.
+  Both only read.
+
+**First campaigns (23 Oct 2026, chain 6b9edf5 with another agent's uncommitted surfenergy changes, so the records
+say `chain 6b9edf5+dirty`; TNT uses cut-off electrostatics, which those changes leave as before):**
+
+| Campaign | Jobs | CPU | Result |
+|---|---|---|---|
+| `tnt_t0_relax`: level 2 at T = 0, slab_from relaxed_bulk, for TNT's on-shape families | 5 run (in 3 `run` calls), 8 skipped | 22.2 min | {1 0 0} 124.01 (static cut 124.11); {1 0 -1} 131.98 (first level 2; unrelaxed 136.90); {2 0 -3} 135.07 (first level 2; unrelaxed 138.58); {1 0 -2} 138.29 (first level 2; unrelaxed 145.12); {2 0 1} failed: the relaxed bulk has 4 terminations and the static cell 2, so surfenergy refuses the re-cut and names slab_from static_cut |
+| `zoo_screen`: level 1 of the next two BFDH families of three zoo crystals (ReaxFF-lg) | 6 run, 12 skipped | 3.2 min | naphthalene {1 1 0} 121.75, {1 0 -2} 89.22; anthracene {0 1 1} 113.12, {1 1 -1} 99.58; benzoic acid {1 0 -2} 102.41, {0 1 1} 183.70 |
+
+- *TNT skips.* {0 0 1} was skipped because it is in the dataset: surfenergy's R3 pin 104.0232. Five families were
+  over the 6-minute cap at plan time.
+- *Recalibration.* The first runs took 1.57 x their estimate (likely R3's second slabcutter pass and the bulk stress
+  steps, which the engine's calibration runs predate). After the recalibration, {0 1 2} (8.0 min) and {2 1 -1}
+  (6.9 min) were over the cap.
+- *Resume.* The first `run` was stopped on purpose with two jobs in flight. Those chain runs finished on their own,
+  and the next `run` recovered both from their `result.json` files.
+- *A new on-shape family.* The refreshed shape put {1 0 -2} on it (0.011). A later re-plan picked it up, estimated
+  at 5.5 min after the recalibration; it took 6.3 min.
+- *Refreshed records.* Of the four TNT level-2 records flagged protocol_superseded, {1 0 0} is refreshed, and its
+  flag names the new record. {2 0 1} fails under R3. {0 1 2} and {0 1 1} are over the time rule.
+- *TNT flags.* {1 0 0}, {1 0 -1} and {1 0 -2} carry surfenergy's `minimisation_not_converged` flag, a warning:
+  the bulk stress was 41, 54 and 139 atm against a 25 atm tolerance.
+- *TNT shape.* The `best` shape now has 13 families on it (12 before). {1 0 0} grows from 0.103 to 0.112.
+  {2 0 -3}, now at level 2, falls from 0.072 to 0.050. {1 0 -2} appears at 0.011.
+- *New zoo shapes.* The three crystals reach four families each and get their first (screening-level) shapes:
+  - naphthalene: {1 0 0} 0.374, {0 1 1} 0.334, {1 0 -2} 0.233, {1 1 0} 0.059;
+  - anthracene: {1 0 0} 0.384, {1 1 -1} 0.377, {0 1 1} 0.238; BFDH gives {1 1 -1} only 0.107;
+  - benzoic acid: {0 0 1} 0.519, {0 1 1} 0.173, {1 0 -2} 0.168, {1 0 0} 0.141.
+
+![Naphthalene material page: the level-1 shape a campaign completed](docs/dashboard/campaign_material.png)
+
+**Limits.**
+
+- `local` is the only backend that runs. The level-3 (MD) path is implemented and unit-tested but has not been
+  run here: it is longer than the time rule.
+- A level-2 job adds no new level-1 records: the screening of every termination is in its run, and its unrelaxed
+  gamma is in the record.
+- The engine (the MCP agent's tools) does not read campaign records as its cache yet. The planner does, and so
+  does the exported dataset.
+- Shapes built from records are level 1 only, with sigma 5 %.
+
 ## Honest limits
 
 - **T = 0 only**: static surface energies, the standard Wulff input. No entropy and no finite-temperature shape.
@@ -300,7 +426,8 @@ changes the shape: {1 0 0} at 0.8 gamma goes from 0.103 to 0.254. There is no ho
 | `tools/build_bundle.py`, `tools/check_public.sh` | bundle builder (needs the chain); secret / path / licence check (CI) |
 | `tools/publish_demo.sh`, `docs/demo/` | copy an agent session (sanitised paths) into `docs/demo/`; the 22 Oct 2026 demo sessions |
 | `tools/make_headline.py` | the README headline figure (`docs/headline_paracetamol.png`), a replay of the paracetamol demo session that checks its area fractions |
-| `schema/`, `tools/export_dataset.py`, `dataset/` | the dataset schema (0.1.0), its exporter and the exported records (prototype) |
+| `schema/`, `tools/export_dataset.py`, `dataset/` | the dataset schema (0.1.1), its exporter and the exported records (prototype) |
+| `wulffhound/campaign*.py`, `wulffhound/chain_estimate.py`, `wulffhound/shapes.py`, `schema/campaign.schema.json`, `campaigns/`, `dataset/campaigns/`, `tests/` | the campaign driver: spec + planner, executor + backends, ingest, surfenergy's estimator in the chain env, record-based shapes, the spec schema, example campaigns, their records, unit tests |
 | `dashboard/`, `tools/serve_dashboard.sh`, `tools/test_dashboard.py`, `docs/dashboard/` | the static dashboard, its server script, the headless browser test and the screenshots |
 
 Not included: the TNT unit cell and its LAMMPS script (CCDC-derived; they stay in the private chain), and the

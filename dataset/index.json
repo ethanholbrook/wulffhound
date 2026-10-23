@@ -1,7 +1,7 @@
 {
- "schema_version": "0.1.0",
+ "schema_version": "0.1.1",
  "schema": "schema/surface_energy.schema.json",
- "built": "2026-10-23T02:39:20-04:00",
+ "built": "2026-10-23T13:53:13-04:00",
  "built_by": "tools/export_dataset.py",
  "files": {
   "surface_energy": "surface_energy.jsonl",
@@ -9,17 +9,19 @@
  },
  "parquet": "skipped: pyarrow is not installed in this environment (JSON Lines only)",
  "counts": {
-  "surface_energy": 259,
-  "wulff_shape": 4,
+  "surface_energy": 272,
+  "wulff_shape": 7,
   "by_source": {
    "wulffhound-ledger:tnt": 55,
    "wulffhound-ledger:paracetamol": 84,
    "cif-zoo": 117,
+   "campaign:tnt_t0_relax": 5,
+   "campaign:zoo_screen": 8,
    "surfenergy": 3
   },
-  "status_failed": 6,
-  "with_warning_or_error_flags": 225,
-  "with_error_flags": 8,
+  "status_failed": 7,
+  "with_warning_or_error_flags": 237,
+  "with_error_flags": 9,
   "materials": 21
  },
  "materials": [
@@ -34,7 +36,7 @@
    "force_fields": [
     "ReaxFF-lg"
    ],
-   "n_records": 3
+   "n_records": 5
   },
   {
    "material_id": "aspirin-i",
@@ -60,7 +62,7 @@
    "force_fields": [
     "ReaxFF-lg"
    ],
-   "n_records": 6
+   "n_records": 10
   },
   {
    "material_id": "carbamazepine-iii",
@@ -125,7 +127,7 @@
    "force_fields": [
     "ReaxFF-lg"
    ],
-   "n_records": 2
+   "n_records": 4
   },
   {
    "material_id": "nicotinamide",
@@ -270,7 +272,7 @@
     "TNT non-reactive (buck + lj/cut + coul/wolf, 11 A)",
     "ReaxFF-lg"
    ],
-   "n_records": 65
+   "n_records": 70
   },
   {
    "material_id": "tnt-orthorhombic",
@@ -301,17 +303,13 @@
  ],
  "no_shape": {
   "materials": [
-   "anthracene",
    "aspirin-i",
-   "benzoic-acid",
    "carbamazepine-iii",
    "cytosine-ii",
    "glycine-alpha",
    "hmx-beta",
-   "naphthalene",
    "nicotinamide",
    "oxalic-acid-alpha",
-   "paracetamol-i",
    "pentaerythritol",
    "petn-i",
    "pyrazine",
@@ -319,11 +317,46 @@
    "salicylic-acid",
    "succinic-acid-beta",
    "theophylline-ii",
-   "tnt-monoclinic",
    "tnt-orthorhombic",
    "urea"
   ],
-  "why": "the CIF zoo computed two facet families per material: two families are not a Wulff shape (every other facet is missing), so only the facet energies are recorded"
+  "why": "fewer than 3 computed facet families (the CIF zoo computed two per material): that is not a Wulff shape (every other facet is missing), so only the facet energies are recorded",
+  "by_material": {
+   "aspirin-i": "2 usable facet families at level 1 (a shape needs >= 3)",
+   "carbamazepine-iii": "2 usable facet families at level 1 (a shape needs >= 3)",
+   "cytosine-ii": "2 usable facet families at level 1 (a shape needs >= 3)",
+   "glycine-alpha": "2 usable facet families at level 1 (a shape needs >= 3)",
+   "hmx-beta": "2 usable facet families at level 1 (a shape needs >= 3)",
+   "nicotinamide": "2 usable facet families at level 1 (a shape needs >= 3)",
+   "oxalic-acid-alpha": "2 usable facet families at level 1 (a shape needs >= 3)",
+   "pentaerythritol": "2 usable facet families at level 1 (a shape needs >= 3)",
+   "petn-i": "2 usable facet families at level 1 (a shape needs >= 3)",
+   "pyrazine": "2 usable facet families at level 1 (a shape needs >= 3)",
+   "rdx-alpha": "1 usable facet families at level 1 (a shape needs >= 3)",
+   "salicylic-acid": "1 usable facet families at level 1 (a shape needs >= 3)",
+   "succinic-acid-beta": "2 usable facet families at level 1 (a shape needs >= 3)",
+   "theophylline-ii": "2 usable facet families at level 1 (a shape needs >= 3)",
+   "tnt-orthorhombic": "2 usable facet families at level 1 (a shape needs >= 3)",
+   "urea": "2 usable facet families at level 1 (a shape needs >= 3)"
+  }
+ },
+ "campaigns": {
+  "tnt_t0_relax": {
+   "records": 5,
+   "store": "campaigns/tnt_t0_relax.jsonl",
+   "materials": [
+    "tnt-monoclinic"
+   ]
+  },
+  "zoo_screen": {
+   "records": 8,
+   "store": "campaigns/zoo_screen.jsonl",
+   "materials": [
+    "anthracene",
+    "benzoic-acid",
+    "naphthalene"
+   ]
+  }
  },
  "skipped": [
   "cif-zoo: pyrazole (COD 1511994): cif2lammps rejected it as expected: partial occupancy on 4 site(s) (H1, H2, H11, H12): disordered structures are not supported. Choose an ordered model of t",

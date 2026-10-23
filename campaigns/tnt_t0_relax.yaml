@@ -1,0 +1,17 @@
+# Level 2 (relaxed T = 0) for the families on TNT's current Wulff shape that fit the per-run time rule, with
+# surfenergy's default slab start since R3 (slab_from relaxed_bulk: the slab is cut again from the relaxed bulk).
+# It refreshes the TNT level-2 records made with the older protocol (slab_from static_cut, flagged
+# protocol_superseded); TNT (0 0 1) is skipped because surfenergy's pinned R3 value is already in the dataset.
+#   ./wh campaign plan campaigns/tnt_t0_relax.yaml      (dry run)
+#   ./wh campaign run  campaigns/tnt_t0_relax.yaml      (needs the chain)
+campaign: tnt_t0_relax
+description: TNT level 2 at T = 0 for the on-shape families within the time rule, slab_from relaxed_bulk (R3)
+materials: [tnt]
+forcefield: {route: auto}          # TNT's own non-reactive typed route (data file + script of the chain example)
+facets: {select: on_shape, shape_level: best}
+levels: [2]
+temperatures: [0]
+protocol: {n_periods: 2, slab_from: relaxed_bulk}
+budget: {cpu_minutes: 30, per_run_cap_minutes: 6}
+policy: baseline
+executor: {backend: local, workers: 2}
