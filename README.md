@@ -255,7 +255,7 @@ changes the shape: {1 0 0} at 0.8 gamma goes from 0.103 to 0.254. There is no ho
 
 **Limits.**
 
-- This is a prototype, schema 0.1.0.
+- This is a prototype, schema 0.1.1 (0.1.0 plus the campaign source and the sim2l_flag code).
 - The CIF-zoo values are **unrelaxed ReaxFF-lg screening cuts, not validated surface energies**.
 - TNT uses a **validated non-reactive force field**. Paracetamol uses **ReaxFF-lg, which is not validated** for it.
 - The shapes are T = 0 shapes and are not converged (flagged).
