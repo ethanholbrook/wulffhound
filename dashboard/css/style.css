@@ -187,3 +187,9 @@ pre.json { background: var(--surface-2); border-radius: 8px; padding: 10px; over
 .row label select, .row label input { min-width: 0; max-width: 100%; flex: 1 1 auto; }
 select { max-width: 100%; text-overflow: ellipsis; }
 input[type="search"] { width: 22em; max-width: 100%; }
+
+/* facet-family colours (app.js PALETTE): swatches in the legend and the tables */
+.swatch { display: inline-block; width: 0.8em; height: 0.8em; border-radius: 2px; margin-right: 6px; vertical-align: -0.05em;
+  box-shadow: 0 0 0 1px var(--axis); }
+.famlegend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 6px 0 2px; font-size: 0.82rem; color: var(--ink-2); }
+.famitem { white-space: nowrap; }
