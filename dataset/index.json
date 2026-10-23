@@ -1,7 +1,7 @@
 {
  "schema_version": "0.1.0",
  "schema": "schema/surface_energy.schema.json",
- "built": "2026-10-23T02:16:33-04:00",
+ "built": "2026-10-23T02:39:20-04:00",
  "built_by": "tools/export_dataset.py",
  "files": {
   "surface_energy": "surface_energy.jsonl",
@@ -107,8 +107,7 @@
    "inchikey": "UZGLIIJVICEWHF-UHFFFAOYSA-N",
    "formula": "C4H8N8O8",
    "structures": [
-    "cod-4110146",
-    "ccdc-1225494"
+    "cod-4110146"
    ],
    "force_fields": [
     "ReaxFF-lg"
@@ -332,7 +331,7 @@
   "cif-zoo: caffeine (COD 4504310): cif2lammps rejected it as expected: partial occupancy on 72 site(s) (N101, C102, N103, C104, C105, C106, N107, C108): disordered structures are not supporte",
   "cif-zoo: thymine (COD 1518688): cif2lammps rejected it as expected: the molecules found are C5N2O2 but the CIF formula (_chemical_formula_sum) is C5H6N2O2: hydrogen atoms are missing from ",
   "surfenergy: tnt_300 / hmx_300 short test-length MD (0.5 + 1 ps and 0.1 + 0.2 ps): e.g. 99.83 +- 23.32 and 178.89 +- 19.25 mJ/m^2, flagged not stationary by surfenergy, re-run at every protocol change, no run id: test settings, not results",
-  "surfenergy: older protocol values of the same cases (hmx_T0 226.45 / 225.22 / 228.24, tnt_T0 104.0965 static cut, the pre-fix 300 K values of SURFENERGY_E2E.md): superseded by the pinned values above",
+  "surfenergy: older protocol values of the same cases (hmx_T0 224.43 on the CCDC cell, 226.45 / 225.22 / 228.24, tnt_T0 104.0965 static cut, the pre-fix 300 K values of SURFENERGY_E2E.md): superseded by the pinned values above",
   "surfenergy: TNT 300 K example defaults (1 + 2 ps): 101.0 +- 13.9 / 121.7 +- 14.9, not stationary, no run id",
   "surfenergy: HMX 300 K at production length: never run (needs a cluster venue)"
  ],

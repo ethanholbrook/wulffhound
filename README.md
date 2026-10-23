@@ -199,7 +199,7 @@ it only reads exported data, and the simulation chain and the agent are unchange
 |---|---|---|
 | wulffhound ledgers, `data/tnt` and `data/paracetamol` | 55 + 84 | level 1 (one record per computed termination group) and level 2, with the failed runs |
 | the chain's CIF zoo (`notes/validation/cif_zoo.json`, read from the private chain) | 117 | 21 COD crystals x 2 facet families, the unrelaxed gamma of every termination (ReaxFF-lg), 2 failed facets |
-| surfenergy's pinned values and notes | 3 | TNT (0 0 1) T = 0 (104.02) and 300 K (96.8 +- 5.7, default MD length), beta-HMX (0 0 1) T = 0 (224.43) |
+| surfenergy's pinned values and notes | 3 | TNT (0 0 1) T = 0 (104.02) and 300 K (96.8 +- 5.7, default MD length), beta-HMX (0 1 0) T = 0 on the COD 4110146 cell (226.07, with its run id) |
 | derived Wulff shapes | 4 | TNT and paracetamol at level `best` and level 1 (pymatgen, the wulffhound engine) |
 
 In all: 259 surface-energy records for 21 materials. 6 are failed runs and 2 are level-2 results that the

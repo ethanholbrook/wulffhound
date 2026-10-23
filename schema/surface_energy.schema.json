@@ -196,7 +196,7 @@
       "required": ["source", "source_ref", "sim2l", "date"],
       "additionalProperties": false,
       "properties": {
-        "source": {"type": "string", "enum": ["wulffhound-ledger", "cif-zoo", "surfenergy-regression", "surfenergy-notes"]},
+        "source": {"type": "string", "enum": ["wulffhound-ledger", "cif-zoo", "surfenergy-regression", "surfenergy-notes", "surfenergy-run"]},
         "source_ref": {"type": "string", "description": "where the value is recorded: file and entry (e.g. data/tnt/ledger.json#entries[3])"},
         "sim2l": {"type": "object", "required": ["name"], "additionalProperties": false,
           "properties": {"name": {"type": "string", "enum": ["supercell+slabcutter", "slabcutter", "surfenergy"]},

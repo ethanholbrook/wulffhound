@@ -515,60 +515,51 @@ def surfenergy_records(mats, wh_tnt_material, chain_root):
                                      'equilibration_ps=10.0 --set production_ps=20.0 --set n_blocks=5 (and slab_from=static_cut)',
                            notes=['bulk PE 14.481 +- 0.065 kcal/mol per molecule, 300.2 K, 30 atm; slab 299.6 K, 250 samples',
                                   'equipartition term 0 (N_slab = N_bulk), reported not subtracted'])})
-    # HMX T = 0 (CCDC 1225494 cell, c-unique setting: (0 0 1) here is (0 1 0) of COD 4110146)
+    # HMX T = 0 on the COD 4110146 cell (the chain example since 6b9edf5): b-unique P 1 21/n 1, facet (0 1 0)
+    # (the facet called (0 0 1) in the earlier c-unique CCDC cell, whose value 224.43 is superseded)
     hz = mats.by_inchikey.get('UZGLIIJVICEWHF-UHFFFAOYSA-N')
-    hm = mats.zoo_material(hz)
-    hmx_params = (6.533, 7.351, 11.032, 90.0, 90.0, 77.32)
-    f = parse_formula('C4H8N8O8')
-    hmat = dict(hm, structure={'structure_id': 'ccdc-1225494', 'source': 'CCDC 1225494 (CSD OCHTET04), the chain '
-                               'example surfenergy/examples/hmx_cif/HMX.cif at the pin; not distributed', 'database': 'CCDC',
-                               'database_id': '1225494', 'licence': 'CCDC terms: not redistributable (only gamma, hkl, '
-                               'lattice parameters and metadata are exported)', 'citation': None, 'doi': None, 'url': None,
-                               'sha256': None, 'md5': '0396cdeed18560692f5fa70c70f9024c', 'measurement_T_K': 295.0,
-                               'distributed': False},
-                space_group={'symbol_data_setting': 'P 1 1 21/n', 'number': 14, 'laue_class': '2/m'},
-                cell=cell_block(hmx_params, 2, f, note='CCDC 1225494 cell parameters (c-unique, gamma 77.32 deg)'))
+    hmat = mats.zoo_material(hz)
     hff = dict(REAX_FF, md5=REAX_MD5, validated_for_material=False,
                note='ReaxFF-lg is parametrised for nitramines such as HMX; its surface energies are not validated against '
                     'a reference; T = 0 ReaxFF relaxations stop at force-field cusps (FIRE)')
     out.append({
-        'record_id': rid('se', 'surfenergy', 'hmx_T0', '2026-10-23'), 'material': hmat, 'force_field': hff,
-        'facet': {'hkl': [0, 0, 1], 'family': '{0 0 1}', 'family_representative': [0, 0, 1], 'family_members': [[0, 0, 1], [0, 0, -1]],
-                  'multiplicity': 2, 'd_hkl': 11.032, 'd_eff': None,
-                  'setting': {'description': 'Miller indices relative to the CCDC 1225494 cell (P 1 1 21/n, a 6.533 b 7.351 '
-                              'c 11.032 A, gamma 77.32 deg)', 'structure_id': 'ccdc-1225494',
-                              'other_settings': '(0 0 1) here is (0 1 0) in the b-unique COD 4110146 setting (P 1 21/n 1)'}},
+        'record_id': rid('se', 'surfenergy', 'hmx_T0', 'cod4110146', '2026-10-23'), 'material': hmat, 'force_field': hff,
+        'facet': {'hkl': [0, 1, 0], 'family': '{0 1 0}', 'family_representative': [0, 1, 0], 'family_members': [[0, 1, 0], [0, -1, 0]],
+                  'multiplicity': 2, 'd_hkl': 10.761, 'd_eff': None,
+                  'setting': {'description': 'Miller indices relative to the COD 4110146 cell (P 1 21/n 1, b unique)',
+                              'structure_id': hmat['structure']['structure_id'],
+                              'other_settings': '(0 1 0) here is (0 0 1) in the c-unique CCDC 1225494 setting (P 1 1 21/n)'}},
         'termination': {'index': 0, 'label': 't0 (lowest unrelaxed; t1 same group)', 'group': 0, 'equivalent_indices': [0, 1],
-                        'gap': None, 'faces_equivalent': True, 'n_terminations': 2, 'is_lowest': True},
+                        'gap': 5.3805, 'faces_equivalent': True, 'n_terminations': 2, 'is_lowest': True},
         'protocol': {'level': 2, 'level_name': 'relaxed_T0', 'temperature_K': 0.0, 'n_periods': 2, 'vacuum_A': 30.0,
-                     'search_range': 6, 'slab_from': 'relaxed_bulk', 'minimiser': 'FIRE in fixed cells (unit cell 1000 steps '
-                     'as the bulk reference, slab 1500), stopped by the energy-change criterion', 'timestep_fs': None,
-                     'equilibration_ps': None, 'production_ps': None, 'n_blocks': None, 'mnp': [-1, 0, 0, 1, -4, 0, 0, 0, 1],
-                     'n_molecules_cell': 8, 'n_molecules_slab': 16, 'n_molecules_bulk': None, 'surface_area_A2': 187.93,
-                     'thickness_A': 22.064, 'energy_check': True},
-        'result': {'status': 'ok', 'gamma': 224.4345, 'gamma_error': 0.0, 'error_method': 'none: T = 0 minimisation (deterministic)',
-                   'units': 'mJ/m^2', 'stationary': None, 'gamma_unrelaxed': 228.7134, 'gamma_raw': None,
-                   'gamma_basis': 'surfenergy relaxed T = 0 gamma (pinned 224.43 +- 1; two runs bit-identical)',
-                   'gamma_flags': [flag('force_field_not_validated', 'warning', hff['note']), norun],
+                     'search_range': 6, 'slab_from': 'relaxed_bulk', 'minimiser': 'FIRE in fixed cells (unit cell 2000 steps '
+                     'as the bulk reference, slab 2000), stopped by the energy-change criterion', 'timestep_fs': None,
+                     'equilibration_ps': None, 'production_ps': None, 'n_blocks': None, 'mnp': [-1, 0, -4, -1, 0, 0, 0, 1, 0],
+                     'n_molecules_cell': 8, 'n_molecules_slab': 16, 'n_molecules_bulk': 2, 'surface_area_A2': 186.367,
+                     'thickness_A': None, 'energy_check': True},
+        'result': {'status': 'ok', 'gamma': 226.0728, 'gamma_error': 0.0, 'error_method': 'none: T = 0 minimisation (deterministic)',
+                   'units': 'mJ/m^2', 'stationary': None, 'gamma_unrelaxed': 236.9898, 'gamma_raw': None,
+                   'gamma_basis': 'surfenergy relaxed T = 0 gamma (pinned 226.07 +- 1; notebook run and test agree)',
+                   'gamma_flags': [flag('force_field_not_validated', 'warning', hff['note'])],
                    'molecules_intact': True,
-                   'minimisation': {'converged': True, 'unit_cell_steps': 1000, 'slab_steps': 1500, 'stop': 'energy-change criterion',
-                                    'force_norm_kcal_mol_A': {'unit_cell': 9, 'slab': 21}},
+                   'minimisation': {'converged': True, 'unit_cell_steps': 2000, 'slab_steps': 2000, 'stop': 'energy-change criterion'},
                    'error_message': None},
-        'provenance': dict(common, source='surfenergy-regression',
-                           source_ref='chain:devtools/test_surfenergy.py PINNED_T0[hmx_T0]; notes/SURFENERGY_STATUS.md',
-                           sim2l={'name': 'surfenergy', 'revision': 'chain be0dc24'}, run_id=None, run_ref=None,
-                           input_md5={'cif': '0396cdeed18560692f5fa70c70f9024c', 'forcefield': REAX_MD5},
-                           date='2026-10-23', cpu_s=None, wall_s=282.0,
-                           reproduce='chain: devtools/test_surfenergy.py --cases hmx_T0 (surfenergy/examples/hmx_cif at '
-                                     'be0dc24-d5c5a7b: CCDC HMX.cif, (0 0 1), normalize_hydrogens, relax_unitcell atoms)',
-                           notes=['bulk -2750.2103 kcal/mol per molecule; the CG + box/relax protocol before gave 226.45 '
-                                  '(unrelaxed 232.51)', 'X-H normalised to Allen & Bruno 2010 (cif2lammps)'])})
+        'provenance': dict(common, source='surfenergy-run',
+                           source_ref='chain:surfenergy/bin/RUNS/a1915be190a7484bbda8dd7362f1b734; devtools/test_surfenergy.py PINNED_T0[hmx_T0]',
+                           sim2l={'name': 'surfenergy', 'revision': 'chain 6b9edf5'}, run_id='a1915be190a7484bbda8dd7362f1b734',
+                           run_ref='chain:surfenergy/bin/RUNS/a1915be190a7484bbda8dd7362f1b734',
+                           input_md5={'cif': '21f25ba03e3a4428cc7242de7da49f09', 'forcefield': REAX_MD5},
+                           date='2026-10-23', cpu_s=347.7, wall_s=351.7,
+                           reproduce='chain: devtools/run_sim2l.py surfenergy surfenergy/examples/hmx_cif (COD 4110146, (0 1 0), '
+                                     'normalize_hydrogens, relax_unitcell atoms)',
+                           notes=['the CCDC 1225494 cell gave 224.43 (unrelaxed 228.71) at its (0 0 1); the COD 20 K cell is 3 % denser',
+                                  'X-H normalised to Allen & Bruno 2010 (cif2lammps; largest shift 0.003 A on this 20 K structure)'])})
     for r in out:
         r.update({'schema_version': SCHEMA_VERSION, 'record_type': 'surface_energy'})
     skipped = [
         'tnt_300 / hmx_300 short test-length MD (0.5 + 1 ps and 0.1 + 0.2 ps): e.g. 99.83 +- 23.32 and 178.89 +- 19.25 '
         'mJ/m^2, flagged not stationary by surfenergy, re-run at every protocol change, no run id: test settings, not results',
-        'older protocol values of the same cases (hmx_T0 226.45 / 225.22 / 228.24, tnt_T0 104.0965 static cut, the '
+        'older protocol values of the same cases (hmx_T0 224.43 on the CCDC cell, 226.45 / 225.22 / 228.24, tnt_T0 104.0965 static cut, the '
         'pre-fix 300 K values of SURFENERGY_E2E.md): superseded by the pinned values above',
         'TNT 300 K example defaults (1 + 2 ps): 101.0 +- 13.9 / 121.7 +- 14.9, not stationary, no run id',
         'HMX 300 K at production length: never run (needs a cluster venue)']
