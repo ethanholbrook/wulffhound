@@ -7,7 +7,12 @@
   const params = new URLSearchParams(location.search);
   const BASE = (params.get('data') || '../dataset/').replace(/\/?$/, '/');
   const D = { records: [], byId: {}, shapes: [], shapeById: {}, index: null, materials: {} };
-  const STATE = { mat: {} };     // per material: {ff, level, bfdh, allTerms, whatif}
+  const STATE = { mat: {}, colorBy: 'family' };     // per material: {ff, level, bfdh, allTerms, whatif}
+  // Categorical facet colours (Tableau 10, then its lighter companions): the same family keeps the same colour on
+  // the 3D shape, the legend, the facet table, the uncertainty bars and the strip, whatever the level or what-if.
+  const PALETTE = ['#4e79a7', '#f28e2b', '#59a14f', '#e15759', '#76b7b2', '#edc948', '#b07aa1', '#ff9da7', '#9c755f',
+    '#bab0ac', '#a0cbe8', '#ffbe7d', '#8cd17d', '#ff9d9a', '#86bcb6', '#f1ce63', '#d4a6c8', '#fabfd2', '#d7b5a6', '#79706e'];
+  const FAMCOL = {};    // material id -> {family: colour}
   window.__dash = { ready: false, errors: [], checks: {}, renders: 0 };
   window.addEventListener('error', (e) => window.__dash.errors.push(String(e.message || e)));
 
@@ -21,6 +26,20 @@
   const levelName = { 1: 'L1 unrelaxed', 2: 'L2 relaxed T = 0', 3: 'L3 MD' };
   const hasError = (r) => r.result.gamma_flags.some((f) => f.severity === 'error');
   const famHkl = (f) => f.replace(/[{}]/g, '');
+
+  /** stable colours for a material's families: the families of its 'best' (else first) shape by recorded area
+   * (largest first, so the dominant faces get the most distinct colours), then any other family by name */
+  function famColors(M) {
+    if (FAMCOL[M.id]) return FAMCOL[M.id];
+    const order = [];
+    const sh = M.shapes.find((s) => s.level === 'best') || M.shapes[0];
+    if (sh) sh.facets.slice().sort((a, b) => b.area_fraction - a.area_fraction || a.family.localeCompare(b.family)).forEach((f) => order.push(f.family));
+    [...new Set(M.records.map((r) => r.facet.family))].sort().forEach((f) => { if (!order.includes(f)) order.push(f); });
+    const m = {};
+    order.forEach((f, i) => { m[f] = PALETTE[i % PALETTE.length]; });
+    return (FAMCOL[M.id] = m);
+  }
+  const swatch = (c) => '<span class="swatch" style="background:' + esc(c) + '"></span>';
 
   function badge(f) {
     return '<span class="badge ' + esc(f.severity) + '" title="' + esc(f.detail + ' (' + f.by + ')') + '">' + esc(f.code.replace(/_/g, ' ')) + '</span>';
@@ -161,7 +180,8 @@
         (opt.overrides && opt.overrides[f.family] != null ? ' (what-if)' : ' (' + (sf.level === 2 ? 'L2' : 'L1') + ')') +
         '<br>family area fraction ' + fmt(res.areaFraction[f.family], 4) + '<br>termination ' + esc(sf.termination_label || '-');
       traces.push({ type: 'mesh3d', x, y, z, i: I, j: J, k: K, flatshading: true,
-        color: mix(lo, hi, gmax > gmin ? (f.gamma - gmin) / (gmax - gmin) : 0.5), opacity: 1,
+        color: opt.colors && STATE.colorBy === 'family' ? (opt.colors[f.family] || PALETTE[9])
+          : mix(lo, hi, gmax > gmin ? (f.gamma - gmin) / (gmax - gmin) : 0.5), opacity: 1,
         lighting: { ambient: 0.78, diffuse: 0.45, specular: 0.05, roughness: 0.9, fresnel: 0.05 },
         lightposition: { x: 1e5, y: 2e5, z: 3e5 }, hovertemplate: tip + '<extra></extra>', name: f.family });
       for (const p of P.concat([P[0]])) { ex.push(p[0]); ey.push(p[1]); ez.push(p[2]); }
@@ -238,8 +258,12 @@
 
     if (shape) {
       h += '<div class="grid2"><div class="card"><div class="row" style="justify-content:space-between"><h2>Wulff shape, T = ' + fmt(shape.temperature_K, 0) + ' K, level ' + esc(shape.level) + '</h2>' +
-        '<span class="legend-ramp">&gamma; low <span class="ramp"></span> high' + (st.bfdh ? ' &nbsp;<span class="legend-line"></span> BFDH (same volume)' : '') + '</span></div>' +
+        '<label class="small">Colour <select id="sel-color"><option value="family"' + (STATE.colorBy === 'family' ? ' selected' : '') + '>by facet family</option>' +
+        '<option value="gamma"' + (STATE.colorBy === 'gamma' ? ' selected' : '') + '>by &gamma;</option></select></label></div>' +
+        (STATE.colorBy === 'gamma' ? '<div class="legend-ramp">&gamma; low <span class="ramp"></span> high' + (st.bfdh ? ' &nbsp;<span class="legend-line"></span> BFDH (same volume)' : '') + '</div>'
+          : (st.bfdh ? '<div class="legend-ramp"><span class="legend-line"></span> BFDH (same volume)</div>' : '')) +
         '<div id="plot3d" class="plot3d" role="img" aria-label="3D Wulff shape of ' + esc(M.name) + '"></div>' +
+        '<div id="famlegend" class="famlegend" aria-label="facet families on the shape"></div>' +
         '<p class="small muted">Computed in your browser from the facet normals and gammas (half-space intersection; data-file axes, a along x). Hover a face for its (h k l), gamma, area and termination. ' +
         'Recorded shape: ' + shapeLink(shape, esc(shape.shape_id)) + '.</p><div id="selfcheck"></div></div>' +
         '<div class="card whatif"><h2>What if</h2><p class="small muted">Change one gamma and watch the shape respond. What-if values are not data.</p>' +
@@ -258,20 +282,27 @@
     }
     h += '<div class="card"><h2>Facet table</h2><p class="small muted">Every gamma links to its record (inputs, protocol, flags, run). ' +
       (st.allTerms ? 'All terminations.' : 'The lowest termination of each run (and failed runs); tick "every termination" for all.') + (shape ? ' Highlighted rows are the inputs of the shape shown.' : '') + '</p>' +
-      '<div class="tablewrap">' + facetTable(recs, shape, st.allTerms) + '</div></div>';
+      '<div class="tablewrap">' + facetTable(recs, shape, st.allTerms, famColors(M)) + '</div></div>';
     app.innerHTML = h;
 
     $('#sel-ff').onchange = (e) => { st.ff = e.target.value; st.whatif = {}; location.hash = '#/m/' + encodeURIComponent(M.id) + '?ff=' + encodeURIComponent(st.ff); };
     $('#chk-all').onchange = (e) => { st.allTerms = e.target.checked; route(); };
-    if (!shape) { drawStrip($('#strip'), recs); return; }
+    const cols = famColors(M);
+    if (!shape) { drawStrip($('#strip'), recs, cols); return; }
     $('#sel-level').onchange = (e) => { st.level = e.target.value; st.whatif = {}; route(); };
     $('#chk-bfdh').onchange = (e) => { st.bfdh = e.target.checked; route(); };
     if (!st.wfam || !shape.facets.some((f) => f.family === st.wfam)) st.wfam = shape.facets[0].family;
     const fam = $('#wf-fam'), sl = $('#wf-slider');
+    $('#sel-color').onchange = (e) => { STATE.colorBy = e.target.value; route(); };
     const base = (f) => shape.facets.find((x) => x.family === f).gamma;
     const syncSlider = () => { sl.value = st.whatif[st.wfam] != null ? st.whatif[st.wfam] / base(st.wfam) : 1; };
     const redraw = () => {
-      const res = drawShape($('#plot3d'), shape, { overrides: st.whatif, bfdh: st.bfdh });
+      const res = drawShape($('#plot3d'), shape, { overrides: st.whatif, bfdh: st.bfdh, colors: cols });
+      if (res.ok) {
+        const on = shape.facets.filter((f) => res.areaFraction[f.family] > 1e-4).sort((a, b) => res.areaFraction[b.family] - res.areaFraction[a.family]);
+        $('#famlegend').innerHTML = on.map((f) => '<span class="famitem">' + (STATE.colorBy === 'family' ? swatch(cols[f.family]) : '') +
+          '<span class="mono">' + esc(f.family) + '</span> ' + (res.areaFraction[f.family] < 0.0005 ? '&lt;0.1' : fmt(100 * res.areaFraction[f.family], 1)) + ' %</span>').join('');
+      }
       window.__dash.lastBuild = { shape_id: shape.shape_id, overrides: Object.assign({}, st.whatif), areaFraction: res.areaFraction, ok: res.ok };
       const g = st.whatif[st.wfam];
       $('#wf-val').innerHTML = esc(st.wfam) + ': gamma <span class="val">' + fmt(g != null ? g : base(st.wfam), 2) + '</span> mJ/m<sup>2</sup>' +
@@ -284,7 +315,7 @@
           tile(fmt(mt.weighted_surface_energy, 1), 'area-weighted gamma, mJ/m2') +
           tile(fmt(shape.shape_metrics.aspect_ratios.e2_over_e1, 2) + ' / ' + fmt(shape.shape_metrics.aspect_ratios.e3_over_e1, 2), 'aspect e2/e1, e3/e1 (recorded)');
       }
-      drawUncertainty($('#unc'), shape, res);
+      drawUncertainty($('#unc'), shape, res, cols);
     };
     fam.onchange = (e) => { st.wfam = e.target.value; syncSlider(); redraw(); };
     sl.oninput = () => {
@@ -300,7 +331,7 @@
       c.max_abs_diff.toExponential(1) + ' over ' + c.n_families + ' families; BFDH ' + c.max_abs_diff_bfdh.toExponential(1) + (c.ok ? ' (agree to 3 decimals)' : ' (DISAGREE)') + '.</div>';
   }
 
-  function facetTable(recs, shape, all) {
+  function facetTable(recs, shape, all, cols) {
     const used = new Set(shape ? shape.input_record_ids : []);
     const area = {};
     if (shape) for (const f of shape.facets) area[f.family] = f;
@@ -314,7 +345,7 @@
       const isUsed = used.has(r.record_id);
       const g = R.status === 'ok' ? recLink(r, fmt(R.gamma, 2) + (R.gamma_error ? ' &plusmn; ' + fmt(R.gamma_error, 1) : '')) : recLink(r, 'failed');
       const sf = area[r.facet.family];
-      h += '<tr class="' + (isUsed ? 'used' : '') + (R.status === 'failed' ? ' failed' : '') + '"><td class="mono">' + esc(r.facet.family) + '</td>' +
+      h += '<tr class="' + (isUsed ? 'used' : '') + (R.status === 'failed' ? ' failed' : '') + '"><td class="mono">' + (cols && cols[r.facet.family] ? swatch(cols[r.facet.family]) : '') + esc(r.facet.family) + '</td>' +
         '<td class="mono">(' + esc(r.facet.hkl.join(' ')) + ')</td><td><span class="badge lvl">' + esc(levelName[P.level]) + '</span></td>' +
         '<td class="num">' + fmt(P.temperature_K, 0) + '</td><td class="num">' + g + (R.gamma_unrelaxed != null ? '<div class="small muted">unrelaxed ' + fmt(R.gamma_unrelaxed, 2) + '</div>' : '') +
         (R.gamma_raw != null ? '<div class="small muted">raw ' + fmt(R.gamma_raw, 2) + '</div>' : '') + '</td>' +
@@ -326,16 +357,16 @@
     return h + '</tbody></table>';
   }
 
-  function drawUncertainty(el, shape, res) {
+  function drawUncertainty(el, shape, res, cols) {
     const fs = shape.facets.slice().sort((a, b) => a.area_fraction - b.area_fraction);
     const y = fs.map((f) => f.family);
     const bars = { type: 'bar', orientation: 'h', y, x: fs.map((f) => f.area_fraction), name: 'recorded (pymatgen), 5-95 % band',
-      marker: { color: css('--series-1') },
+      marker: { color: cols && STATE.colorBy === 'family' ? fs.map((f) => cols[f.family] || PALETTE[9]) : css('--series-1') },
       error_x: { type: 'data', symmetric: false, array: fs.map((f) => Math.max(0, f.area_p95 - f.area_fraction)), arrayminus: fs.map((f) => Math.max(0, f.area_fraction - f.area_p05)), color: css('--ink-2'), thickness: 1.5, width: 3 },
       customdata: fs.map((f) => [f.area_mean, f.area_std, f.area_p05, f.area_p95, f.gamma, f.sigma, f.level]),
       hovertemplate: '%{y}: %{x:.4f}<br>mean %{customdata[0]:.4f} &plusmn; %{customdata[1]:.4f}<br>5-95 %: %{customdata[2]:.4f} - %{customdata[3]:.4f}<br>gamma %{customdata[4]:.2f} &plusmn; %{customdata[5]:.2f} (L%{customdata[6]})<extra></extra>' };
     const dots = { type: 'scatter', mode: 'markers', y, x: fs.map((f) => res.areaFraction ? res.areaFraction[f.family] : null), name: 'browser, current gamma',
-      marker: { color: css('--series-2'), size: 9, line: { color: css('--surface'), width: 2 } }, hovertemplate: '%{y}: %{x:.4f} (browser)<extra></extra>' };
+      marker: { color: css('--ink'), size: 8, line: { color: css('--surface'), width: 2 } }, hovertemplate: '%{y}: %{x:.4f} (browser)<extra></extra>' };
     const layout = Object.assign(plotTheme(), { margin: { l: 80, r: 10, t: 10, b: 40 }, barmode: 'overlay', bargap: 0.35,
       xaxis: Object.assign(axis('area fraction'), { rangemode: 'tozero' }), yaxis: Object.assign(axis(''), { type: 'category' }),
       legend: { orientation: 'h', y: 1.08, x: 0 }, height: Math.max(300, 22 * fs.length + 90) });
@@ -343,12 +374,13 @@
     Plotly.react(el, [bars, dots], layout, PCFG);
   }
 
-  function drawStrip(el, recs) {
+  function drawStrip(el, recs, cols) {
     const ok = recs.filter((r) => r.result.status === 'ok');
     const fams = [...new Set(ok.map((r) => r.facet.family))];
     const tr = {
       type: 'scatter', mode: 'markers', x: ok.map((r) => r.result.gamma), y: ok.map((r) => r.facet.family),
-      marker: { size: 11, color: ok.map((r) => (r.termination.is_lowest ? css('--series-1') : css('--surface'))), line: { color: css('--series-1'), width: 2 } },
+      marker: { size: 11, color: ok.map((r) => { const c = (cols && cols[r.facet.family]) || css('--series-1'); return r.termination.is_lowest ? c : css('--surface'); }),
+        line: { color: ok.map((r) => (cols && cols[r.facet.family]) || css('--series-1')), width: 2 } },
       customdata: ok.map((r) => [r.record_id, r.termination.label, 'L' + r.protocol.level]),
       hovertemplate: '%{y} %{customdata[1]} (%{customdata[2]}): %{x:.2f} mJ/m<sup>2</sup><br>record %{customdata[0]}<extra></extra>' };
     const layout = Object.assign(plotTheme(), { margin: { l: 80, r: 10, t: 10, b: 44 }, showlegend: false,
@@ -461,7 +493,7 @@
       h += '<div id="c3d-' + k + '" class="plot3d" style="height:340px"></div><p class="small muted">T = ' + fmt(shape.temperature_K, 0) + ' K, level ' + esc(shape.level) + ', ' +
         shape.shape_metrics.n_on_shape + ' families on the shape; shape factor ' + fmt(shape.shape_metrics.shape_factor, 3) + '. &gamma; is the value the shape was built with.</p>' +
         '<div class="tablewrap"><table><thead><tr><th>Family</th><th>Level</th><th class="num">&gamma; (mJ/m<sup>2</sup>)</th><th class="num">Area</th></tr></thead><tbody>' +
-        shape.facets.map((f) => { const r = D.byId[f.input_record_ids[0]]; return '<tr><td class="mono">' + esc(f.family) + '</td><td>L' + f.level + (f.level === 1 && shape.level === 'best' ? ' (scaled)' : '') + '</td><td class="num">' + recLink(r, fmt(f.gamma, 2)) + '</td>' +
+        shape.facets.map((f) => { const r = D.byId[f.input_record_ids[0]]; return '<tr><td class="mono">' + swatch(famColors(M)[f.family] || PALETTE[9]) + esc(f.family) + '</td><td>L' + f.level + (f.level === 1 && shape.level === 'best' ? ' (scaled)' : '') + '</td><td class="num">' + recLink(r, fmt(f.gamma, 2)) + '</td>' +
           '<td class="num">' + shapeLink(shape, fmt(f.area_fraction, 4), f.family) + '</td></tr>'; }).join('') + '</tbody></table></div></div>';
     } else {
       // no shape: the highest level at T = 0 of each family (its lowest termination)
@@ -476,7 +508,7 @@
         fams.map((f) => '<tr><td class="mono">' + esc(f) + '</td><td>L' + best[f].protocol.level + '</td><td class="num">' + recLink(best[f], fmt(best[f].result.gamma, 2)) + '</td></tr>').join('') + '</tbody></table></div></div>';
     }
     el.innerHTML = h;
-    if (shape) drawShape($('#c3d-' + k), shape, {});
+    if (shape) drawShape($('#c3d-' + k), shape, { colors: famColors(M) });
   }
 
   // ------------------------------------------------------------------ record and shape pages
