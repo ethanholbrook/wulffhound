@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Surface-energy explorer</title>
+<meta name="description" content="Prototype dashboard of the wulffhound surface-energy dataset: facet energies with provenance, Wulff shapes computed in the browser, explorer and comparison.">
+<link rel="stylesheet" href="css/style.css">
+<script>
+  // errors before the app loads (read by the headless test), then the theme before first paint
+  window.__early = []; window.addEventListener('error', function (e) { window.__early.push(String(e.message || e)); });
+  (function () { var ce = console.error; console.error = function () { window.__early.push('console.error: ' + Array.prototype.join.call(arguments, ' ')); return ce.apply(console, arguments); }; })();
+  // theme before first paint (per-viewer convenience; works without storage)
+  (function () { try { var t = localStorage.getItem('wh-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {} })();
+</script>
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="#/">Surface-energy explorer <span class="proto">prototype</span></a>
+  <nav>
+    <a href="#/" data-nav="home">Overview</a>
+    <a href="#/explore" data-nav="explore">Explorer</a>
+    <a href="#/compare" data-nav="compare">Compare</a>
+    <button id="theme-toggle" type="button" aria-label="Switch light / dark theme">Theme</button>
+  </nav>
+</header>
+<main id="app" aria-live="polite"><p class="muted">Loading the dataset...</p></main>
+<footer class="foot">
+  <span id="foot-info"></span>
+  <span>Every number links to its record and run. Prototype: zoo values are unrelaxed ReaxFF screening cuts, not validated surface energies.</span>
+</footer>
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
+<script src="js/wulff.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

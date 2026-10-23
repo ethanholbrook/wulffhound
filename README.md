@@ -186,6 +186,84 @@ of {1 0 -1} at level 2 and the superseded raw {0 0 1} value. Its four observed g
 almost no area. The agent's shapes match the baseline's on-shape sets (TNT: plus a 0.0002 sliver of {2 1 0})
 at 5-11 CPU min less.
 
+## Dataset and dashboard (prototype)
+
+A first cut of the open surface-energy dataset and of a morphology dashboard that reads it. It is an opt-in layer:
+it only reads exported data, and the simulation chain and the agent are unchanged.
+
+![TNT material page: facet table, the Wulff shape computed in the browser with the BFDH overlay, what-if slider](docs/dashboard/tnt_whatif_bfdh.png)
+
+**What is in it** (`dataset/`, built by `tools/export_dataset.py`, schema 0.1.0):
+
+| Source | Records | What |
+|---|---|---|
+| wulffhound ledgers, `data/tnt` and `data/paracetamol` | 55 + 84 | level 1 (one record per computed termination group) and level 2, with the failed runs |
+| the chain's CIF zoo (`notes/validation/cif_zoo.json`, read from the private chain) | 117 | 21 COD crystals x 2 facet families, the unrelaxed gamma of every termination (ReaxFF-lg), 2 failed facets |
+| surfenergy's pinned values and notes | 3 | TNT (0 0 1) T = 0 (104.02) and 300 K (96.8 +- 5.7, default MD length), beta-HMX (0 0 1) T = 0 (224.43) |
+| derived Wulff shapes | 4 | TNT and paracetamol at level `best` and level 1 (pymatgen, the wulffhound engine) |
+
+In all: 259 surface-energy records for 21 materials. 6 are failed runs and 2 are level-2 results that the
+consistency guard rejects. They are kept, with their flags. Parquet is skipped because pyarrow is not installed
+in the dev env (`dataset/index.json` says so). `index.json` lists what was not taken: the short test-length MD
+values of surfenergy (not stationary, no run id), the older-protocol pins, and the 4 zoo CIFs that cif2lammps
+rejects as expected. The zoo has only two facet families per material, which is not a Wulff shape, so for those
+materials the dataset records the facet energies and no shape, and the dashboard says so.
+
+**Schema** (`schema/surface_energy.schema.json`, JSON Schema 2020-12). The unit of record is one surface energy:
+
+- `material`: InChIKey, SMILES, name, polymorph, the structure with its source and licence, space group, cell, density.
+- `force_field`: name, version, md5, validated or not.
+- `facet`: hkl, family and its Laue orbit, d_hkl, d_eff, and the Miller setting of the record's own cell.
+- `termination`: index, group, faces_equivalent, lowest or not.
+- `protocol`: level (unrelaxed / relaxed T = 0 / MD), T, n_periods, vacuum, slab_from, minimiser, MD lengths, cell.
+- `result`: gamma, error and error method, stationary, `gamma_flags` (code, severity, detail, who raised it), unrelaxed and raw values.
+- `provenance`: source entry, Sim2L and revision, run id, child run ids, input md5s, date, venue, CPU, a reproduce line.
+
+A derived `wulff_shape` record covers one material x force field x T x level x facet set. It holds each family's
+gamma, sigma, area fraction, 5-95 % sensitivity band, BFDH area and input record ids, plus the shape metrics
+(shape factor, anisotropy, aspect ratios) and the convention checks (2/m orbits asserted at symprec 1e-5 and 1e-3).
+The exporter validates every record and fails if any is invalid.
+
+**Dashboard** (`dashboard/`: static HTML + JS, no build step, plotly.js 2.35.2 from jsDelivr):
+
+- **Material page.** The facet table: gamma +- error, level, termination, flags, and every value linked to its
+  record and run. The Wulff shape is **computed in the browser** (`dashboard/js/wulff.js`, half-space intersection
+  on the data-file lattice). Hover a face for its hkl, gamma, area and termination. You can overlay the BFDH shape,
+  move a what-if slider (one gamma, live redraw), and view area bars with the recorded sensitivity bands.
+- **Explorer.** Search by name, InChIKey, formula or SMILES; filter by force field, T and level; plot the lowest
+  gamma against density or molecular mass; and see a coverage map of material x facet x level.
+- **Compare.** Two materials side by side.
+- **Record and shape pages.** The full provenance of every number.
+
+```bash
+./wh py tools/export_dataset.py                 # rebuild dataset/ (reads cif_zoo.json from $WULFFHOUND_CHAIN_ROOT)
+tools/serve_dashboard.sh                        # http://127.0.0.1:8765/dashboard/
+python tools/test_dashboard.py --screenshots    # headless Firefox + selenium (an env with both; plotly from the CDN)
+```
+
+The headless test passes with 0 failures. Every page loads with no JS errors, and the TNT shape renders. The
+browser area fractions equal pymatgen's to within 1.2e-6 for all 4 shapes (the BFDH ones to 6e-7). The slider
+changes the shape: {1 0 0} at 0.8 gamma goes from 0.103 to 0.254. There is no horizontal scroll at 390 px.
+
+| | |
+|---|---|
+| ![overview](docs/dashboard/overview.png) | ![explorer](docs/dashboard/explorer.png) |
+| ![paracetamol](docs/dashboard/paracetamol_material.png) | ![compare](docs/dashboard/compare.png) |
+| ![TNT, dark](docs/dashboard/tnt_material_dark.png) | ![phone width](docs/dashboard/tnt_phone_dark.png) |
+
+**Limits.**
+
+- This is a prototype, schema 0.1.0.
+- The CIF-zoo values are **unrelaxed ReaxFF-lg screening cuts, not validated surface energies**.
+- TNT uses a **validated non-reactive force field**. Paracetamol uses **ReaxFF-lg, which is not validated** for it.
+- The shapes are T = 0 shapes and are not converged (flagged).
+- The TNT shape uses the ledger only, the same as the agent's engine, so surfenergy's re-cut {0 0 1} T = 0 value
+  is in the dataset but not in the shape.
+- The surfenergy records have no run id (flagged `no_run_id`).
+- Run folders are cited by id (`chain:...`) and are not shipped.
+- No atomic coordinates are exported. The CCDC-derived TNT and HMX cells contribute only gamma, hkl, lattice
+  parameters and metadata.
+
 ## Honest limits
 
 - **T = 0 only**: static surface energies, the standard Wulff input. No entropy and no finite-temperature shape.
@@ -222,6 +300,8 @@ at 5-11 CPU min less.
 | `tools/build_bundle.py`, `tools/check_public.sh` | bundle builder (needs the chain); secret / path / licence check (CI) |
 | `tools/publish_demo.sh`, `docs/demo/` | copy an agent session (sanitised paths) into `docs/demo/`; the 22 Oct 2026 demo sessions |
 | `tools/make_headline.py` | the README headline figure (`docs/headline_paracetamol.png`), a replay of the paracetamol demo session that checks its area fractions |
+| `schema/`, `tools/export_dataset.py`, `dataset/` | the dataset schema (0.1.0), its exporter and the exported records (prototype) |
+| `dashboard/`, `tools/serve_dashboard.sh`, `tools/test_dashboard.py`, `docs/dashboard/` | the static dashboard, its server script, the headless browser test and the screenshots |
 
 Not included: the TNT unit cell and its LAMMPS script (CCDC-derived; they stay in the private chain), and the
 ReaxFF-lg force-field file. The paracetamol live route needs the private chain anyway.
@@ -237,6 +317,8 @@ wulffhound is MIT-licensed (see `LICENSE`).
 - **Allen & Bruno**, *Acta Cryst.* B66, 380 (2010): the X-H normalisation in the CIF route (cif2lammps).
 - **Crystallography Open Database** (CC0): paracetamol form I, COD 2104364, from Bouhmaida, Bonhomme, Guillot,
   Jelsch & Ghermani, *Acta Cryst.* B65, 363-374 (2009), doi:10.1107/S0108768109008271.
+- **CIF zoo (dataset)**: 21 COD entries (CC0). No structure files are shipped. Each record cites its COD id and the
+  original authors (`material.structure.citation`, `doi`, `url`).
 - ReaxFF-lg: Liu, Liu, Zybin & Goddard, *J. Phys. Chem. A* 115, 11016 (2011). Used through the chain; not
   included.
 - **MCP Bond** (Valency) for literature search.
