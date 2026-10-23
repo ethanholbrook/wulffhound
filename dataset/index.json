@@ -1,7 +1,7 @@
 {
  "schema_version": "0.1.1",
  "schema": "schema/surface_energy.schema.json",
- "built": "2026-10-23T14:07:28-04:00",
+ "built": "2026-10-23T14:21:32-04:00",
  "built_by": "tools/export_dataset.py",
  "files": {
   "surface_energy": "surface_energy.jsonl",
