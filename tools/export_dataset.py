@@ -804,9 +804,13 @@ def main():
                     new[0]['record_id'], new[0]['result']['gamma'], new[0]['provenance']['source_ref'].split('#')[0])
     se += camp_recs
     rec_by_id = {r['record_id']: r for r in se}
+    # shape inputs beyond the ledgers: the campaign runs and surfenergy's own pinned/run T = 0 relaxed values (e.g.
+    # TNT {0 0 1} 104.0232, R3), which would otherwise leave that family at its ratio-scaled level-1 value
+    surf_l2 = [r for r in se if r['provenance']['source'] in ('surfenergy-regression', 'surfenergy-run')
+               and r['result']['status'] == 'ok' and r['protocol']['level'] == 2 and r['protocol']['temperature_K'] == 0]
     for mat in ('tnt', 'paracetamol'):
         er, led = entry_recs[mat]
-        shapes += build_shapes(mat, er, led, campaign_recs=camp_recs, rec_by_id=rec_by_id)
+        shapes += build_shapes(mat, er, led, campaign_recs=camp_recs + surf_l2, rec_by_id=rec_by_id)
     # materials without a bundle: a level-1 shape from their records once they have enough families
     from shapes import level1_shape
     have_shape = {s['material_id'] for s in shapes}
