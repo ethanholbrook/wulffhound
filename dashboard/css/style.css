@@ -193,3 +193,13 @@ input[type="search"] { width: 22em; max-width: 100%; }
   box-shadow: 0 0 0 1px var(--axis); }
 .famlegend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 6px 0 2px; font-size: 0.82rem; color: var(--ink-2); }
 .famitem { white-space: nowrap; }
+
+/* shape construction: equilibrium (Wulff) | growth (AE) | BFDH */
+.seglabel { font-size: 0.9rem; color: var(--ink-2); }
+.seg { display: inline-flex; border: 1px solid var(--axis); border-radius: 7px; overflow: hidden; }
+.seg button { border: 0; border-radius: 0; border-right: 1px solid var(--axis); padding: 5px 10px; font-size: 0.88rem; background: var(--surface); color: var(--ink-2); }
+.seg button:last-child { border-right: 0; }
+.seg button[aria-checked="true"] { background: var(--accent); color: #fff; }
+.seg button:disabled { color: var(--muted); cursor: not-allowed; opacity: 0.6; }
+#ae-explain ul { margin: 6px 0 4px; padding-left: 20px; }
+#ae-explain li { margin: 2px 0; }

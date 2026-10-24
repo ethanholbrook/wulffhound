@@ -193,7 +193,7 @@ it only reads exported data, and the simulation chain and the agent are unchange
 
 ![TNT material page: facet table, the Wulff shape computed in the browser with the BFDH overlay, what-if slider](docs/dashboard/tnt_whatif_bfdh.png)
 
-**What is in it** (`dataset/`, built by `tools/export_dataset.py`, schema 0.1.1):
+**What is in it** (`dataset/`, built by `tools/export_dataset.py`, schema 0.2.0):
 
 | Source | Records | What |
 |---|---|---|
@@ -201,6 +201,7 @@ it only reads exported data, and the simulation chain and the agent are unchange
 | the chain's CIF zoo (`notes/validation/cif_zoo.json`, read from the private chain) | 117 | 21 COD crystals x 2 facet families, the unrelaxed gamma of every termination (ReaxFF-lg), 2 failed facets |
 | surfenergy's pinned values and notes | 3 | TNT (0 0 1) T = 0 (104.02) and 300 K (96.8 +- 5.7, default MD length), beta-HMX (0 1 0) T = 0 on the COD 4110146 cell (226.07, with its run id) |
 | campaign driver, `dataset/campaigns/*.jsonl` (see [Campaign driver](#campaign-driver)) | 5 + 8 | TNT level 2 with the R3 slab start (4 values, 1 failed run); level 1 of two more families of naphthalene, anthracene and benzoic acid |
+| the chain's attachment-energy prototype (`devtools/attachment/results`, read from the private chain; see [Growth morphology](#growth-morphology-attachment-energies)) | 50 `attachment_energy` | TNT (16 families), paracetamol (19) and alpha-RDX (15): the static attachment energy of each family's growth slice |
 | derived Wulff shapes | 7 | TNT and paracetamol at level `best` and level 1 (pymatgen, the wulffhound engine); naphthalene, anthracene and benzoic acid at level 1 (built from their records, `wulffhound/shapes.py`) |
 
 In all: 272 surface-energy records for 21 materials. 7 are failed runs and 2 are level-2 results that the
@@ -221,6 +222,10 @@ level-1 shape once it has three or more families that enclose a bounded shape (t
 - `result`: gamma, error and error method, stationary, `gamma_flags` (code, severity, detail, who raised it), unrelaxed and raw values.
 - `provenance`: source entry, Sim2L and revision, run id, child run ids, input md5s, date, venue, CPU, a reproduce line.
 
+Schema 0.2.0 (additive) adds the `attachment_energy` record (`dataset/attachment_energy.jsonl`) and a `construction` field
+on `wulff_shape` records: `wulff` (the default, and every record before 0.2.0) or `attachment_energy` (the growth shape,
+level `ae-static`, see [Growth morphology](#growth-morphology-attachment-energies)).
+
 A derived `wulff_shape` record covers one material x force field x T x level x facet set. It holds each family's
 gamma, sigma, area fraction, 5-95 % sensitivity band, BFDH area and input record ids, plus the shape metrics
 (shape factor, anisotropy, aspect ratios) and the convention checks (2/m orbits asserted at symprec 1e-5 and 1e-3).
@@ -234,7 +239,11 @@ The exporter validates every record and fails if any is invalid.
   move a what-if slider (one gamma, live redraw), and view area bars with the recorded sensitivity bands.
 - **Explorer.** Search by name, InChIKey, formula or SMILES; filter by force field, T and level; plot the lowest
   gamma against density or molecular mass; and see a coverage map of material x facet x level.
-- **Compare.** Two materials side by side.
+- **Shape control.** `Shape: equilibrium (Wulff) | growth (AE) | BFDH` on the material page, for the materials with
+  attachment energies. The facet-family colours are the same in the three shapes. With AE records the facet table gets
+  an E_att column.
+- **Compare.** Two materials side by side, each with its own shape (Wulff, AE or BFDH). Pick the same material twice to
+  see its equilibrium and growth shapes next to each other.
 - **Record and shape pages.** The full provenance of every number.
 
 ```bash
@@ -255,7 +264,7 @@ changes the shape: {1 0 0} at 0.8 gamma goes from 0.103 to 0.254. There is no ho
 
 **Limits.**
 
-- This is a prototype, schema 0.1.1 (0.1.0 plus the campaign source and the sim2l_flag code).
+- This is a prototype, schema 0.2.0 (0.1.1 plus the attachment-energy record and the shape construction; 0.1.1 added the campaign source and the sim2l_flag code).
 - The CIF-zoo values are **unrelaxed ReaxFF-lg screening cuts, not validated surface energies**.
 - TNT uses a **validated non-reactive force field**. Paracetamol uses **ReaxFF-lg, which is not validated** for it.
 - The shapes are T = 0 shapes and are not converged (flagged).
@@ -265,6 +274,101 @@ changes the shape: {1 0 0} at 0.8 gamma goes from 0.103 to 0.254. There is no ho
 - Run folders are cited by id (`chain:...`) and are not shipped.
 - No atomic coordinates are exported. The CCDC-derived TNT and HMX cells contribute only gamma, hkl, lattice
   parameters and metadata.
+
+## Growth morphology (attachment energies)
+
+![Paracetamol material page with the growth (attachment-energy) shape selected](docs/dashboard/paracetamol_material_ae.png)
+
+The Wulff shape is the equilibrium shape. Crystals grown from solution or vapour usually show a growth habit, and the
+classical model for it is the **attachment energy** (Hartman-Perdok). The dataset now has a static attachment energy
+for every facet family of TNT, paracetamol form I and alpha-RDX, and a growth shape for each of the three.
+
+**Method** (the chain's prototype, `devtools/attachment`; this repository only ingests its results):
+
+- *Growth slice.* A layer of thickness d_eff = d_hkl / n, with n the extinction factor of the space group (as in
+  BFDH). It holds the whole molecules whose centres of mass lie in [cut, cut + d_eff). It is cut from the oriented
+  cell that the surface-energy runs already use.
+- *Energies* (kcal/mol per molecule). E_att = e_bulk - e_slice, where e_slice is one slice alone in vacuum. Also
+  E_latt = E_slice + E_att. Only E_slice and E_latt need a gas-phase reference; E_att does not.
+- *Which cut.* A family has several candidate cuts. The growth slice is the one with the lowest |E_att| (the most
+  strongly bound slice). The record also keeps the E_att of the lowest-gamma cut, and the flag `cut_rules_disagree`
+  marks the families where the two cuts differ: TNT 2 of 16, paracetamol 4 of 19, RDX 7 of 15 (2 of the 7 are ties
+  within the QEq tolerance). None of these families is on an AE shape, so both rules give the same shapes.
+- *Shape.* The Wulff construction with |E_att| in place of gamma: a face's growth rate is taken proportional to
+  |E_att|. It uses the same lattice, orbits and checks as the Wulff shapes: Laue 2/m (4 operations) for TNT and
+  paracetamol, mmm (8) for RDX, at symprec 1e-5 and 1e-3. The sensitivity resamples |E_att| x (1 + 5 % N(0, 1)),
+  200 draws.
+- *Export.* `tools/export_dataset.py` reads the results JSON (`--ae DIR` or `WULFFHOUND_AE_RESULTS`, default
+  `<chain>/devtools/attachment/results`). It asserts several things:
+  - the material, force field and unit cell (md5) are those of the dataset's surface-energy records;
+  - the Laue orbits are the same;
+  - the lowest 2-period gamma of each family equals its level-1 record (linked in `related_record_ids`);
+  - E_latt = E_slice + E_att;
+  - the AE area fractions equal the prototype's own morphology JSON to 3 decimals. They agree to 1e-6.
+
+  Only the exported records are committed.
+- *Lattice energy, three conventions* (all in each record):
+  - `rigid`, the one used for E_slice: the gas molecule frozen in its crystal geometry;
+  - static minus the minimised molecule;
+  - relaxed bulk minus the minimised molecule.
+
+  They differ by the intramolecular strain of the static cell (flag `intramolecular_strain_in_reference`). TNT's
+  unnormalised X-ray cell carries 39.8 kcal/mol of strain, so its static E_latt is positive and meaningless. The rigid
+  and relaxed values are -29.6 and -27.5 kcal/mol.
+
+**Results** (area fractions, all families of the Wulff shapes):
+
+| | growth (AE) | equilibrium (Wulff, best) | BFDH |
+|---|---|---|---|
+| TNT | {0 0 1} 63 %, {2 0 -1} 11 %, {1 1 0} 9 %; a plate, e3/e1 0.28 | {0 0 1} 25 %, {1 1 1} 16 %, {1 0 0} 11 %; compact | {0 0 1} 59 %, {2 0 -1} 19 % |
+| paracetamol | {0 1 1} 53 %, {1 0 -1} 20 %, {1 1 -1} 15 %, {1 0 1} 10 %, {0 0 1} 1 % | {1 1 -1} 39 %, {0 1 1} 27 %, {1 0 1} 12 %, {1 0 -1} 7 % | {0 1 1} 50 %, {1 0 -1} 18 %, {1 1 0} 14 % |
+| alpha-RDX | {1 1 1} 61 %, {0 0 1} 15 %, {1 0 0} 14 %, {0 1 0} 5 %, {2 1 0} 2 % | {2 1 1} 33 %, {0 0 1} 23 %, {2 1 2} 9 % | {1 1 1} 74 %, {1 0 0} 13 %, {0 1 0} 7 % |
+
+- **AE ~ Wulff(gamma / d_eff) ~ BFDH.** If slices interact only with their neighbours,
+  |E_att| = 2 gamma V_m / d_eff. So AE multiplies the energetic ranking of the Wulff shape by BFDH's preference for
+  wide slices. The AE shapes overlap the gamma / d_eff shapes by 0.98, 0.99 and 0.97 (TNT, paracetamol, RDX). They
+  overlap BFDH by 0.87, 0.80 and 0.85, and the Wulff shapes by only 0.45, 0.61 and 0.32.
+- **Paracetamol is the case that matches observed habits.** Its two largest AE faces are the two dominant observed
+  ones:
+  - {0 1 1} = (110) in P2_1/a, the columnar habit at low supersaturation;
+  - {1 0 -1} = (001)_a, the plate face at high supersaturation. The Wulff shape gives it only 7 %.
+
+  The five external habit faces carry 99 % of the AE area (Wulff 91 %, BFDH 86 %). BFDH's unreported {1 1 0} (14 %)
+  drops to 0.7 %. The AE shape is still compact (e2/e1 0.94), not columnar.
+- **TNT and RDX: consistency, not validation.** Their literature comparisons are themselves computed
+  (attachment-energy or BFDH-type) morphologies.
+  - TNT: the AE plate on {0 0 1} agrees with them in kind. The side faces are fragile: a ±5 % change of |E_att|
+    moves {2 0 -1} between 0 and 19 %.
+  - RDX: AE carries exactly the five predicted growth faces, (111), (200), (020), (002) and (210), with 97 % of the
+    area. BFDH does as well here.
+
+**Caveats.**
+
+- *Static and vacuum.* The slices and the bulk are not relaxed (unrelaxed AE), and there is no solvent or
+  supersaturation.
+- *A kinetic model.* AE predicts growth, and the Wulff shape is the equilibrium shape. A closer match of AE to grown
+  crystals is the expected direction, not proof that either set of energies is right.
+- *ReaxFF QEq charge response* (paracetamol, RDX; flag `qeq_charges_changed`). QEq re-equilibrates the charges of
+  each isolated slice, so E_att includes a charge (electronic) response that a fixed-charge force field leaves out.
+  Where it was measured, the mean |dq| is 0.011-0.019 e for paracetamol and 0.019-0.044 e for RDX (max 0.05-0.18 e),
+  against an rms bulk charge of 0.27-0.32 e. Its size in E_att has not been separated.
+- *Force fields.* ReaxFF-lg is not validated for paracetamol. TNT uses a validated non-reactive force field.
+- *Families.* Only the families of the Wulff shapes are computed. A family outside that set with a small |E_att|
+  would be missed.
+- *Slice convention.* The growth slice is the d_eff slice. For paracetamol's (0 1 0), a slice of the full d_010 (the
+  H-bonded double layer) would give the lowest |E_att| of all. That is a Hartman-Perdok question the d_eff
+  convention answers "yes, the layers grow independently" by construction.
+
+In the dashboard, open a material and pick `growth (AE)`. The page explains the method and its caveats, and its
+self-check confirms the browser shape equals the recorded one. `tools/test_dashboard.py` checks the three materials:
+- the AE, BFDH and Wulff shapes render, each equal to pymatgen to 3 decimals;
+- the toggle works and the facet colours stay the same;
+- the E_att column, the AE record and shape pages, and the compare view all work.
+
+| | |
+|---|---|
+| ![TNT growth shape](docs/dashboard/tnt_material_ae.png) | ![RDX growth shape](docs/dashboard/rdx_material_ae.png) |
+| ![paracetamol: equilibrium vs growth](docs/dashboard/compare_ae.png) | |
 
 ## Campaign driver
 
@@ -280,7 +384,7 @@ tools already accept. An override is passed only when the spec gives it; otherwi
 ./wh campaign run    campaigns/zoo_screen.yaml   # plan, run (journal, resumable), ingest, rebuild dataset/
 ./wh campaign status campaigns/zoo_screen.yaml   # the journal: gamma, gamma_flags, errors, CPU
 ./wh campaign ingest campaigns/zoo_screen.yaml   # journal -> dataset/campaigns/<name>.jsonl -> tools/export_dataset.py
-./wh py -W ignore -m unittest discover -s tests  # 39 unit tests (planner, executor, ingest, shapes), no chain needed
+./wh py -W ignore -m unittest discover -s tests  # 48 unit tests (planner, executor, ingest, shapes, AE ingest), no chain needed
 ```
 
 **Spec** (YAML or JSON, `schema/campaign.schema.json`):
@@ -414,7 +518,8 @@ say `chain 6b9edf5+dirty`; TNT uses cut-off electrostatics, which those changes 
 
 - **T = 0 only**: static surface energies, the standard Wulff input. No entropy and no finite-temperature shape.
 - **The Wulff shape is the equilibrium shape**, not the growth habit (solvent, supersaturation, kinetics). Compare
-  them; do not expect them to be equal.
+  them; do not expect them to be equal. The [growth (AE) shapes](#growth-morphology-attachment-energies) are a
+  vacuum, static growth model, not the habit either.
 - **TNT**: a validated non-reactive force field. **Paracetamol**: ReaxFF-lg 2011 is parametrised for nitramine
   energetic crystals and not validated for hydrogen-bonded pharmaceuticals, so the paracetamol numbers are
   screening-level and the facet ranking matters more than absolute γ. Its T = 0 ReaxFF relaxations are
@@ -446,7 +551,8 @@ say `chain 6b9edf5+dirty`; TNT uses cut-off electrostatics, which those changes 
 | `tools/build_bundle.py`, `tools/check_public.sh` | bundle builder (needs the chain); secret / path / licence check (CI) |
 | `tools/publish_demo.sh`, `docs/demo/` | copy an agent session (sanitised paths) into `docs/demo/`; the 22 Oct 2026 demo sessions |
 | `tools/make_headline.py` | the README headline figure (`docs/headline_paracetamol.png`), a replay of the paracetamol demo session that checks its area fractions |
-| `schema/`, `tools/export_dataset.py`, `dataset/` | the dataset schema (0.1.1), its exporter and the exported records (prototype) |
+| `schema/`, `tools/export_dataset.py`, `dataset/` | the dataset schema (0.2.0), its exporter and the exported records (prototype) |
+| `wulffhound/attachment_ingest.py`, `tests/test_attachment.py` | the attachment-energy ingest of the exporter (records, asserts, the check against the prototype's morphology) and its unit tests |
 | `wulffhound/campaign*.py`, `wulffhound/chain_estimate.py`, `wulffhound/shapes.py`, `schema/campaign.schema.json`, `campaigns/`, `dataset/campaigns/`, `tests/` | the campaign driver: spec + planner, executor + backends, ingest, surfenergy's estimator in the chain env, record-based shapes, the spec schema, example campaigns, their records, unit tests |
 | `dashboard/`, `tools/serve_dashboard.sh`, `tools/test_dashboard.py`, `docs/dashboard/` | the static dashboard, its server script, the headless browser test and the screenshots |
 

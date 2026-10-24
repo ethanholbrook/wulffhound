@@ -13,6 +13,11 @@ Firefox (selenium + geckodriver) and checks
   7. the production campaign materials (CAMPAIGN_SHAPES: alpha-RDX mmm, beta-HMX 2/m, ...): each page renders the
      'best' shape built from the campaign's relaxed records (and offers the level-1 one), with a level-2 record
      linked, and both shapes record the Laue class with as many pymatgen operations (mmm 8, 2/m 4, ...);
+  8. growth (attachment-energy) shapes (AE_SHAPES: TNT, paracetamol, alpha-RDX): the 'Shape: equilibrium (Wulff) |
+     growth (AE) | BFDH' control switches the shape (each one equal to its recorded pymatgen area fractions to 3
+     decimals, the AE one with the 2/m or mmm orbit checks), the facet-family colours are the same in the three, the
+     facet table gets the E_att column and the page the AE explanation, the AE record and shape pages load, and the
+     compare view shows the equilibrium and growth shapes of one material side by side;
 and saves small screenshots under docs/dashboard/ (--screenshots).
 
     python tools/test_dashboard.py [--screenshots] [--port 8766]
@@ -35,6 +40,11 @@ CAMPAIGN_SHAPES = [('rdx-alpha', 'alpha-RDX', 'mmm', 8, 'rdx_material'),        
                    ('hmx-beta', 'beta-HMX', '2/m', 4, 'hmx_material'),         # campaigns/hmx_wulff.yaml, P2_1/n
                    ('petn-i', 'PETN-I', '4/mmm', 16, 'petn_material'),         # campaigns/petn_wulff.yaml, P-42_1c
                    ('tatb', 'TATB', '-1', 2, 'tatb_material')]                 # campaigns/tatb_wulff.yaml, P-1
+# growth (attachment-energy) shapes: (material_id, name, Laue class, operations, screenshot)
+AE_SHAPES = [('tnt-monoclinic', 'TNT', '2/m', 4, 'tnt_material_ae'), ('paracetamol-i', 'paracetamol', '2/m', 4, 'paracetamol_material_ae'),
+             ('rdx-alpha', 'alpha-RDX', 'mmm', 8, 'rdx_material_ae')]
+MESHCOL = ('var p=document.getElementById("plot3d"); var o={}; (p && p.data ? p.data : []).forEach(function(t){'
+           'if (t.type==="mesh3d") o[t.name]=t.color;}); return o')
 
 
 def check(ok, what):
@@ -103,6 +113,10 @@ def main():
     o.add_argument('-headless')
     o.binary_location = find('firefox', 'FIREFOX')
     drv = webdriver.Firefox(options=o, service=Service(find('geckodriver', 'GECKODRIVER')))
+    try:   # a 3D page takes 20-40 s of software WebGL on a loaded machine: allow 10 min per command, not 2
+        drv.command_executor._client_config.timeout = 600
+    except AttributeError:
+        pass
     base = 'http://127.0.0.1:%d/dashboard/' % port
     js = drv.execute_script
 
@@ -165,7 +179,7 @@ def main():
         worst = 0.0
         for s in shapes:
             r = js("""var s = arguments[0];
-              var w = Wulff.build(s.lattice_matrix, s.facets.map(function(f){return {family:f.family, members:f.members, gamma:f.gamma};}));
+              var w = Wulff.build(s.lattice_matrix, s.facets.map(function(f){return {family:f.family, members:f.members, gamma:(f.distance != null ? f.distance : f.gamma)};}));
               var b = Wulff.build(s.lattice_matrix, s.facets.map(function(f){return {family:f.family, members:f.members, gamma:1/f.d_eff};}));
               return {ok: w.ok, af: w.areaFraction, bf: b.areaFraction, m: Wulff.metrics(w)};""", s)
             d = max(abs(r['af'][f['family']] - f['area_fraction']) for f in s['facets'])
@@ -175,8 +189,9 @@ def main():
             same3 = all(round(r['af'][f['family']], 3) == round(f['area_fraction'], 3) or abs(r['af'][f['family']] - f['area_fraction']) < 5e-4
                         for f in s['facets'])
             check(r['ok'] and d < 5e-4 and db < 5e-4 and same3,
-                  'JS vs pymatgen %s level %s: %d families, max |dA| %.1e, BFDH %.1e, shape factor %.5f vs %.5f'
-                  % (s['material_id'], s['level'], len(s['facets']), d, db, r['m']['shape_factor'], s['shape_metrics']['shape_factor']))
+                  'JS vs pymatgen %s %s level %s: %d families, max |dA| %.1e, BFDH %.1e, shape factor %.5f vs %.5f'
+                  % (s['material_id'], s.get('construction', 'wulff'), s['level'], len(s['facets']), d, db, r['m']['shape_factor'],
+                     s['shape_metrics']['shape_factor']))
             print('    ' + ', '.join('%s %.4f/%.4f' % (f['family'], r['af'][f['family']], f['area_fraction']) for f in s['facets'][:6]) + ' ...')
 
         # what-if slider
@@ -274,6 +289,107 @@ def main():
                           name, sh['level'], laue, nops, {k: c.get(k) for k in (
                               'laue_class', 'pymatgen_recip_ops_order', 'pymatgen_recip_ops_symprec_1em3')}))
             shot(png, 1280, 1500)
+        # growth (attachment-energy) shapes and the Wulff | AE | BFDH control
+        aes = {s['material_id']: s for s in shapes if s.get('construction') == 'attachment_energy'}
+        allae = [json.loads(l) for l in open(os.path.join(ROOT, 'dataset', 'attachment_energy.jsonl')) if l.strip()]
+        check(set(aes) >= {m for m, *_ in AE_SHAPES} and len(allae) >= 3 * len(AE_SHAPES),
+              'dataset has growth (AE) shapes for %s and %d attachment_energy records' % (sorted(aes), len(allae)))
+
+        def pick(c):
+            n = js('return window.__dash.renders')
+            js('var b=document.querySelector("#sel-construction button[data-c=\'" + arguments[0] + "\']"); if (b) b.click();', c)
+            wait('window.__dash.renders > %d' % n, 20)
+            time.sleep(1.2)
+            return js('return window.__dash.lastBuild') or {}
+
+        def agree(build, ref):
+            return max(abs(build['areaFraction'][f] - a) for f, a in ref.items())
+
+        for mid, name, laue, nops, png in AE_SHAPES:
+            sa = aes.get(mid)
+            if not sa:
+                continue
+            sw = next(s for s in shapes if s['material_id'] == mid and s['level'] == 'best')
+            goto('#/m/' + mid, 2.5)
+            btn = js('return Array.from(document.querySelectorAll("#sel-construction button")).map(function(b){return [b.dataset.c, b.disabled, b.textContent]})')
+            check([b[0] for b in btn] == ['wulff', 'ae', 'bfdh'] and not any(b[1] for b in btn),
+                  '%s: shape control %s' % (name, [b[2] for b in btn]))
+            cw = js(MESHCOL)
+            b = pick('ae')
+            ca = js(MESHCOL)
+            ntr = js('var p=document.getElementById("plot3d"); return p && p.data ? p.data.filter(function(t){return t.type==="mesh3d"}).length : 0')
+            sc = js('var e=document.getElementById("selfcheck"); return e ? e.textContent : ""')
+            title = js('return document.getElementById("shape-title").textContent')
+            nae = js('return Array.from(document.querySelectorAll("table tbody td.num a")).filter(function(a){return a.getAttribute("href").indexOf("#/ae/")===0}).length')
+            hdr = js('return Array.from(document.querySelectorAll("table thead th")).map(function(t){return t.textContent}).join("|")')
+            expl = js('var e=document.getElementById("ae-explain"); return e ? e.textContent : ""')
+            gl = js('var p=document.getElementById("plot3d"); return !!(p && p.querySelector("canvas")) && p.textContent.indexOf("WebGL is not") < 0')
+            dA = agree(b, {f['family']: f['area_fraction'] for f in sa['facets']}) if b.get('areaFraction') else 1
+            n_ae = len([r for r in allae if r['material']['material_id'] == mid])
+            check(b.get('construction') == 'attachment_energy' and b.get('ok') and gl and ntr >= 4 and dA < 5e-4 and 'agree to 3 decimals' in sc
+                  and 'Growth' in title and 'E_att' in hdr.replace('E' + 'att', 'E_att') and nae == n_ae and 'Hartman-Perdok' in expl
+                  and 'not the equilibrium shape' in expl and not errors(),
+                  '%s growth (AE) shape renders (WebGL canvas): %d mesh3d faces, browser vs pymatgen max |dA| %.1e, self-check "%s", E_att column '
+                  'with %d/%d AE links, explanation shown' % (name, ntr, dA, sc.strip()[:60], nae, n_ae))
+            c = sa['checks']
+            check(c.get('laue_class') == laue and c.get('pymatgen_recip_ops_order') == nops and c.get('pymatgen_recip_ops_symprec_1em3') == nops
+                  and sa['provenance']['checked_against_morphology']['max_abs_diff_area'] < 5e-4,
+                  '%s AE shape: Laue %s, %d pymatgen operations at symprec 1e-5 and 1e-3; equal to the prototype\'s morphology '
+                  'JSON (max |dA| %.1e)' % (name, laue, nops, sa['provenance']['checked_against_morphology']['max_abs_diff_area']))
+            big = max(sa['facets'], key=lambda f: f['area_fraction'])
+            leg = js('return document.getElementById("famlegend").textContent')
+            check(big['family'] in leg, '%s AE legend leads with %s (%.3f)' % (name, big['family'], big['area_fraction']))
+            shot(png, 1280, 1700)
+            b = pick('bfdh')
+            cb = js(MESHCOL)
+            dB = agree(b, {f['family']: f['bfdh_area_fraction'] for f in sw['facets']}) if b.get('areaFraction') else 1
+            sc = js('var e=document.getElementById("selfcheck"); return e ? e.textContent : ""')
+            dis = js('return document.getElementById("wf-slider").disabled')
+            check(b.get('construction') == 'bfdh' and dB < 5e-4 and 'agree to 3 decimals' in sc and dis and not errors(),
+                  '%s BFDH shape: browser vs recorded BFDH max |dA| %.1e, what-if disabled' % (name, dB))
+            common = [f for f in ca if f in cw or f in cb]
+            same = all(ca[f] == cw.get(f, ca[f]) == cb.get(f, ca[f]) for f in ca) and all(cw[f] == cb.get(f, cw[f]) for f in cw)
+            check(same and len(common) >= 2, '%s: facet-family colours equal in the Wulff, AE and BFDH shapes (%d families on '
+                  'AE and another shape, e.g. %s)' % (name, len(common), {f: ca[f] for f in common[:3]}))
+            b = pick('wulff')
+            check(b.get('construction') == 'wulff' and b.get('shape_id') == sw['shape_id'] and not errors(),
+                  '%s: back to the equilibrium shape %s' % (name, b.get('shape_id')))
+        # what-if on the AE shape (|E_att| of the largest TNT face)
+        if 'tnt-monoclinic' in aes:
+            goto('#/m/tnt-monoclinic?shape=ae', 2.0)
+            b0 = js('return window.__dash.lastBuild') or {}
+            js('var s=document.getElementById("wf-fam"); s.value="{0 0 1}"; s.dispatchEvent(new Event("change"));'
+               'var r=document.getElementById("wf-slider"); r.value="1.3"; r.dispatchEvent(new Event("input"));')
+            time.sleep(1.0)
+            b1 = js('return window.__dash.lastBuild') or {}
+            check(b0.get('construction') == 'attachment_energy' and b1['areaFraction']['{0 0 1}'] < b0['areaFraction']['{0 0 1}'] - 0.02,
+                  'AE what-if: TNT {0 0 1} |E_att| x 1.3 -> area %.3f -> %.3f' % (b0['areaFraction']['{0 0 1}'], b1['areaFraction']['{0 0 1}']))
+            js('document.getElementById("wf-reset").click()')
+            time.sleep(0.5)
+            pick('wulff')
+        if allae:
+            a0 = allae[0]
+            goto('#/ae/' + a0['record_id'], 1.0)
+            body = js('return document.body.textContent')
+            check(a0['record_id'] in js('return document.querySelector("h1").textContent') and 'Cuts' in body and 'rigid' in body
+                  and not errors(), 'AE record page %s (%s %s, E_att %.3f)' % (a0['record_id'], a0['material']['name'],
+                                                                           a0['facet']['family'], a0['result']['E_att']))
+        if 'tnt-monoclinic' in aes:
+            goto('#/shape/' + aes['tnt-monoclinic']['shape_id'], 1.0)
+            check('growth' in js('return document.querySelector("h1").textContent') and not errors(),
+                  'AE shape page %s' % aes['tnt-monoclinic']['shape_id'])
+            goto('#/compare/paracetamol-i/paracetamol-i?sa=wulff&sb=ae', 2.5)
+            ta = js('var e=document.getElementById("c-title-a"); return e ? e.textContent : ""')
+            tb = js('var e=document.getElementById("c-title-b"); return e ? e.textContent : ""')
+            na = js('var p=document.getElementById("c3d-a"); return p && p.data ? p.data.filter(function(t){return t.type==="mesh3d"}).length : 0')
+            nb = js('var p=document.getElementById("c3d-b"); return p && p.data ? p.data.filter(function(t){return t.type==="mesh3d"}).length : 0')
+            check('Wulff' in ta and 'Growth' in tb and na >= 4 and nb >= 4 and not errors(),
+                  'compare: paracetamol equilibrium vs growth (AE) side by side (%d / %d mesh3d faces)' % (na, nb))
+            shot('compare_ae', 1280, 1100)
+            goto('#/compare/urea/tnt-monoclinic?sa=ae&sb=bfdh', 2.0)
+            body = js('return document.getElementById("side-a").textContent')
+            nb = js('var p=document.getElementById("c3d-b"); return p && p.data ? p.data.filter(function(t){return t.type==="mesh3d"}).length : 0')
+            check('No growth' in body and nb >= 4 and not errors(), 'compare: a material without AE says so; TNT BFDH renders (%d faces)' % nb)
         rid = js('return document.querySelector(".cov a") ? null : null')
         first = json.loads(open(os.path.join(ROOT, 'dataset', 'surface_energy.jsonl')).readline())
         goto('#/record/' + first['record_id'], 1.0)

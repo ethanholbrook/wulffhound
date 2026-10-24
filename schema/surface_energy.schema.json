@@ -2,21 +2,22 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/ethanholbrook/wulffhound/schema/surface_energy.schema.json",
   "title": "wulffhound surface-energy dataset",
-  "description": "Two record types, one per line of dataset/*.jsonl. 'surface_energy': the unit of record, one computed surface energy (one material, force field, facet, termination and protocol) with its result and provenance. 'wulff_shape': a derived record, the Wulff shape of one material x force field x temperature x level x facet set, built from surface_energy records (listed by id). Units: gamma in mJ/m^2, lengths in angstrom, temperatures in K, density in g/cm^3, masses in g/mol. Miller indices are always in the setting of the record's own cell (facet.setting); two structures of one material can use different settings. Flagged records are kept; their flags say what is wrong and how severe it is.",
-  "schema_version": "0.1.1",
+  "description": "Three record types, one per line of dataset/*.jsonl. 'surface_energy': the unit of record, one computed surface energy (one material, force field, facet, termination and protocol) with its result and provenance. 'wulff_shape': a derived record, the Wulff shape of one material x force field x temperature x level x facet set, built from surface_energy records (listed by id); since 0.2.0 also, with construction 'attachment_energy', the growth (attachment-energy) morphology built from attachment_energy records. 'attachment_energy' (0.2.0): the static Hartman-Perdok attachment energy of one facet family's growth slice (material, force field, facet, slice, the energies with their gas-reference convention, flags, provenance), in kcal/mol per molecule. Units: gamma in mJ/m^2, lengths in angstrom, temperatures in K, density in g/cm^3, masses in g/mol. Miller indices are always in the setting of the record's own cell (facet.setting); two structures of one material can use different settings. Flagged records are kept; their flags say what is wrong and how severe it is.",
+  "schema_version": "0.2.0",
   "oneOf": [
     {"$ref": "#/$defs/surface_energy"},
-    {"$ref": "#/$defs/wulff_shape"}
+    {"$ref": "#/$defs/wulff_shape"},
+    {"$ref": "#/$defs/attachment_energy"}
   ],
   "$defs": {
-    "schema_version": {"type": "string", "enum": ["0.1.0", "0.1.1"], "description": "0.1.1 (additive): provenance source campaign (the campaign driver), flag code sim2l_flag"},
+    "schema_version": {"type": "string", "enum": ["0.1.0", "0.1.1", "0.2.0"], "description": "0.1.1 (additive): provenance source campaign (the campaign driver), flag code sim2l_flag. 0.2.0 (additive): record type attachment_energy; wulff_shape.construction (wulff, the default, or attachment_energy) with level ae-static and facets carrying E_att and distance; provenance source attachment-prototype; flag codes cut_rules_disagree, qeq_charges_changed, intramolecular_strain_in_reference, growth_morphology"},
     "hkl": {"type": "array", "items": {"type": "integer"}, "minItems": 3, "maxItems": 3},
     "md5": {"type": ["string", "null"], "pattern": "^[0-9a-f]{32}$"},
     "matrix3": {"type": "array", "minItems": 3, "maxItems": 3,
       "items": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"type": "number"}}},
     "flag": {
       "type": "object",
-      "description": "One flag on a gamma or a shape. severity 'error': the value is not usable as a surface energy (kept, marked, left out of shapes); 'warning': usable with care; 'info': context a reader needs.",
+      "description": "One flag on a gamma or a shape. severity 'error': the value is not usable as a surface energy (kept, marked, left out of shapes); 'warning': usable with care; 'info': context a reader needs. Attachment-energy flags (0.2.0): cut_rules_disagree (the lowest-|E_att| cut is not the lowest-gamma cut), qeq_charges_changed (ReaxFF: QEq re-equilibrates the charges of the isolated slice, so E_att includes their response), intramolecular_strain_in_reference (the static molecules are strained against the minimised gas molecule: the static E_latt includes it, E_att does not), growth_morphology (a shape built from attachment energies: kinetic, not equilibrium).",
       "required": ["code", "severity", "detail", "by"],
       "additionalProperties": false,
       "properties": {
@@ -24,10 +25,11 @@
           "gamma_not_positive", "relaxed_above_unrelaxed", "minimisation_not_converged", "molecules_not_intact",
           "run_failed", "faces_not_equivalent", "force_field_not_validated", "unrelaxed_screening",
           "raw_value_superseded", "not_stationary", "no_run_id", "protocol_superseded", "energy_check_skipped",
-          "shape_not_converged", "level1_used_for_inconsistent_level2", "ratio_scaled_level1", "sim2l_flag"]},
+          "shape_not_converged", "level1_used_for_inconsistent_level2", "ratio_scaled_level1", "sim2l_flag",
+          "cut_rules_disagree", "qeq_charges_changed", "intramolecular_strain_in_reference", "growth_morphology"]},
         "severity": {"type": "string", "enum": ["error", "warning", "info"]},
         "detail": {"type": "string"},
-        "by": {"type": "string", "description": "who raised it: surfenergy (its gamma_flags guard), wulffhound-guard (engine.consistency), exporter (this dataset's curation), engine, campaign driver"}
+        "by": {"type": "string", "description": "who raised it: surfenergy (its gamma_flags guard), wulffhound-guard (engine.consistency), exporter (this dataset's curation), engine, campaign driver, attachment ingest (the exporter reading the attachment-energy results)"}
       }
     },
     "material": {
@@ -196,10 +198,10 @@
       "required": ["source", "source_ref", "sim2l", "date"],
       "additionalProperties": false,
       "properties": {
-        "source": {"type": "string", "enum": ["wulffhound-ledger", "cif-zoo", "surfenergy-regression", "surfenergy-notes", "surfenergy-run", "campaign"], "description": "campaign: a job of the campaign driver (dataset/campaigns/<name>.jsonl)"},
+        "source": {"type": "string", "enum": ["wulffhound-ledger", "cif-zoo", "surfenergy-regression", "surfenergy-notes", "surfenergy-run", "campaign", "attachment-prototype"], "description": "campaign: a job of the campaign driver (dataset/campaigns/<name>.jsonl); attachment-prototype: the chain's static attachment-energy prototype (devtools/attachment; its results JSON is read by the exporter)"},
         "source_ref": {"type": "string", "description": "where the value is recorded: file and entry (e.g. data/tnt/ledger.json#entries[3])"},
         "sim2l": {"type": "object", "required": ["name"], "additionalProperties": false,
-          "properties": {"name": {"type": "string", "enum": ["supercell+slabcutter", "slabcutter", "surfenergy"]},
+          "properties": {"name": {"type": "string", "enum": ["supercell+slabcutter", "slabcutter", "surfenergy", "devtools-attachment"]},
                          "revision": {"type": ["string", "null"], "description": "chain git revision or nanoHUB revision"}}},
         "run_id": {"type": ["string", "null"], "description": "the run folder id (simtool run hash or wulffhound run name)"},
         "run_ref": {"type": ["string", "null"], "description": "portable reference of the run folder (chain:..., state:...); not shipped"},
@@ -233,6 +235,92 @@
         "provenance": {"$ref": "#/$defs/provenance"}
       }
     },
+    "ae_cut": {
+      "type": "object",
+      "description": "one candidate cut of a growth slice: a gap between the molecular layers taken modulo d_eff",
+      "required": ["index", "cut_z", "E_att"],
+      "additionalProperties": false,
+      "properties": {
+        "index": {"type": "integer"},
+        "cut_z": {"type": "number", "description": "angstrom along the facet normal of the oriented cell"},
+        "gap": {"type": ["number", "null"]},
+        "E_att": {"type": "number"},
+        "E_slice": {"type": ["number", "null"], "description": "in the record's energy_convention"},
+        "gamma_unrelaxed": {"type": ["number", "null"], "description": "mJ/m^2: the unrelaxed gamma of the 2-period slab of this cut (slabcutter's slab of that termination)"},
+        "faces_equivalent": {"type": ["boolean", "null"]}
+      }
+    },
+    "attachment_energy": {
+      "type": "object",
+      "description": "The static (unrelaxed) attachment energy of one facet family: E_att = e_bulk - e_slice per molecule, the energy released when one growth slice of thickness d_eff (d_hkl / extinction factor, as BFDH) attaches to the crystal. The growth rate of the face is taken proportional to |E_att| (Hartman-Perdok). E_latt = E_slice + E_att; E_slice and E_latt need a gas reference (result.energy_convention), E_att does not. Units kcal/mol per molecule. No coordinates: energies, cut heights and slice sizes only.",
+      "required": ["schema_version", "record_type", "record_id", "material", "force_field", "facet", "slice", "result", "provenance"],
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {"$ref": "#/$defs/schema_version"},
+        "record_type": {"const": "attachment_energy"},
+        "record_id": {"type": "string", "pattern": "^ae-[0-9a-f]{12}$"},
+        "material": {"$ref": "#/$defs/material"},
+        "force_field": {"$ref": "#/$defs/force_field"},
+        "facet": {"$ref": "#/$defs/facet"},
+        "slice": {
+          "type": "object",
+          "required": ["d_eff", "extinction_factor", "n_slice", "n_cuts", "cut_index", "rule", "lowest_gamma_cut_index"],
+          "additionalProperties": false,
+          "properties": {
+            "d_eff": {"type": "number", "description": "slice thickness (angstrom): d_hkl / extinction_factor"},
+            "extinction_factor": {"type": "integer", "minimum": 1, "description": "n, from the systematic absences of the space group in the data-file setting"},
+            "extinction_factor_structural": {"type": ["integer", "null"], "description": "the largest n for which the atom-height profile of the oriented cell repeats after d_hkl / n (a check: equal to extinction_factor)"},
+            "n_slice": {"type": "integer", "description": "molecules in one slice: the whole molecules whose centres of mass lie in [cut, cut + d_eff)"},
+            "n_molecules_cell": {"type": ["integer", "null"]},
+            "area_A2": {"type": ["number", "null"]},
+            "period_A": {"type": ["number", "null"]},
+            "volume_per_molecule_A3": {"type": ["number", "null"]},
+            "n_cuts": {"type": "integer"},
+            "cut_index": {"type": "integer", "description": "the growth slice: the cut chosen by rule"},
+            "cut_z": {"type": ["number", "null"]},
+            "gap": {"type": ["number", "null"]},
+            "rule": {"type": "string", "enum": ["lowest_abs_E_att", "lowest_gamma"], "description": "lowest_abs_E_att: the most strongly bound slice (Hartman-Perdok's choice)"},
+            "lowest_gamma_cut_index": {"type": ["integer", "null"], "description": "the cut with the lowest unrelaxed 2-period gamma (its E_att: result.E_att_lowest_gamma_cut)"},
+            "gamma_periods": {"type": ["integer", "null"]},
+            "cuts": {"type": "array", "items": {"$ref": "#/$defs/ae_cut"}}
+          }
+        },
+        "result": {
+          "type": "object",
+          "required": ["status", "units", "E_att", "E_att_lowest_gamma_cut", "E_slice", "E_latt", "energy_convention", "flags"],
+          "additionalProperties": false,
+          "properties": {
+            "status": {"type": "string", "enum": ["ok", "failed"]},
+            "units": {"type": "string", "const": "kcal/mol per molecule"},
+            "E_att": {"type": "number", "description": "attachment energy of the growth slice (slice.cut_index); negative = bound"},
+            "E_att_kJ_per_mol": {"type": ["number", "null"]},
+            "E_att_lowest_gamma_cut": {"type": "number", "description": "E_att of the lowest-gamma cut (= E_att when the two rules agree)"},
+            "gamma_unrelaxed_growth_cut": {"type": ["number", "null"], "description": "mJ/m^2"},
+            "gamma_unrelaxed_min": {"type": ["number", "null"], "description": "mJ/m^2: the lowest unrelaxed 2-period gamma over the cuts (the family's level-1 value in this dataset)"},
+            "E_slice": {"type": ["number", "null"], "description": "slice energy per molecule against the gas reference of energy_convention"},
+            "E_latt": {"type": ["number", "null"], "description": "lattice energy per molecule against the same reference (= E_slice + E_att)"},
+            "energy_convention": {"type": "string", "enum": ["static_minus_minimised_gas", "rigid", "relaxed"], "description": "gas reference of E_slice and E_latt. static_minus_minimised_gas: static crystal minus the minimised isolated molecule (includes intramolecular strain); rigid: minus the molecule frozen in its crystal geometry (intermolecular energy only, the classical HABIT convention); relaxed: the bulk minimised at fixed box minus the minimised molecule"},
+            "E_latt_conventions": {"type": "object", "additionalProperties": false,
+              "properties": {"static_minus_minimised_gas": {"type": ["number", "null"]}, "rigid": {"type": ["number", "null"]}, "relaxed": {"type": ["number", "null"]}}},
+            "E_slice_static_minus_minimised_gas": {"type": ["number", "null"]},
+            "gas_reference": {"type": ["object", "null"], "additionalProperties": false,
+              "properties": {"E_gas_minimised": {"type": ["number", "null"]}, "E_gas_crystal_conformer_mean": {"type": ["number", "null"]},
+                             "intramolecular_strain_mean": {"type": ["number", "null"]}, "box_A": {"type": ["number", "null"]}, "note": {"type": ["string", "null"]}}},
+            "e_bulk_per_molecule": {"type": ["number", "null"], "description": "static energy per molecule of the oriented bulk cell (force-field zero)"},
+            "e_bulk_minus_unitcell": {"type": ["number", "null"], "description": "oriented cell minus unit cell, per molecule (a check, ~0)"},
+            "equivalent_slices_max_dev": {"type": ["number", "null"], "description": "extinction_factor > 1: the largest energy difference per molecule between the n symmetry-equivalent slices of one period"},
+            "qeq": {"type": ["object", "null"], "description": "ReaxFF only (null otherwise): the QEq charges of the isolated slice against the same atoms in the bulk, in e",
+              "additionalProperties": false,
+              "properties": {"measured": {"type": "boolean"}, "mean_abs_dq": {"type": ["number", "null"]}, "max_abs_dq": {"type": ["number", "null"]},
+                             "rms_q_bulk": {"type": ["number", "null"]}, "net_slice_charge": {"type": ["number", "null"]},
+                             "n_atoms": {"type": ["integer", "null"]}, "note": {"type": ["string", "null"]}}},
+            "flags": {"type": "array", "items": {"$ref": "#/$defs/flag"}}
+          }
+        },
+        "related_record_ids": {"type": "array", "items": {"type": "string", "pattern": "^se-[0-9a-f]{12}$"}, "description": "surface_energy records of the same family whose gamma is this record's gamma_unrelaxed_min (the level-1 lowest termination)"},
+        "provenance": {"$ref": "#/$defs/provenance"}
+      }
+    },
     "shape_facet": {
       "type": "object",
       "required": ["family", "representative", "members", "gamma", "level", "area_fraction", "on_shape", "input_record_ids"],
@@ -242,7 +330,9 @@
         "representative": {"$ref": "#/$defs/hkl"},
         "members": {"type": "array", "items": {"$ref": "#/$defs/hkl"}},
         "d_eff": {"type": ["number", "null"]},
-        "gamma": {"type": "number", "description": "the gamma used in the build (may be a level-1 value scaled by the relaxed/unrelaxed ratio, see basis)"},
+        "gamma": {"type": ["number", "null"], "description": "the gamma used in the build (may be a level-1 value scaled by the relaxed/unrelaxed ratio, see basis); null in an attachment_energy shape, whose facets carry E_att and distance"},
+        "E_att": {"type": ["number", "null"], "description": "attachment_energy shapes: E_att of the input record, kcal/mol per molecule"},
+        "distance": {"type": ["number", "null"], "description": "the centre-to-face distance of the build when it is not gamma: |E_att| in an attachment_energy shape (the shape's distance_units)"},
         "gamma_record": {"type": ["number", "null"], "description": "the gamma of the input record"},
         "sigma": {"type": ["number", "null"]},
         "level": {"type": "integer"},
@@ -257,7 +347,7 @@
         "p_on_shape": {"type": ["number", "null"]},
         "bfdh_area_fraction": {"type": ["number", "null"], "description": "BFDH (gamma ~ 1/d_eff) area fraction over the same facet set"},
         "flags": {"type": "array", "items": {"$ref": "#/$defs/flag"}},
-        "input_record_ids": {"type": "array", "items": {"type": "string", "pattern": "^se-[0-9a-f]{12}$"}, "minItems": 1}
+        "input_record_ids": {"type": "array", "items": {"type": "string", "pattern": "^(se|ae)-[0-9a-f]{12}$"}, "minItems": 1}
       }
     },
     "wulff_shape": {
@@ -269,6 +359,9 @@
       "properties": {
         "schema_version": {"$ref": "#/$defs/schema_version"},
         "record_type": {"const": "wulff_shape"},
+        "construction": {"type": "string", "enum": ["wulff", "attachment_energy"], "default": "wulff", "description": "wulff (the default; records before 0.2.0 have no field): the equilibrium (Wulff) shape, centre-to-face distance = gamma; attachment_energy: the growth morphology, distance = |E_att| (growth rate ~ |E_att|, Hartman-Perdok), on the same lattice with the same orbits and checks"},
+        "distance_quantity": {"type": "string", "enum": ["gamma", "abs_E_att"]},
+        "distance_units": {"type": "string"},
         "shape_id": {"type": "string", "pattern": "^ws-[0-9a-f]{12}$"},
         "material_id": {"type": "string"},
         "material_name": {"type": "string"},
@@ -276,7 +369,7 @@
         "force_field": {"type": "string"},
         "force_field_validated": {"type": "boolean"},
         "temperature_K": {"type": "number"},
-        "level": {"type": "string", "enum": ["1", "2", "best"], "description": "1: unrelaxed values only; 2: relaxed only; best: relaxed where available, else level 1 scaled by the mean relaxed/unrelaxed ratio (wulffhound engine)"},
+        "level": {"type": "string", "enum": ["1", "2", "best", "ae-static"], "description": "1: unrelaxed values only; 2: relaxed only; best: relaxed where available, else level 1 scaled by the mean relaxed/unrelaxed ratio (wulffhound engine); ae-static: the static (unrelaxed) attachment-energy growth morphology (construction attachment_energy)"},
         "level_description": {"type": "string"},
         "facet_set": {"type": "array", "items": {"type": "string"}},
         "facets": {"type": "array", "items": {"$ref": "#/$defs/shape_facet"}},
@@ -287,7 +380,7 @@
           "properties": {
             "shape_factor": {"type": "number"},
             "anisotropy": {"type": "number"},
-            "weighted_surface_energy": {"type": "number"},
+            "weighted_surface_energy": {"type": "number", "description": "area-weighted distance: gamma, or |E_att| in an attachment_energy shape"},
             "volume": {"type": ["number", "null"], "description": "in (gamma units)^3: the shape is scaled by gamma"},
             "surface_area": {"type": ["number", "null"]},
             "effective_radius": {"type": ["number", "null"]},
@@ -312,9 +405,20 @@
         "checks": {"type": "object", "description": "the conventions checks: pymatgen keeps the data-file a, b, c and its reciprocal-lattice symmetry gives the Laue orbits (2/m asserted)"},
         "flags": {"type": "array", "items": {"$ref": "#/$defs/flag"}},
         "convergence": {"type": ["object", "null"]},
-        "input_record_ids": {"type": "array", "items": {"type": "string", "pattern": "^se-[0-9a-f]{12}$"}},
+        "input_record_ids": {"type": "array", "items": {"type": "string", "pattern": "^(se|ae)-[0-9a-f]{12}$"}},
         "provenance": {"type": "object", "required": ["built_by", "date"], "additionalProperties": true}
-      }
+      },
+      "allOf": [
+        {"if": {"required": ["construction"], "properties": {"construction": {"const": "attachment_energy"}}},
+         "then": {"required": ["distance_quantity", "distance_units"],
+                  "properties": {"level": {"const": "ae-static"}, "distance_quantity": {"const": "abs_E_att"},
+                                 "facets": {"items": {"required": ["E_att", "distance"], "properties": {"E_att": {"type": "number"}, "distance": {"type": "number", "exclusiveMinimum": 0},
+                                                                                                  "input_record_ids": {"items": {"pattern": "^ae-"}}}}},
+                                 "input_record_ids": {"items": {"pattern": "^ae-"}}}},
+         "else": {"properties": {"level": {"enum": ["1", "2", "best"]},
+                                 "facets": {"items": {"properties": {"gamma": {"type": "number"}, "input_record_ids": {"items": {"pattern": "^se-"}}}}},
+                                 "input_record_ids": {"items": {"pattern": "^se-"}}}}}
+      ]
     }
   }
 }

@@ -5,11 +5,15 @@ campaign materials), with the same resampling and metrics as the bundle shapes o
   level best  the engine's rule (engine.gamma_table('best')): the relaxed T = 0 value (level 2) where a family has
               one that passes the consistency guard, else its level-1 value x the mean relaxed/unrelaxed ratio of
               the families that have both; sigma max(gamma_error, 2 %) for level 2, (std of the ratios + 2 %, floor
-              5 %) x gamma for the scaled level-1 values (best_shape).
+              5 %) x gamma for the scaled level-1 values (best_shape);
+  ae-static   the growth (attachment-energy) morphology from attachment_energy records: the same construction with
+              |E_att| as the centre-to-face distance (growth rate ~ |E_att|, Hartman-Perdok), construction
+              'attachment_energy', resampled |E_att| x (1 + 5 % N(0, 1)) (ae_shape).
 
     from shapes import level1_shape, best_shape
     rec, why = level1_shape(records_of_one_material, flag=..., rid=..., schema_version='0.1.1')
     rec, why = best_shape(records_of_one_material, flag=..., rid=..., schema_version='0.1.1')
+    rec, why = ae_shape(attachment_energy_records_of_one_material, flag=..., rid=..., schema_version='0.2.0')
 
 A shape is built only when (1) at least MIN_FAMILIES families have a usable gamma, (2) their Laue orbits
 (facet.family_members) enclose the origin (bounded shape), and (3) pymatgen's reciprocal-lattice symmetry gives
@@ -26,6 +30,9 @@ MIN_FAMILIES = 3
 SIGMA1_REL = 0.05     # level-1 values as a T = 0 stand-in: 5 % (the engine's level-1 floor)
 SIGMA2_REL = 0.02     # level 2 (engine.SIGMA2_REL)
 AREA_ON = 1e-4
+AE_SIGMA_REL = 0.05   # |E_att| resampled x (1 + 5 % N(0, 1)) (the attachment-energy prototype's sensitivity)
+AE_N_SAMPLES = 200
+AE_SEED = 20261023
 LAUE_ORDER = {'-1': 2, '2/m': 4, 'mmm': 8, '4/m': 8, '4/mmm': 16, '-3': 6, '-3m': 12, '6/m': 12, '6/mmm': 24,
               'm-3': 24, 'm-3m': 48}
 
@@ -168,15 +175,7 @@ def _build(rows, flag, rid, schema_version, level, level_description, sigma_rule
     g = np.array([x['gamma'] for x in rows], float)
     sig = np.array([x['sigma'] for x in rows], float)
     w, area = _wulff(L, reps_list, g)
-    rng = np.random.default_rng(seed)
-    S = []
-    for _ in range(n_samples):
-        gs = np.maximum(g + sig * rng.standard_normal(len(g)), 0.2 * g)
-        try:
-            S.append(_wulff(L, reps_list, gs)[1])
-        except Exception:
-            pass
-    S = np.array(S)
+    S = _resample(L, reps_list, g, sig, n_samples, seed)
     # d_eff (BFDH): the row's own (best_shape fills it in from another record of the family when the record used
     # has none, e.g. a surfenergy pin), else the record's, else d_hkl
     d_eff = [x.get('d_eff') or x['record']['facet'].get('d_eff') or x['record']['facet'].get('d_hkl') for x in rows]
@@ -200,44 +199,65 @@ def _build(rows, flag, rid, schema_version, level, level_description, sigma_rule
                        'flags': fl, 'input_record_ids': [r['record_id']]})
         ids.append(r['record_id'])
     facets.sort(key=lambda x: -x['area_fraction'])
-    pts = np.array(w.wulff_convex.points)[w.wulff_convex.vertices]
-    c = pts - pts.mean(axis=0)
-    _, vec = np.linalg.eigh(np.cov(c.T))
-    ext = sorted([float(np.ptp(c @ vec[:, k])) for k in range(3)], reverse=True)
     m = r0['material']
     ff = r0['force_field']
     sflags = []
     if not ff['validated_for_material']:
         sflags.append(flag('force_field_not_validated', 'warning', ff.get('note') or 'force field not validated'))
     sflags += extra_flags
-    try:
-        import pymatgen
-        pv = pymatgen.__version__
-    except AttributeError:
-        import importlib.metadata
-        pv = importlib.metadata.version('pymatgen')
     return {
-        'schema_version': schema_version, 'record_type': 'wulff_shape', 'shape_id': rid('ws', m['material_id'], level, sorted(ids)),
+        'schema_version': schema_version, 'record_type': 'wulff_shape', 'construction': 'wulff',
+        'shape_id': rid('ws', m['material_id'], level, sorted(ids)),
         'material_id': m['material_id'], 'material_name': m['name'], 'structure_id': m['structure']['structure_id'],
         'force_field': ff['name'], 'force_field_validated': bool(ff['validated_for_material']), 'temperature_K': 0.0,
         'level': level, 'level_description': level_description,
         'facet_set': fams, 'facets': facets,
-        'shape_metrics': {'shape_factor': round(float(w.shape_factor), 5), 'anisotropy': round(float(w.anisotropy), 5),
-                          'weighted_surface_energy': round(float(w.weighted_surface_energy), 3),
-                          'volume': round(float(w.volume), 3), 'surface_area': round(float(w.surface_area), 3),
-                          'effective_radius': round(float(w.effective_radius), 4),
-                          'aspect_ratios': {'e2_over_e1': round(ext[1] / ext[0], 4), 'e3_over_e1': round(ext[2] / ext[0], 4),
-                                            'method': 'extents of the Wulff vertices along the principal axes of their covariance'},
-                          'n_on_shape': sum(1 for x in facets if x['on_shape']), 'relax_ratio': relax_ratio},
+        'shape_metrics': _metrics(w, facets, relax_ratio),
         'sensitivity': {'method': 'resample every gamma ~ N(gamma, sigma) (clipped at 0.2 gamma), rebuild, area fraction '
                                   'mean / std / 5-95 %', 'n_samples': int(len(S)), 'seed': seed,
                         'max_area_std': round(float(S.std(axis=0).max()), 4), 'sigma_rules': sigma_rules},
         'lattice_matrix': L.tolist(), 'checks': checks,
         'flags': sflags, 'convergence': None, 'input_record_ids': ids,
         'provenance': {'built_by': 'wulffhound shapes.%s from dataset records (pymatgen %s)' % (
-                           'level1_shape' if level == '1' else 'best_shape', pv),
+                           'level1_shape' if level == '1' else 'best_shape', _pymatgen_version()),
                        'date': datetime.date.today().isoformat(), 'area_on_threshold': AREA_ON,
                        'sources': sorted({x['record']['provenance']['source'] for x in rows})}}, None
+
+
+def _resample(L, reps_list, g, sig, n_samples, seed):
+    """Area fractions (n_samples x families) of shapes rebuilt with every distance ~ N(g, sig), clipped at 0.2 g."""
+    rng = np.random.default_rng(seed)
+    S = []
+    for _ in range(n_samples):
+        gs = np.maximum(g + sig * rng.standard_normal(len(g)), 0.2 * g)
+        try:
+            S.append(_wulff(L, reps_list, gs)[1])
+        except Exception:
+            pass
+    return np.array(S)
+
+
+def _metrics(w, facets, relax_ratio):
+    pts = np.array(w.wulff_convex.points)[w.wulff_convex.vertices]
+    c = pts - pts.mean(axis=0)
+    _, vec = np.linalg.eigh(np.cov(c.T))
+    ext = sorted([float(np.ptp(c @ vec[:, k])) for k in range(3)], reverse=True)
+    return {'shape_factor': round(float(w.shape_factor), 5), 'anisotropy': round(float(w.anisotropy), 5),
+            'weighted_surface_energy': round(float(w.weighted_surface_energy), 3),
+            'volume': round(float(w.volume), 3), 'surface_area': round(float(w.surface_area), 3),
+            'effective_radius': round(float(w.effective_radius), 4),
+            'aspect_ratios': {'e2_over_e1': round(ext[1] / ext[0], 4), 'e3_over_e1': round(ext[2] / ext[0], 4),
+                              'method': 'extents of the Wulff vertices along the principal axes of their covariance'},
+            'n_on_shape': sum(1 for x in facets if x['on_shape']), 'relax_ratio': relax_ratio}
+
+
+def _pymatgen_version():
+    try:
+        import pymatgen
+        return pymatgen.__version__
+    except AttributeError:
+        import importlib.metadata
+        return importlib.metadata.version('pymatgen')
 
 
 def level1_shape(records, flag, rid, schema_version, n_samples=40, seed=0):
@@ -310,3 +330,100 @@ def best_shape(records, flag, rid, schema_version, n_samples=40, seed=0):
                   [flag('shape_not_converged', 'info', '%d of %d families relaxed (T = 0), %d ratio-scaled level-1 values; '
                         'families beyond these are not computed' % (n2, len(rows), len(rows) - n2), by='exporter')],
                   round(ratio, 5), n_samples, seed)
+
+
+def ae_shape(records, flag, rid, schema_version, n_samples=AE_N_SAMPLES, seed=AE_SEED, sigma_rel=AE_SIGMA_REL):
+    """The growth (attachment-energy) morphology of one material x force field from its attachment_energy records:
+    the Wulff construction with |E_att| of each family's growth slice as the centre-to-face distance (growth rate
+    R_hkl ~ |E_att|, Hartman-Perdok), on the data-file lattice of the records, with the same asserts as the Wulff
+    shapes (bounded, the Laue orbits equal pymatgen's reciprocal-lattice operations with as many operations as the
+    Laue class at symprec 1e-5 and 1e-3). The records' order is kept (it fixes the resampling draws). (record, None)
+    or (None, reason)."""
+    recs = [r for r in records if r['result']['status'] == 'ok' and r['result'].get('E_att') is not None]
+    if len(recs) < MIN_FAMILIES:
+        return None, '%d attachment energies (a shape needs >= %d)' % (len(recs), MIN_FAMILIES)
+    fams = [r['facet']['family'] for r in recs]
+    if len(set(fams)) != len(fams):
+        return None, 'more than one attachment_energy record for a family: %s' % sorted({f for f in fams if fams.count(f) > 1})
+    if any(r['result']['E_att'] >= 0 for r in recs):
+        return None, 'a non-negative E_att (an unbound slice): %s' % [r['facet']['family'] for r in recs if r['result']['E_att'] >= 0]
+    r0 = recs[0]
+    L = np.array(r0['material']['cell']['lattice_matrix'])
+    members, reps = {}, {}
+    for r in recs:
+        f = r['facet']['family']
+        if not r['facet'].get('family_members'):
+            return None, 'family %s has no Laue orbit in its record (facet.family_members)' % f
+        if not np.allclose(np.array(r['material']['cell']['lattice_matrix']), L, atol=1e-4):
+            return None, 'the records of %s use different lattices' % r0['material']['material_id']
+        if r['force_field']['name'] != r0['force_field']['name']:
+            return None, 'the records of %s use different force fields' % r0['material']['material_id']
+        members[f] = [list(m) for m in r['facet']['family_members']]
+        reps[f] = tuple(r['facet']['family_representative'] or r['facet']['hkl'])
+    if not _closed(L, fams, members):
+        return None, 'the %d families %s do not enclose a bounded shape' % (len(fams), ', '.join(fams))
+    laue = (r0['material'].get('space_group') or {}).get('laue_class')
+    checks, why = _checks(L, fams, members, reps, laue)
+    if why:
+        return None, why
+    reps_list = [reps[f] for f in fams]
+    g = np.array([round(abs(r['result']['E_att']), 6) for r in recs], float)
+    sig = sigma_rel * g
+    w, area = _wulff(L, reps_list, g)
+    S = _resample(L, reps_list, g, sig, n_samples, seed)
+    d_eff = [r['slice']['d_eff'] for r in recs]
+    bf = _wulff(L, reps_list, [1.0 / d for d in d_eff])[1]
+    facets = []
+    for j, r in enumerate(recs):
+        sl, R = r['slice'], r['result']
+        fl = [x for x in R['flags'] if x['code'] == 'cut_rules_disagree']
+        facets.append({'family': fams[j], 'representative': list(reps_list[j]), 'members': members[fams[j]],
+                       'd_eff': round(float(d_eff[j]), 5), 'gamma': None, 'E_att': R['E_att'],
+                       'distance': float(g[j]), 'gamma_record': R.get('gamma_unrelaxed_growth_cut'),
+                       'sigma': round(float(sig[j]), 6), 'level': 1,
+                       'basis': 'static (unrelaxed) attachment energy of the growth slice (cut %d of %d, %s, %d molecules, '
+                                'd_eff %.3f A), record %s' % (sl['cut_index'], sl['n_cuts'], sl['rule'], sl['n_slice'],
+                                                              sl['d_eff'], r['record_id']),
+                       'termination_label': 'cut %d (lowest |E_att|)' % sl['cut_index'],
+                       'area_fraction': round(area[j], 6), 'on_shape': area[j] > AREA_ON,
+                       'area_mean': round(float(S[:, j].mean()), 4), 'area_std': round(float(S[:, j].std()), 4),
+                       'area_p05': round(float(np.percentile(S[:, j], 5)), 4),
+                       'area_p95': round(float(np.percentile(S[:, j], 95)), 4),
+                       'p_on_shape': round(float((S[:, j] > AREA_ON).mean()), 3), 'bfdh_area_fraction': round(bf[j], 6),
+                       'flags': fl, 'input_record_ids': [r['record_id']]})
+    facets.sort(key=lambda x: -x['area_fraction'])
+    ids = [r['record_id'] for r in recs]
+    m, ff = r0['material'], r0['force_field']
+    sflags = [flag('growth_morphology', 'info', 'attachment-energy growth (kinetic, layer-growth) morphology from static '
+                   '(unrelaxed) slices in vacuum (no solvent): not an equilibrium shape; a face grows at a rate ~ |E_att|',
+                   by='exporter')]
+    if not ff['validated_for_material']:
+        sflags.append(flag('force_field_not_validated', 'warning', ff.get('note') or 'force field not validated'))
+    nd = sum(1 for r in recs if any(x['code'] == 'cut_rules_disagree' for x in r['result']['flags']))
+    if nd:
+        sflags.append(flag('cut_rules_disagree', 'info', 'in %d of %d families the lowest-|E_att| cut is not the lowest-gamma '
+                           'cut (the growth slice is the lowest-|E_att| one; see each record)' % (nd, len(recs)), by='exporter'))
+    if any(any(x['code'] == 'qeq_charges_changed' for x in r['result']['flags']) for r in recs):
+        sflags.append(flag('qeq_charges_changed', 'info', 'ReaxFF: QEq re-equilibrates the charges of each isolated slice, so '
+                           'E_att includes the slice\'s charge response (a fixed-charge force field would not)', by='exporter'))
+    return {
+        'schema_version': schema_version, 'record_type': 'wulff_shape', 'construction': 'attachment_energy',
+        'distance_quantity': 'abs_E_att', 'distance_units': 'kcal/mol per molecule',
+        'shape_id': rid('ws', m['material_id'], 'ae-static', sorted(ids)),
+        'material_id': m['material_id'], 'material_name': m['name'], 'structure_id': m['structure']['structure_id'],
+        'force_field': ff['name'], 'force_field_validated': bool(ff['validated_for_material']), 'temperature_K': 0.0,
+        'level': 'ae-static',
+        'level_description': 'growth (attachment-energy) morphology: the Wulff construction with |E_att| of each family\'s '
+                             'growth slice (static, unrelaxed; the lowest-|E_att| cut) as the centre-to-face distance '
+                             '(Hartman-Perdok: growth rate ~ |E_att|), built from the attachment_energy records (shapes.ae_shape)',
+        'facet_set': fams, 'facets': facets,
+        'shape_metrics': _metrics(w, facets, None),
+        'sensitivity': {'method': 'resample every |E_att| x (1 + %g %% N(0, 1)) (clipped at 0.2 |E_att|), rebuild, area '
+                                  'fraction mean / std / 5-95 %%' % (100 * sigma_rel), 'n_samples': int(len(S)), 'seed': seed,
+                        'max_area_std': round(float(S.std(axis=0).max()), 4),
+                        'sigma_rules': '%g %% of |E_att| (no measured uncertainty: a sensitivity, not an error bar)' % (100 * sigma_rel)},
+        'lattice_matrix': L.tolist(), 'checks': checks,
+        'flags': sflags, 'convergence': None, 'input_record_ids': ids,
+        'provenance': {'built_by': 'wulffhound shapes.ae_shape from attachment_energy records (pymatgen %s)' % _pymatgen_version(),
+                       'date': datetime.date.today().isoformat(), 'area_on_threshold': AREA_ON,
+                       'sources': sorted({r['provenance']['source'] for r in recs})}}, None

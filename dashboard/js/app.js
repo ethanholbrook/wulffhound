@@ -1,13 +1,15 @@
 /* Surface-energy explorer (prototype): reads dataset/*.jsonl (schema/surface_energy.schema.json) and renders
  * the overview, the explorer, a material page (facet table, Wulff shape built in the browser by wulff.js, what-if
- * slider, BFDH overlay, uncertainty bars), a comparison, and record / shape provenance pages. No build step.
+ * slider, BFDH overlay, uncertainty bars; shape: equilibrium (Wulff) | growth (attachment energy) | BFDH, with the
+ * E_att column when attachment_energy records exist), a comparison, and record / AE record / shape provenance pages.
+ * No build step.
  * Data base path: ?data=<url> (default ../dataset/). Everything read from the dataset is escaped before display. */
 (function () {
   'use strict';
   const params = new URLSearchParams(location.search);
   const BASE = (params.get('data') || '../dataset/').replace(/\/?$/, '/');
-  const D = { records: [], byId: {}, shapes: [], shapeById: {}, index: null, materials: {} };
-  const STATE = { mat: {}, colorBy: 'family' };     // per material: {ff, level, bfdh, allTerms, whatif}
+  const D = { records: [], byId: {}, shapes: [], shapeById: {}, ae: [], aeById: {}, index: null, materials: {} };
+  const STATE = { mat: {}, colorBy: 'family' };     // per material: {ff, level, construction, bfdh, allTerms, whatif}
   // Categorical facet colours (Tableau 10, then its lighter companions): the same family keeps the same colour on
   // the 3D shape, the legend, the facet table, the uncertainty bars and the strip, whatever the level or what-if.
   const PALETTE = ['#4e79a7', '#f28e2b', '#59a14f', '#e15759', '#76b7b2', '#edc948', '#b07aa1', '#ff9da7', '#9c755f',
@@ -26,13 +28,44 @@
   const levelName = { 1: 'L1 unrelaxed', 2: 'L2 relaxed T = 0', 3: 'L3 MD' };
   const hasError = (r) => r.result.gamma_flags.some((f) => f.severity === 'error');
   const famHkl = (f) => f.replace(/[{}]/g, '');
+  const aeLink = (r, text) => '<a href="#/ae/' + esc(r.record_id) + '" title="attachment-energy record ' + esc(r.record_id) + '">' + text + '</a>';
+  const anyLink = (id, text) => (D.byId[id] ? recLink(D.byId[id], text) : D.aeById[id] ? aeLink(D.aeById[id], text) : esc(text));
+
+  // ------------------------------------------------------------------ shape constructions
+  // A wulff_shape record is the equilibrium (Wulff) shape (distance = gamma) or, with construction
+  // 'attachment_energy', the growth morphology (distance = |E_att|). The BFDH shape (distance = 1/d_eff) is derived
+  // in the browser from the facet set of a Wulff shape, whose recorded bfdh_area_fraction it reproduces.
+  const isAE = (s) => !!s && s.construction === 'attachment_energy';
+  const dist = (f) => (f.distance != null ? f.distance : f.gamma);
+  const CONSTRUCTIONS = [['wulff', 'equilibrium (Wulff)'], ['ae', 'growth (AE)'], ['bfdh', 'BFDH']];
+  function qty(s) {
+    if (s && s.construction === 'bfdh') return { k: 'bfdh', name: '1/d<sub>eff</sub>', plain: '1/d_eff', units: '1/&Aring;', d: 4 };
+    if (isAE(s)) return { k: 'ae', name: '|E<sub>att</sub>|', plain: '|E_att|', units: 'kcal/mol', d: 2 };
+    return { k: 'wulff', name: '&gamma;', plain: 'gamma', units: 'mJ/m<sup>2</sup>', d: 2 };
+  }
+  function bfdhShape(s) {
+    return Object.assign({}, s, { construction: 'bfdh', flags: [], sensitivity: { n_samples: 0 },
+      facets: s.facets.map((f) => Object.assign({}, f, { distance: 1 / f.d_eff, area_fraction: f.bfdh_area_fraction,
+        area_mean: f.bfdh_area_fraction, area_std: 0, area_p05: f.bfdh_area_fraction, area_p95: f.bfdh_area_fraction,
+        sigma: 0, termination_label: 'BFDH: d_eff ' + (+f.d_eff).toFixed(3) + ' A' })) });
+  }
+  /** the shape of a material for one construction: Wulff (the given level, else best, else the first), AE, BFDH */
+  function shapeFor(M, ff, kind, level) {
+    const ws = shapesOf(M, ff).filter((s) => !isAE(s));
+    const w = ws.find((s) => s.level === level) || ws.find((s) => s.level === 'best') || ws[0] || null;
+    if (kind === 'ae') return shapesOf(M, ff).find(isAE) || null;
+    if (kind === 'bfdh') return w ? bfdhShape(w) : null;
+    return w;
+  }
+  const shapeTitle = (s) => (s.construction === 'bfdh' ? 'BFDH shape (1/d_eff, ' + s.facets.length + ' families)'
+    : isAE(s) ? 'Growth (attachment-energy) shape, static slices' : 'Wulff shape, T = ' + fmt(s.temperature_K, 0) + ' K, level ' + esc(s.level));
 
   /** stable colours for a material's families: the families of its 'best' (else first) shape by recorded area
    * (largest first, so the dominant faces get the most distinct colours), then any other family by name */
   function famColors(M) {
     if (FAMCOL[M.id]) return FAMCOL[M.id];
     const order = [];
-    const sh = M.shapes.find((s) => s.level === 'best') || M.shapes[0];
+    const sh = M.shapes.find((s) => s.level === 'best' && !isAE(s)) || M.shapes.find((s) => !isAE(s)) || M.shapes[0];
     if (sh) sh.facets.slice().sort((a, b) => b.area_fraction - a.area_fraction || a.family.localeCompare(b.family)).forEach((f) => order.push(f.family));
     [...new Set(M.records.map((r) => r.facet.family))].sort().forEach((f) => { if (!order.includes(f)) order.push(f); });
     const m = {};
@@ -70,21 +103,24 @@
     D.shapes = await getJSONL(D.index.files.wulff_shape);
     for (const r of D.records) D.byId[r.record_id] = r;
     for (const s of D.shapes) D.shapeById[s.shape_id] = s;
+    if (D.index.files.attachment_energy) D.ae = await getJSONL(D.index.files.attachment_energy);
+    for (const r of D.ae) D.aeById[r.record_id] = r;
     for (const r of D.records) {
       const m = r.material;
       const M = D.materials[m.material_id] || (D.materials[m.material_id] = {
         id: m.material_id, name: m.name, formula: m.formula, inchikey: m.inchikey, smiles: m.smiles,
         mass: m.molecular_mass, density: m.cell.density, category: m.category, polymorph: m.polymorph,
-        structures: {}, ffs: [], records: [], shapes: [] });
+        structures: {}, ffs: [], records: [], shapes: [], ae: [] });
       M.records.push(r);
       M.structures[m.structure.structure_id] = m;
       if (!M.ffs.includes(r.force_field.name)) M.ffs.push(r.force_field.name);
       if (M.density == null && m.cell.density != null) M.density = m.cell.density;
     }
     for (const s of D.shapes) if (D.materials[s.material_id]) D.materials[s.material_id].shapes.push(s);
+    for (const r of D.ae) if (D.materials[r.material.material_id]) D.materials[r.material.material_id].ae.push(r);
     for (const M of Object.values(D.materials)) M.ffs.sort((a, b) => shapesOf(M, b).length - shapesOf(M, a).length || a.localeCompare(b));
     $('#foot-info').innerHTML = 'Dataset schema ' + esc(D.index.schema_version) + ', built ' + esc(D.index.built.slice(0, 10)) + ': ' +
-      D.records.length + ' surface-energy records, ' + D.shapes.length + ' Wulff shapes, ' + Object.keys(D.materials).length + ' materials.';
+      D.records.length + ' surface-energy records, ' + D.ae.length + ' attachment energies, ' + D.shapes.length + ' shapes, ' + Object.keys(D.materials).length + ' materials.';
   }
   const shapesOf = (M, ff) => M.shapes.filter((s) => !ff || s.force_field === ff);
   const matList = () => Object.values(D.materials).sort((a, b) => a.name.localeCompare(b.name));
@@ -97,12 +133,15 @@
     const query = new URLSearchParams(q || '');
     document.querySelectorAll('nav a').forEach((a) => a.classList.toggle('active', a.dataset.nav === (parts[0] || 'home') || (parts[0] === 'm' && a.dataset.nav === 'explore')));
     const app = $('#app');
+    // free the WebGL contexts of the plots about to be replaced (each 3D plot holds one; browsers cap them)
+    if (typeof Plotly !== 'undefined') app.querySelectorAll('.js-plotly-plot').forEach((e) => { try { Plotly.purge(e); } catch (x) { /* already gone */ } });
     try {
       if (!parts.length) home(app);
       else if (parts[0] === 'explore') explore(app, query);
       else if (parts[0] === 'm' && D.materials[parts[1]]) material(app, D.materials[parts[1]], query);
-      else if (parts[0] === 'compare') compare(app, parts[1], parts[2]);
+      else if (parts[0] === 'compare') compare(app, parts[1], parts[2], query);
       else if (parts[0] === 'record' && D.byId[parts[1]]) recordPage(app, D.byId[parts[1]]);
+      else if (parts[0] === 'ae' && D.aeById[parts[1]]) aePage(app, D.aeById[parts[1]]);
       else if (parts[0] === 'shape' && D.shapeById[parts[1]]) shapePage(app, D.shapeById[parts[1]], query.get('f'));
       else app.innerHTML = '<div class="card"><h1>Not found</h1><p>No page for <code>' + esc(h) + '</code>. <a href="#/">Overview</a></p></div>';
     } catch (e) {
@@ -126,6 +165,7 @@
       tile(c.surface_energy, 'surface-energy records') + tile(c.wulff_shape, 'Wulff shapes') + tile(c.materials, 'materials') +
       tile(n('wulffhound'), 'from wulffhound ledgers') + tile(n('cif-zoo'), 'from the CIF zoo') + tile(n('surfenergy'), 'from surfenergy pins / notes') +
       tile(c.status_failed, 'failed runs (kept)') + tile(c.with_error_flags, 'flagged as errors (kept)') +
+      (c.attachment_energy ? tile(c.attachment_energy, 'attachment energies (' + Object.keys(c.attachment_energy_by_material || {}).length + ' growth shapes)') : '') +
       '</div>' +
       '<div class="banner">Prototype. CIF-zoo values are unrelaxed ReaxFF-lg screening cuts, not validated surface energies. ' +
       'TNT uses a validated non-reactive force field; paracetamol uses ReaxFF-lg, which is not validated for it.</div></div>';
@@ -149,13 +189,13 @@
     return '<a class="matcard" href="#/m/' + encodeURIComponent(M.id) + '"><div class="t">' + esc(M.name) + '</div>' +
       '<div class="small muted">' + esc(M.formula) + ' &middot; ' + esc(M.polymorph) + '</div>' +
       '<div class="small">' + fams.size + ' facet families &middot; ' + levels.map((l) => 'L' + l).join(', ') + ' &middot; ' + esc(M.ffs.join(' / ')) +
-      (M.shapes.length ? ' &middot; <strong>shape</strong>' : '') + '</div></a>';
+      (M.shapes.length ? ' &middot; <strong>shape</strong>' : '') + (M.ae.length ? ' &middot; <strong>growth (AE)</strong>' : '') + '</div></a>';
   }
 
   // ------------------------------------------------------------------ 3D Wulff shape
   function facetsForBuild(shape, overrides) {
     return shape.facets.map((f) => ({ family: f.family, members: f.members,
-      gamma: overrides && overrides[f.family] != null ? overrides[f.family] : f.gamma }));
+      gamma: overrides && overrides[f.family] != null ? overrides[f.family] : dist(f) }));
   }
   /** draw a shape (and optionally the BFDH shape scaled to its volume) into el; returns the browser build */
   function drawShape(el, shape, opt) {
@@ -176,9 +216,11 @@
       const I = [], J = [], K = [];
       for (let k = 1; k < P.length - 1; k++) { I.push(0); J.push(k); K.push(k + 1); }
       const sf = fbyfam[f.family];
-      const tip = '(' + f.hkl.join(' ') + ') of ' + f.family + '<br>gamma ' + fmt(f.gamma, 2) + ' mJ/m<sup>2</sup>' +
-        (opt.overrides && opt.overrides[f.family] != null ? ' (what-if)' : ' (' + (sf.level === 2 ? 'L2' : 'L1') + ')') +
-        '<br>family area fraction ' + fmt(res.areaFraction[f.family], 4) + '<br>termination ' + esc(sf.termination_label || '-');
+      const q = qty(shape);
+      const tip = '(' + f.hkl.join(' ') + ') of ' + f.family + '<br>' + q.plain + ' ' + fmt(f.gamma, q.d) + ' ' + q.units +
+        (opt.overrides && opt.overrides[f.family] != null ? ' (what-if)' : q.k === 'wulff' ? ' (' + (sf.level === 2 ? 'L2' : 'L1') + ')' : '') +
+        (q.k === 'ae' ? '<br>E_att ' + fmt(sf.E_att, 2) + ' kcal/mol, d_eff ' + fmt(sf.d_eff, 3) + ' &Aring;' : '') +
+        '<br>family area fraction ' + fmt(res.areaFraction[f.family], 4) + '<br>' + (q.k === 'ae' ? 'growth slice ' : 'termination ') + esc(sf.termination_label || '-');
       traces.push({ type: 'mesh3d', x, y, z, i: I, j: J, k: K, flatshading: true,
         color: opt.colors && STATE.colorBy === 'family' ? (opt.colors[f.family] || PALETTE[9])
           : mix(lo, hi, gmax > gmin ? (f.gamma - gmin) / (gmax - gmin) : 0.5), opacity: 1,
@@ -189,7 +231,7 @@
     }
     traces.push({ type: 'scatter3d', mode: 'lines', x: ex, y: ey, z: ez, hoverinfo: 'skip', line: { color: css('--ink-2'), width: 2 }, showlegend: false });
     let bfdh = null;
-    if (opt.bfdh) {
+    if (opt.bfdh && shape.construction !== 'bfdh') {
       bfdh = Wulff.build(shape.lattice_matrix, shape.facets.map((f) => ({ family: f.family, members: f.members, gamma: 1 / f.d_eff })));
       if (bfdh.ok) {
         const s = Math.cbrt(res.volume / bfdh.volume);
@@ -216,21 +258,28 @@
     for (const f of shape.facets) max = Math.max(max, Math.abs((res.areaFraction[f.family] || 0) - f.area_fraction));
     const b = Wulff.build(shape.lattice_matrix, shape.facets.map((f) => ({ family: f.family, members: f.members, gamma: 1 / f.d_eff })));
     for (const f of shape.facets) if (f.bfdh_area_fraction != null) maxB = Math.max(maxB, Math.abs((b.areaFraction[f.family] || 0) - f.bfdh_area_fraction));
-    const c = { shape_id: shape.shape_id, max_abs_diff: max, max_abs_diff_bfdh: maxB, n_families: shape.facets.length,
+    const c = { shape_id: shape.shape_id, construction: shape.construction || 'wulff', max_abs_diff: max, max_abs_diff_bfdh: maxB, n_families: shape.facets.length,
       ok: res.ok && max < 5e-4 && maxB < 5e-4, faces: res.faces.length,
       browser: Object.fromEntries(shape.facets.map((f) => [f.family, res.areaFraction[f.family]])) };
-    window.__dash.checks[shape.shape_id] = c;
+    window.__dash.checks[shape.shape_id + (shape.construction === 'bfdh' ? ':bfdh' : '')] = c;
     return c;
   }
 
   // ------------------------------------------------------------------ material page
   function material(app, M, query) {
-    const st = STATE.mat[M.id] || (STATE.mat[M.id] = { ff: M.ffs[0], level: 'best', bfdh: false, allTerms: false, whatif: {}, wfam: null });
+    const st = STATE.mat[M.id] || (STATE.mat[M.id] = { ff: M.ffs[0], level: 'best', construction: 'wulff', bfdh: false, allTerms: false, whatif: {}, wfam: null });
     if (query.get('ff') && M.ffs.includes(query.get('ff'))) st.ff = query.get('ff');
+    if (CONSTRUCTIONS.some(([k]) => k === query.get('shape'))) st.construction = query.get('shape');
     const recs = M.records.filter((r) => r.force_field.name === st.ff);
     const shapes = shapesOf(M, st.ff);
-    if (!shapes.some((s) => s.level === st.level) && shapes.length) st.level = shapes[0].level;
-    const shape = shapes.find((s) => s.level === st.level) || null;
+    const wshapes = shapes.filter((s) => !isAE(s));
+    const aeShape = shapes.find(isAE) || null;
+    const aeRecs = M.ae.filter((r) => r.force_field.name === st.ff);
+    if (!wshapes.some((s) => s.level === st.level) && wshapes.length) st.level = wshapes[0].level;
+    if (st.construction === 'ae' && !aeShape) st.construction = 'wulff';
+    if (st.construction !== 'ae' && !wshapes.length && aeShape) st.construction = 'ae';
+    const shape = shapeFor(M, st.ff, st.construction, st.level);
+    const q = qty(shape);
     const m0 = recs[0].material;
     // the force-field note of the highest level present (a relaxed record's note, not the screening one)
     const ff = recs.slice().sort((x, y) => y.protocol.level - x.protocol.level)[0].force_field;
@@ -251,31 +300,43 @@
     if (!ff.validated_for_material) h += '<div class="banner">' + esc(ff.note || 'Force field not validated for this material.') + '</div>';
     h += '<div class="row"><label>Force field <select id="sel-ff">' + M.ffs.map((f) => '<option' + (f === st.ff ? ' selected' : '') + '>' + esc(f) + '</option>').join('') + '</select></label>';
     if (shapes.length) {
-      h += '<label>Shape level <select id="sel-level">' + shapes.map((s) => '<option value="' + esc(s.level) + '"' + (s.level === st.level ? ' selected' : '') + '>' + (s.level === 'best' ? 'best (L2 where relaxed)' : 'L' + esc(s.level) + ' unrelaxed') + '</option>').join('') + '</select></label>' +
-        '<label><input type="checkbox" id="chk-bfdh"' + (st.bfdh ? ' checked' : '') + '> BFDH overlay</label>';
+      const why = { wulff: wshapes.length ? '' : 'no equilibrium (Wulff) shape for this material', bfdh: wshapes.length ? '' : 'no facet set to build BFDH on',
+        ae: aeShape ? '' : 'no attachment-energy records for this material and force field' };
+      h += '<span class="seglabel">Shape</span><div class="seg" role="radiogroup" aria-label="Shape construction" id="sel-construction">' +
+        CONSTRUCTIONS.map(([k, l]) => '<button type="button" role="radio" data-c="' + k + '" aria-checked="' + (st.construction === k) + '"' +
+          (why[k] ? ' disabled title="' + esc(why[k]) + '"' : '') + '>' + esc(l) + '</button>').join('') + '</div>';
+      if (wshapes.length) {
+        h += '<label>Level <select id="sel-level"' + (st.construction === 'ae' ? ' disabled title="the growth (AE) shape has one level: static slices"' : '') + '>' +
+          wshapes.map((s) => '<option value="' + esc(s.level) + '"' + (s.level === st.level ? ' selected' : '') + '>' + (s.level === 'best' ? 'best (L2 where relaxed)' : 'L' + esc(s.level) + ' unrelaxed') + '</option>').join('') + '</select></label>';
+      }
+      if (st.construction !== 'bfdh') h += '<label><input type="checkbox" id="chk-bfdh"' + (st.bfdh ? ' checked' : '') + '> BFDH overlay</label>';
     }
     h += '<label><input type="checkbox" id="chk-all"' + (st.allTerms ? ' checked' : '') + '> every termination</label>' +
       '<a href="#/compare/' + encodeURIComponent(M.id) + '">compare...</a></div></div>';
 
     if (shape) {
-      h += '<div class="grid2"><div class="card"><div class="row" style="justify-content:space-between"><h2>Wulff shape, T = ' + fmt(shape.temperature_K, 0) + ' K, level ' + esc(shape.level) + '</h2>' +
+      h += '<div class="grid2"><div class="card"><div class="row" style="justify-content:space-between"><h2 id="shape-title">' + shapeTitle(shape) + '</h2>' +
         '<label class="small">Colour <select id="sel-color"><option value="family"' + (STATE.colorBy === 'family' ? ' selected' : '') + '>by facet family</option>' +
-        '<option value="gamma"' + (STATE.colorBy === 'gamma' ? ' selected' : '') + '>by &gamma;</option></select></label></div>' +
-        (STATE.colorBy === 'gamma' ? '<div class="legend-ramp">&gamma; low <span class="ramp"></span> high' + (st.bfdh ? ' &nbsp;<span class="legend-line"></span> BFDH (same volume)' : '') + '</div>'
-          : (st.bfdh ? '<div class="legend-ramp"><span class="legend-line"></span> BFDH (same volume)</div>' : '')) +
+        '<option value="gamma"' + (STATE.colorBy === 'gamma' ? ' selected' : '') + '>by ' + q.name + '</option></select></label></div>' +
+        (STATE.colorBy === 'gamma' ? '<div class="legend-ramp">' + q.name + ' low <span class="ramp"></span> high' + (st.bfdh && q.k !== 'bfdh' ? ' &nbsp;<span class="legend-line"></span> BFDH (same volume)' : '') + '</div>'
+          : (st.bfdh && q.k !== 'bfdh' ? '<div class="legend-ramp"><span class="legend-line"></span> BFDH (same volume)</div>' : '')) +
         '<div id="plot3d" class="plot3d" role="img" aria-label="3D Wulff shape of ' + esc(M.name) + '"></div>' +
         '<div id="famlegend" class="famlegend" aria-label="facet families on the shape"></div>' +
-        '<p class="small muted">Computed in your browser from the facet normals and gammas (half-space intersection; data-file axes, a along x). Hover a face for its (h k l), gamma, area and termination. ' +
-        'Recorded shape: ' + shapeLink(shape, esc(shape.shape_id)) + '.</p><div id="selfcheck"></div></div>' +
-        '<div class="card whatif"><h2>What if</h2><p class="small muted">Change one gamma and watch the shape respond. What-if values are not data.</p>' +
-        '<div class="row"><label>Facet <select id="wf-fam">' + shape.facets.map((f) => '<option' + (f.family === st.wfam ? ' selected' : '') + '>' + esc(f.family) + '</option>').join('') + '</select></label>' +
-        '<button type="button" id="wf-reset">Reset all</button></div>' +
-        '<input type="range" id="wf-slider" min="0.6" max="1.4" step="0.005" value="1" aria-label="gamma factor">' +
+        '<p class="small muted">Computed in your browser from the facet normals and ' + (q.k === 'ae' ? 'attachment energies (distance |E_att|)' : q.k === 'bfdh' ? 'slice widths (distance 1/d_eff)' : 'gammas') +
+        ' (half-space intersection; data-file axes, a along x). The facet-family colours are the same in the three shapes. Hover a face for its (h k l), ' + q.plain + ', area and ' + (q.k === 'ae' ? 'growth slice' : 'termination') + '. ' +
+        (q.k === 'bfdh' ? 'BFDH area fractions recorded in ' : 'Recorded shape: ') + shapeLink(shape, esc(shape.shape_id)) + '.</p><div id="selfcheck"></div></div>' +
+        '<div class="card whatif"><h2>What if</h2><p class="small muted">' + (q.k === 'bfdh' ? 'BFDH is geometric (1/d_eff): there is no energy to vary. Pick the equilibrium or growth shape.'
+          : 'Change one ' + q.plain + ' and watch the shape respond. What-if values are not data.') + '</p>' +
+        '<div class="row"><label>Facet <select id="wf-fam"' + (q.k === 'bfdh' ? ' disabled' : '') + '>' + shape.facets.map((f) => '<option' + (f.family === st.wfam ? ' selected' : '') + '>' + esc(f.family) + '</option>').join('') + '</select></label>' +
+        '<button type="button" id="wf-reset"' + (q.k === 'bfdh' ? ' disabled' : '') + '>Reset all</button></div>' +
+        '<input type="range" id="wf-slider" min="0.6" max="1.4" step="0.005" value="1" aria-label="' + q.plain + ' factor"' + (q.k === 'bfdh' ? ' disabled' : '') + '>' +
         '<div class="small" id="wf-val"></div><div class="spacer"></div><div id="metrics" class="tiles"></div>' +
         '<div class="spacer"></div><h3>Shape flags</h3><div>' + (shape.flags.length ? shape.flags.map(badge).join('') : '<span class="muted small">none</span>') + '</div></div></div>' +
         '<div class="spacer"></div><div class="card"><h2>Uncertainty: area fraction per family</h2>' +
-        '<p class="small muted">Bars: the recorded area fraction (pymatgen) with its 5-95 % band from resampling every gamma within its sigma (' + esc(shape.sensitivity.n_samples) + ' samples). Dots: the shape in the browser now (equal to the bars until you move the slider).</p>' +
+        '<p class="small muted">' + (q.k === 'bfdh' ? 'Bars: the BFDH area fraction recorded with the Wulff shape (pymatgen); BFDH has no resampling. Dots: the shape in the browser.'
+          : 'Bars: the recorded area fraction (pymatgen) with its 5-95 % band from resampling every ' + q.plain + (q.k === 'ae' ? ' by &plusmn;5 % (a sensitivity, not an error bar)' : ' within its sigma') + ' (' + esc(shape.sensitivity.n_samples) + ' samples). Dots: the shape in the browser now (equal to the bars until you move the slider).') + '</p>' +
         '<div id="unc" class="plot"></div></div>';
+      if (q.k === 'ae') h += aeExplainer(aeShape, aeRecs);
     } else {
       h += '<div class="card"><h2>Facet energies</h2><div class="banner info">No Wulff shape for this material and force field: ' +
         (new Set(recs.filter((r) => r.result.status === 'ok').map((r) => r.facet.family)).size) + ' facet families computed. ' + esc(D.index.no_shape.why) + '.</div>' +
@@ -283,40 +344,43 @@
     }
     h += '<div class="card"><h2>Facet table</h2><p class="small muted">Every gamma links to its record (inputs, protocol, flags, run). ' +
       (st.allTerms ? 'All terminations.' : 'The lowest termination of each run (and failed runs); tick "every termination" for all.') + (shape ? ' Highlighted rows are the inputs of the shape shown.' : '') + '</p>' +
-      '<div class="tablewrap">' + facetTable(recs, shape, st.allTerms, famColors(M)) + '</div></div>';
+      '<div class="tablewrap">' + facetTable(recs, shape, st.allTerms, famColors(M), aeRecs) + '</div></div>';
     app.innerHTML = h;
+    document.querySelectorAll('#sel-construction button').forEach((b) => {
+      b.onclick = () => { if (b.disabled || st.construction === b.dataset.c) return; st.construction = b.dataset.c; st.whatif = {}; route(); };
+    });
 
     $('#sel-ff').onchange = (e) => { st.ff = e.target.value; st.whatif = {}; location.hash = '#/m/' + encodeURIComponent(M.id) + '?ff=' + encodeURIComponent(st.ff); };
     $('#chk-all').onchange = (e) => { st.allTerms = e.target.checked; route(); };
     const cols = famColors(M);
     if (!shape) { drawStrip($('#strip'), recs, cols); return; }
-    $('#sel-level').onchange = (e) => { st.level = e.target.value; st.whatif = {}; route(); };
-    $('#chk-bfdh').onchange = (e) => { st.bfdh = e.target.checked; route(); };
+    if ($('#sel-level')) $('#sel-level').onchange = (e) => { st.level = e.target.value; st.whatif = {}; route(); };
+    if ($('#chk-bfdh')) $('#chk-bfdh').onchange = (e) => { st.bfdh = e.target.checked; route(); };
     if (!st.wfam || !shape.facets.some((f) => f.family === st.wfam)) st.wfam = shape.facets[0].family;
     const fam = $('#wf-fam'), sl = $('#wf-slider');
     $('#sel-color').onchange = (e) => { STATE.colorBy = e.target.value; route(); };
-    const base = (f) => shape.facets.find((x) => x.family === f).gamma;
+    const base = (f) => dist(shape.facets.find((x) => x.family === f));
     const syncSlider = () => { sl.value = st.whatif[st.wfam] != null ? st.whatif[st.wfam] / base(st.wfam) : 1; };
     const redraw = () => {
-      const res = drawShape($('#plot3d'), shape, { overrides: st.whatif, bfdh: st.bfdh, colors: cols });
+      const res = drawShape($('#plot3d'), shape, { overrides: st.whatif, bfdh: st.bfdh && q.k !== 'bfdh', colors: cols });
       if (res.ok) {
         const on = shape.facets.filter((f) => res.areaFraction[f.family] > 1e-4).sort((a, b) => res.areaFraction[b.family] - res.areaFraction[a.family]);
         $('#famlegend').innerHTML = on.map((f) => '<span class="famitem">' + (STATE.colorBy === 'family' ? swatch(cols[f.family]) : '') +
           '<span class="mono">' + esc(f.family) + '</span> ' + (res.areaFraction[f.family] < 0.0005 ? '&lt;0.1' : fmt(100 * res.areaFraction[f.family], 1)) + ' %</span>').join('');
       }
-      window.__dash.lastBuild = { shape_id: shape.shape_id, overrides: Object.assign({}, st.whatif), areaFraction: res.areaFraction, ok: res.ok };
+      window.__dash.lastBuild = { shape_id: shape.shape_id, construction: shape.construction || 'wulff', overrides: Object.assign({}, st.whatif), areaFraction: res.areaFraction, ok: res.ok };
       const g = st.whatif[st.wfam];
-      $('#wf-val').innerHTML = esc(st.wfam) + ': gamma <span class="val">' + fmt(g != null ? g : base(st.wfam), 2) + '</span> mJ/m<sup>2</sup>' +
-        (g != null ? ' (recorded ' + fmt(base(st.wfam), 2) + ')' : ' (recorded)') + '; area fraction now <span class="val">' + fmt(res.areaFraction[st.wfam], 4) + '</span>' +
+      $('#wf-val').innerHTML = esc(st.wfam) + ': ' + q.plain + ' <span class="val">' + fmt(g != null ? g : base(st.wfam), q.d) + '</span> ' + q.units +
+        (g != null ? ' (recorded ' + fmt(base(st.wfam), q.d) + ')' : ' (recorded)') + '; area fraction now <span class="val">' + fmt(res.areaFraction[st.wfam], 4) + '</span>' +
         (Object.keys(st.whatif).length ? '<br><span class="badge warning">what-if: ' + Object.entries(st.whatif).map(([k, v]) => esc(k) + ' ' + fmt(v, 1)).join(', ') + '</span>' : '');
       if (res.ok) {
         const mt = Wulff.metrics(res);
         const onS = shape.facets.filter((f) => res.areaFraction[f.family] > 1e-4).length;
         $('#metrics').innerHTML = tile(onS + ' / ' + shape.facets.length, 'families on the shape') + tile(fmt(mt.shape_factor, 3), 'shape factor') +
-          tile(fmt(mt.weighted_surface_energy, 1), 'area-weighted gamma, mJ/m2') +
+          tile(fmt(mt.weighted_surface_energy, q.k === 'bfdh' ? 3 : 1), 'area-weighted ' + q.plain + ', ' + q.units.replace(/<\/?sup>/g, '')) +
           tile(fmt(shape.shape_metrics.aspect_ratios.e2_over_e1, 2) + ' / ' + fmt(shape.shape_metrics.aspect_ratios.e3_over_e1, 2), 'aspect e2/e1, e3/e1 (recorded)');
       }
-      drawUncertainty($('#unc'), shape, res, cols);
+      drawUncertainty($('#unc'), shape, res, cols, q);
     };
     fam.onchange = (e) => { st.wfam = e.target.value; syncSlider(); redraw(); };
     sl.oninput = () => {
@@ -328,45 +392,60 @@
     syncSlider();
     redraw();
     const c = checkShape(shape);
-    $('#selfcheck').innerHTML = '<div class="banner ' + (c.ok ? 'ok' : '') + ' small">Browser vs pymatgen (the recorded shape): max |&Delta; area fraction| ' +
+    $('#selfcheck').innerHTML = '<div class="banner ' + (c.ok ? 'ok' : '') + ' small">Browser vs pymatgen (' + (q.k === 'bfdh' ? 'the recorded BFDH fractions' : q.k === 'ae' ? 'the recorded growth shape' : 'the recorded shape') + '): max |&Delta; area fraction| ' +
       c.max_abs_diff.toExponential(1) + ' over ' + c.n_families + ' families; BFDH ' + c.max_abs_diff_bfdh.toExponential(1) + (c.ok ? ' (agree to 3 decimals)' : ' (DISAGREE)') + '.</div>';
   }
 
-  function facetTable(recs, shape, all, cols) {
-    const used = new Set(shape ? shape.input_record_ids : []);
+  function facetTable(recs, shape, all, cols, aeRecs) {
+    const wulff = shape && !isAE(shape) && shape.construction !== 'bfdh';
+    const used = new Set(wulff ? shape.input_record_ids : []);
     const area = {};
     if (shape) for (const f of shape.facets) area[f.family] = f;
+    const aeBy = {};
+    for (const a of aeRecs || []) aeBy[a.facet.family] = a;
+    const hasAE = Object.keys(aeBy).length > 0;
+    const seen = new Set();
     const rows = recs.filter((r) => all || r.result.status === 'failed' || r.termination.is_lowest !== false)
       .sort((a, b) => a.facet.family.localeCompare(b.facet.family) || a.protocol.level - b.protocol.level ||
         (a.result.gamma == null) - (b.result.gamma == null) || (a.result.gamma || 0) - (b.result.gamma || 0));
     let h = '<table><thead><tr><th>Family</th><th>(h k l) cut</th><th>Level</th><th class="num">T (K)</th><th class="num">&gamma; &plusmn; &sigma; (mJ/m<sup>2</sup>)</th>' +
-      '<th>Termination</th><th>Flags</th>' + (shape ? '<th class="num">Area (shape)</th>' : '') + '<th>Run / provenance</th></tr></thead><tbody>';
+      (hasAE ? '<th class="num" title="attachment energy of the growth slice (static), kcal/mol per molecule">E<sub>att</sub> (kcal/mol)</th>' : '') +
+      '<th>Termination</th><th>Flags</th>' + (shape ? '<th class="num">Area (' + (wulff ? 'shape' : isAE(shape) ? 'growth shape' : 'BFDH') + ')</th>' : '') + '<th>Run / provenance</th></tr></thead><tbody>';
     for (const r of rows) {
       const R = r.result, P = r.protocol, pv = r.provenance;
       const isUsed = used.has(r.record_id);
       const g = R.status === 'ok' ? recLink(r, fmt(R.gamma, 2) + (R.gamma_error ? ' &plusmn; ' + fmt(R.gamma_error, 1) : '')) : recLink(r, 'failed');
       const sf = area[r.facet.family];
+      const first = !seen.has(r.facet.family);
+      seen.add(r.facet.family);
+      const a = aeBy[r.facet.family];
+      const aeCell = !hasAE ? '' : '<td class="num">' + (first && a ? aeLink(a, fmt(a.result.E_att, 2)) + '<div class="small muted">slice ' + fmt(a.slice.d_eff, 2) + ' &Aring;, ' + esc(a.slice.n_slice) + ' mol' +
+        (a.result.flags.some((x) => x.code === 'cut_rules_disagree') ? '; cuts differ' : '') + '</div>' : '') + '</td>';
+      const areaCell = !shape ? '' : '<td class="num">' + (wulff ? (isUsed && sf ? shapeLink(shape, fmt(sf.area_fraction, 4), sf.family) + (sf.level !== P.level || Math.abs(sf.gamma - R.gamma) > 1e-6 ? '<div class="small muted">built with ' + fmt(sf.gamma, 2) + '</div>' : '') : '')
+        : (first && sf ? shapeLink(shape, fmt(sf.area_fraction, 4), sf.family) : '')) + '</td>';
       h += '<tr class="' + (isUsed ? 'used' : '') + (R.status === 'failed' ? ' failed' : '') + '"><td class="mono">' + (cols && cols[r.facet.family] ? swatch(cols[r.facet.family]) : '') + esc(r.facet.family) + '</td>' +
         '<td class="mono">(' + esc(r.facet.hkl.join(' ')) + ')</td><td><span class="badge lvl">' + esc(levelName[P.level]) + '</span></td>' +
         '<td class="num">' + fmt(P.temperature_K, 0) + '</td><td class="num">' + g + (R.gamma_unrelaxed != null ? '<div class="small muted">unrelaxed ' + fmt(R.gamma_unrelaxed, 2) + '</div>' : '') +
-        (R.gamma_raw != null ? '<div class="small muted">raw ' + fmt(R.gamma_raw, 2) + '</div>' : '') + '</td>' +
+        (R.gamma_raw != null ? '<div class="small muted">raw ' + fmt(R.gamma_raw, 2) + '</div>' : '') + '</td>' + aeCell +
         '<td>' + esc(r.termination.label) + (r.termination.faces_equivalent === false ? '<div class="small muted">faces differ</div>' : '') + '</td>' +
         '<td>' + R.gamma_flags.filter((f) => f.code !== 'force_field_not_validated').map(badge).join('') + '</td>' +
-        (shape ? '<td class="num">' + (isUsed && sf ? shapeLink(shape, fmt(sf.area_fraction, 4), sf.family) + (sf.level !== P.level || Math.abs(sf.gamma - R.gamma) > 1e-6 ? '<div class="small muted">built with ' + fmt(sf.gamma, 2) + '</div>' : '') : '') + '</td>' : '') +
+        areaCell +
         '<td class="small">' + recLink(r, esc(pv.run_id ? pv.run_id.slice(0, 18) : pv.source)) + '<div class="muted">' + esc(pv.source) + ', ' + esc(String(pv.date).slice(0, 10)) + '</div></td></tr>';
     }
     return h + '</tbody></table>';
   }
 
-  function drawUncertainty(el, shape, res, cols) {
+  function drawUncertainty(el, shape, res, cols, q) {
+    q = q || qty(shape);
     const fs = shape.facets.slice().sort((a, b) => a.area_fraction - b.area_fraction);
     const y = fs.map((f) => f.family);
     const bars = { type: 'bar', orientation: 'h', y, x: fs.map((f) => f.area_fraction), name: 'recorded (pymatgen), 5-95 % band',
       marker: { color: cols && STATE.colorBy === 'family' ? fs.map((f) => cols[f.family] || PALETTE[9]) : css('--series-1') },
       error_x: { type: 'data', symmetric: false, array: fs.map((f) => Math.max(0, f.area_p95 - f.area_fraction)), arrayminus: fs.map((f) => Math.max(0, f.area_fraction - f.area_p05)), color: css('--ink-2'), thickness: 1.5, width: 3 },
-      customdata: fs.map((f) => [f.area_mean, f.area_std, f.area_p05, f.area_p95, f.gamma, f.sigma, f.level]),
-      hovertemplate: '%{y}: %{x:.4f}<br>mean %{customdata[0]:.4f} &plusmn; %{customdata[1]:.4f}<br>5-95 %: %{customdata[2]:.4f} - %{customdata[3]:.4f}<br>gamma %{customdata[4]:.2f} &plusmn; %{customdata[5]:.2f} (L%{customdata[6]})<extra></extra>' };
-    const dots = { type: 'scatter', mode: 'markers', y, x: fs.map((f) => res.areaFraction ? res.areaFraction[f.family] : null), name: 'browser, current gamma',
+      customdata: fs.map((f) => [f.area_mean, f.area_std, f.area_p05, f.area_p95, dist(f), f.sigma, f.level]),
+      hovertemplate: '%{y}: %{x:.4f}<br>mean %{customdata[0]:.4f} &plusmn; %{customdata[1]:.4f}<br>5-95 %: %{customdata[2]:.4f} - %{customdata[3]:.4f}<br>' + q.plain +
+        ' %{customdata[4]:.' + q.d + 'f} &plusmn; %{customdata[5]:.' + q.d + 'f}' + (q.k === 'wulff' ? ' (L%{customdata[6]})' : '') + '<extra></extra>' };
+    const dots = { type: 'scatter', mode: 'markers', y, x: fs.map((f) => res.areaFraction ? res.areaFraction[f.family] : null), name: 'browser, current ' + q.plain,
       marker: { color: css('--ink'), size: 8, line: { color: css('--surface'), width: 2 } }, hovertemplate: '%{y}: %{x:.4f} (browser)<extra></extra>' };
     const layout = Object.assign(plotTheme(), { margin: { l: 80, r: 10, t: 10, b: 40 }, barmode: 'overlay', bargap: 0.35,
       xaxis: Object.assign(axis('area fraction'), { rangemode: 'tozero' }), yaxis: Object.assign(axis(''), { type: 'category' }),
@@ -470,32 +549,47 @@
   }
 
   // ------------------------------------------------------------------ compare
-  function compare(app, a, b) {
+  function compare(app, a, b, query) {
     const ms = matList();
     const withShape = ms.filter((M) => M.shapes.length);
     a = D.materials[a] ? a : (withShape[0] || ms[0]).id;
     b = D.materials[b] ? b : ((withShape.find((M) => M.id !== a) || ms.find((M) => M.id !== a)).id);
-    const sel = (id, v) => '<select id="' + id + '">' + ms.map((M) => '<option value="' + esc(M.id) + '"' + (M.id === v ? ' selected' : '') + '>' + esc(M.name) + (M.shapes.length ? ' (shape)' : '') + '</option>').join('') + '</select>';
-    app.innerHTML = '<div class="card"><h1>Compare</h1><div class="row"><label>Left ' + sel('ca', a) + '</label><label>Right ' + sel('cb', b) + '</label></div></div>' +
+    const kinds = { a: (query && query.get('sa')) || 'wulff', b: (query && query.get('sb')) || 'wulff' };
+    for (const k of ['a', 'b']) if (!CONSTRUCTIONS.some(([c]) => c === kinds[k])) kinds[k] = 'wulff';
+    const go = (x, y, ka, kb) => { location.hash = '#/compare/' + encodeURIComponent(x) + '/' + encodeURIComponent(y) + (ka !== 'wulff' || kb !== 'wulff' ? '?sa=' + ka + '&sb=' + kb : ''); };
+    const sel = (id, v) => '<select id="' + id + '">' + ms.map((M) => '<option value="' + esc(M.id) + '"' + (M.id === v ? ' selected' : '') + '>' + esc(M.name) + (M.shapes.length ? ' (shape)' : '') + (M.ae.length ? ' (AE)' : '') + '</option>').join('') + '</select>';
+    const ksel = (id, v) => '<select id="' + id + '" aria-label="shape construction">' + CONSTRUCTIONS.map(([c, l]) => '<option value="' + c + '"' + (c === v ? ' selected' : '') + '>' + esc(l) + '</option>').join('') + '</select>';
+    app.innerHTML = '<div class="card"><h1>Compare</h1><div class="row"><label>Left ' + sel('ca', a) + '</label><label>shape ' + ksel('ka', kinds.a) + '</label>' +
+      '<label>Right ' + sel('cb', b) + '</label><label>shape ' + ksel('kb', kinds.b) + '</label></div>' +
+      '<p class="small muted">Pick the same material on both sides to set its equilibrium (Wulff), growth (attachment-energy) and BFDH shapes side by side.</p></div>' +
       '<div class="cols2"><div id="side-a"></div><div id="side-b"></div></div>';
-    $('#ca').onchange = (e) => { location.hash = '#/compare/' + encodeURIComponent(e.target.value) + '/' + encodeURIComponent(b); };
-    $('#cb').onchange = (e) => { location.hash = '#/compare/' + encodeURIComponent(a) + '/' + encodeURIComponent(e.target.value); };
-    side($('#side-a'), D.materials[a], 'a');
-    side($('#side-b'), D.materials[b], 'b');
+    $('#ca').onchange = (e) => go(e.target.value, b, kinds.a, kinds.b);
+    $('#cb').onchange = (e) => go(a, e.target.value, kinds.a, kinds.b);
+    $('#ka').onchange = (e) => go(a, b, e.target.value, kinds.b);
+    $('#kb').onchange = (e) => go(a, b, kinds.a, e.target.value);
+    side($('#side-a'), D.materials[a], 'a', kinds.a);
+    side($('#side-b'), D.materials[b], 'b', kinds.b);
   }
-  function side(el, M, k) {
+  function side(el, M, k, kind) {
     const ff = M.ffs[0];
-    const shape = shapesOf(M, ff).find((s) => s.level === 'best') || shapesOf(M, ff)[0];
+    const shape = shapeFor(M, ff, kind || 'wulff', 'best');
+    const q = qty(shape);
     const recs = M.records.filter((r) => r.force_field.name === ff && r.result.status === 'ok' && !hasError(r));
-    let h = '<div class="card"><h2><a href="#/m/' + encodeURIComponent(M.id) + '">' + esc(M.name) + '</a></h2><div class="small muted">' + esc(M.formula) + ', ' + esc(ff) +
+    let h = '<div class="card"><h2><a href="#/m/' + encodeURIComponent(M.id) + (kind && kind !== 'wulff' ? '?shape=' + kind : '') + '">' + esc(M.name) + '</a></h2><div class="small muted">' + esc(M.formula) + ', ' + esc(ff) +
       (recs[0] && !recs[0].force_field.validated_for_material ? ' <span class="badge warning">not validated</span>' : '') + '</div>';
+    if (!shape && kind === 'ae') h += '<div class="banner info small">No growth (attachment-energy) shape for this material' + (D.ae.length ? ' (attachment energies are computed for ' + esc([...new Set(D.ae.map((r) => r.material.name))].join(', ')) + ')' : '') + '.</div>';
     if (shape) {
-      // the shape's own inputs: the gamma it was built with, its level and area (T = shape T)
-      h += '<div id="c3d-' + k + '" class="plot3d" style="height:340px"></div><p class="small muted">T = ' + fmt(shape.temperature_K, 0) + ' K, level ' + esc(shape.level) + ', ' +
-        shape.shape_metrics.n_on_shape + ' families on the shape; shape factor ' + fmt(shape.shape_metrics.shape_factor, 3) + '. &gamma; is the value the shape was built with.</p>' +
-        '<div class="tablewrap"><table><thead><tr><th>Family</th><th>Level</th><th class="num">&gamma; (mJ/m<sup>2</sup>)</th><th class="num">Area</th></tr></thead><tbody>' +
-        shape.facets.map((f) => { const r = D.byId[f.input_record_ids[0]]; return '<tr><td class="mono">' + swatch(famColors(M)[f.family] || PALETTE[9]) + esc(f.family) + '</td><td>L' + f.level + (f.level === 1 && shape.level === 'best' ? ' (scaled)' : '') + '</td><td class="num">' + recLink(r, fmt(f.gamma, 2)) + '</td>' +
+      // the shape's own inputs: the distance it was built with (gamma, |E_att| or 1/d_eff), its level and area
+      h += '<div class="small"><strong id="c-title-' + k + '">' + shapeTitle(shape) + '</strong></div><div id="c3d-' + k + '" class="plot3d" style="height:340px"></div><p class="small muted">' +
+        (q.k === 'wulff' ? 'T = ' + fmt(shape.temperature_K, 0) + ' K, level ' + esc(shape.level) + ', ' : q.k === 'ae' ? 'growth morphology (kinetic, vacuum, static slices): not an equilibrium shape; ' : '') +
+        (q.k === 'bfdh' ? shape.facets.filter((f) => f.area_fraction > 1e-4).length : shape.shape_metrics.n_on_shape) + ' families on the shape' +
+        (q.k === 'bfdh' ? '' : '; shape factor ' + fmt(shape.shape_metrics.shape_factor, 3)) + '. ' + q.name + ' is the value the shape was built with.</p>' +
+        '<div class="tablewrap"><table><thead><tr><th>Family</th><th>' + (q.k === 'ae' ? 'E<sub>att</sub> (kcal/mol)' : 'Level') + '</th><th class="num">' + q.name + ' (' + q.units + ')</th><th class="num">Area</th></tr></thead><tbody>' +
+        shape.facets.map((f) => { const id = f.input_record_ids[0]; return '<tr><td class="mono">' + swatch(famColors(M)[f.family] || PALETTE[9]) + esc(f.family) + '</td><td>' +
+          (q.k === 'ae' ? fmt(f.E_att, 2) : 'L' + f.level + (f.level === 1 && shape.level === 'best' ? ' (scaled)' : '')) + '</td><td class="num">' + anyLink(id, fmt(dist(f), q.d)) + '</td>' +
           '<td class="num">' + shapeLink(shape, fmt(f.area_fraction, 4), f.family) + '</td></tr>'; }).join('') + '</tbody></table></div></div>';
+    } else if (kind === 'ae') {
+      h += '</div>';
     } else {
       // no shape: the highest level at T = 0 of each family (its lowest termination)
       const best = {};
@@ -545,17 +639,71 @@
       '</dl></div></div><div class="card"><h2>Full record</h2><pre class="json">' + esc(JSON.stringify(r, null, 1)) + '</pre></div>';
   }
   function shapePage(app, s, focus) {
-    const rows = s.facets.map((f) => '<tr' + (f.family === focus ? ' class="used"' : '') + '><td class="mono">' + esc(f.family) + '</td><td class="num">' + fmt(f.gamma, 2) + ' &plusmn; ' + fmt(f.sigma, 2) + '</td><td>L' + f.level + '</td>' +
+    const q = qty(s), ae = isAE(s);
+    const rows = s.facets.map((f) => '<tr' + (f.family === focus ? ' class="used"' : '') + '><td class="mono">' + esc(f.family) + '</td><td class="num">' + fmt(dist(f), q.d) + ' &plusmn; ' + fmt(f.sigma, q.d) + '</td><td>' + (ae ? fmt(f.E_att, 3) : 'L' + f.level) + '</td>' +
       '<td class="num">' + fmt(f.area_fraction, 4) + '</td><td class="num">' + fmt(f.area_p05, 3) + ' - ' + fmt(f.area_p95, 3) + '</td><td class="num">' + fmt(f.bfdh_area_fraction, 4) + '</td>' +
-      '<td>' + f.input_record_ids.map((id) => D.byId[id] ? recLink(D.byId[id], esc(id)) : esc(id)).join(' ') + '</td><td class="small">' + esc(f.basis) + ' ' + f.flags.map(badge).join('') + '</td></tr>').join('');
-    app.innerHTML = '<div class="card"><h1>' + esc(s.material_name) + ': Wulff shape <span class="muted small">' + esc(s.shape_id) + '</span></h1>' +
-      '<p><a href="#/m/' + encodeURIComponent(s.material_id) + '">material page</a> &middot; ' + esc(s.force_field) + ' &middot; T ' + fmt(s.temperature_K, 0) + ' K &middot; level ' + esc(s.level) + '</p>' +
+      '<td>' + f.input_record_ids.map((id) => anyLink(id, id)).join(' ') + '</td><td class="small">' + esc(f.basis) + ' ' + f.flags.map(badge).join('') + '</td></tr>').join('');
+    app.innerHTML = '<div class="card"><h1>' + esc(s.material_name) + ': ' + (ae ? 'growth (attachment-energy) shape' : 'Wulff shape') + ' <span class="muted small">' + esc(s.shape_id) + '</span></h1>' +
+      '<p><a href="#/m/' + encodeURIComponent(s.material_id) + (ae ? '?shape=ae' : '') + '">material page</a> &middot; ' + esc(s.force_field) + ' &middot; ' + (ae ? 'static slices' : 'T ' + fmt(s.temperature_K, 0) + ' K') + ' &middot; level ' + esc(s.level) + '</p>' +
       '<p class="small">' + esc(s.level_description) + '</p><div class="tiles">' + tile(s.shape_metrics.n_on_shape + ' / ' + s.facets.length, 'families on the shape') +
-      tile(fmt(s.shape_metrics.shape_factor, 3), 'shape factor') + tile(fmt(s.shape_metrics.anisotropy, 3), 'anisotropy') + tile(fmt(s.shape_metrics.weighted_surface_energy, 1), 'area-weighted gamma') +
+      tile(fmt(s.shape_metrics.shape_factor, 3), 'shape factor') + tile(fmt(s.shape_metrics.anisotropy, 3), 'anisotropy') + tile(fmt(s.shape_metrics.weighted_surface_energy, 1), 'area-weighted ' + q.plain) +
       tile(fmt(s.sensitivity.max_area_std, 3), 'max area std') + '</div>' +
       '<p class="small">' + s.flags.map((f) => badge(f) + ' ' + esc(f.detail)).join('<br>') + '</p></div>' +
-      '<div class="card"><h2>Facets</h2><div class="tablewrap"><table><thead><tr><th>Family</th><th class="num">&gamma; &plusmn; &sigma;</th><th>Level</th><th class="num">Area</th><th class="num">5-95 %</th><th class="num">BFDH</th><th>Input record</th><th>Basis</th></tr></thead><tbody>' + rows + '</tbody></table></div></div>' +
+      '<div class="card"><h2>Facets</h2><div class="tablewrap"><table><thead><tr><th>Family</th><th class="num">' + q.name + ' &plusmn; &sigma;</th><th>' + (ae ? 'E<sub>att</sub>' : 'Level') + '</th><th class="num">Area</th><th class="num">5-95 %</th><th class="num">BFDH</th><th>Input record</th><th>Basis</th></tr></thead><tbody>' + rows + '</tbody></table></div></div>' +
       '<div class="card"><h2>Full record</h2><pre class="json">' + esc(JSON.stringify(s, null, 1)) + '</pre></div>';
+  }
+
+  /** what the growth (AE) shape is, with this material's numbers from its attachment_energy records */
+  function aeExplainer(shape, recs) {
+    const n = recs.length;
+    const nd = recs.filter((r) => r.result.flags.some((x) => x.code === 'cut_rules_disagree')).length;
+    const reax = recs.some((r) => r.result.qeq);
+    const qm = recs.filter((r) => r.result.qeq && r.result.qeq.measured).map((r) => r.result.qeq.mean_abs_dq);
+    const r0 = recs[0];
+    const E = r0 ? r0.result.E_latt_conventions : {};
+    const gr = r0 ? r0.result.gas_reference || {} : {};
+    const big = shape.facets.filter((f) => f.on_shape).slice(0, 3).map((f) => esc(f.family) + ' ' + fmt(100 * f.area_fraction, 1) + ' %').join(', ');
+    return '<div class="spacer"></div><div class="card" id="ae-explain"><h2>What the growth (AE) shape is</h2>' +
+      '<p class="small">The <strong>attachment energy</strong> E<sub>att</sub> is the energy released when one growth slice (whole molecules in a layer of thickness d<sub>eff</sub> = d<sub>hkl</sub> / n, as in BFDH) attaches to the crystal face: E<sub>att</sub> = E<sub>latt</sub> &minus; E<sub>slice</sub>. ' +
+      'In the Hartman-Perdok model a face grows at a rate proportional to |E<sub>att</sub>|, so the slow faces (small |E<sub>att</sub>|) dominate the grown crystal. The shape is the Wulff construction with |E<sub>att</sub>| in place of &gamma;: a <strong>growth (kinetic) morphology, not the equilibrium shape</strong>. Here: ' + big + '.</p>' +
+      '<ul class="small">' +
+      '<li><strong>Static, vacuum.</strong> Unrelaxed slices and bulk; no solvent, no supersaturation, no surface relaxation.</li>' +
+      '<li><strong>AE &asymp; Wulff(&gamma; / d<sub>eff</sub>) &asymp; BFDH.</strong> For nearest-slice interactions |E<sub>att</sub>| = 2 &gamma; V<sub>m</sub> / d<sub>eff</sub>, so AE multiplies the energetic (Wulff) ranking by BFDH\'s preference for wide slices; it usually looks much more like BFDH than like the Wulff shape.</li>' +
+      '<li><strong>Growth slice.</strong> Of the cuts of each family, the one with the lowest |E<sub>att</sub>| (the most strongly bound slice). In ' + nd + ' of ' + n + ' families the lowest-&gamma; cut is another one (flag <em>cut rules disagree</em>; both E<sub>att</sub> are in the record).</li>' +
+      (reax ? '<li><strong>ReaxFF charges.</strong> QEq re-equilibrates the charges of each isolated slice, so E<sub>att</sub> includes a charge response that a fixed-charge force field leaves out' + (qm.length ? ' (mean |&Delta;q| ' + fmt(Math.min(...qm), 3) + '-' + fmt(Math.max(...qm), 3) + ' e where measured)' : '') + '.</li>' : '') +
+      (r0 ? '<li><strong>Lattice energy</strong> (kcal/mol per molecule): ' + fmt(E.rigid, 2) + ' with the rigid-molecule gas reference (used for E<sub>slice</sub>); ' + fmt(E.static_minus_minimised_gas, 2) + ' against the minimised molecule (includes ' + fmt(gr.intramolecular_strain_mean, 1) + ' of intramolecular strain)' +
+        (E.relaxed != null ? '; ' + fmt(E.relaxed, 2) + ' with the bulk relaxed' : '') + '. E<sub>att</sub> does not depend on the gas reference.</li>' : '') +
+      '<li>The 5-95 % bands resample |E<sub>att</sub>| by &plusmn;5 %: a sensitivity, not an error bar. A match with grown crystals is the expected direction for a growth model, not proof that the energies are right.</li>' +
+      '</ul><p class="small muted">Records: ' + recs.map((r) => aeLink(r, esc(r.facet.family))).join(' ') + '. Shape ' + shapeLink(shape, esc(shape.shape_id)) + '.</p></div>';
+  }
+
+  function aePage(app, r) {
+    const R = r.result, S = r.slice, f = r.facet, pv = r.provenance;
+    const shapes = D.shapes.filter((s) => s.input_record_ids.includes(r.record_id));
+    const E = R.E_latt_conventions || {};
+    const cuts = (S.cuts || []).map((c) => '<tr' + (c.index === S.cut_index ? ' class="used"' : '') + '><td>' + esc(c.index) + (c.index === S.cut_index ? ' (growth slice)' : '') + (c.index === S.lowest_gamma_cut_index ? ' (lowest &gamma;)' : '') + '</td><td class="num">' + fmt(c.cut_z, 3) + '</td><td class="num">' + fmt(c.gap, 3) + '</td><td class="num">' + fmt(c.E_att, 3) + '</td><td class="num">' + fmt(c.E_slice, 3) + '</td><td class="num">' + fmt(c.gamma_unrelaxed, 2) + '</td><td>' + (c.faces_equivalent === false ? 'faces differ' : '') + '</td></tr>').join('');
+    app.innerHTML = '<div class="card"><h1>' + esc(r.material.name) + ' ' + esc(f.family) + ' <span class="muted small">attachment energy ' + esc(r.record_id) + '</span></h1>' +
+      '<p><a href="#/m/' + encodeURIComponent(r.material.material_id) + '?ff=' + encodeURIComponent(r.force_field.name) + '&shape=ae">material page (growth shape)</a></p>' +
+      '<div class="cols2"><dl class="kv">' +
+      '<dt>E<sub>att</sub></dt><dd><strong>' + fmt(R.E_att, 4) + '</strong> ' + esc(R.units) + ' (' + fmt(R.E_att_kJ_per_mol, 2) + ' kJ/mol)</dd>' +
+      '<dt>Lowest-&gamma; cut</dt><dd>E<sub>att</sub> ' + fmt(R.E_att_lowest_gamma_cut, 4) + ' (cut ' + esc(S.lowest_gamma_cut_index) + ', &gamma; ' + fmt(R.gamma_unrelaxed_min, 2) + ' mJ/m<sup>2</sup>)</dd>' +
+      '<dt>E<sub>slice</sub></dt><dd>' + fmt(R.E_slice, 4) + ' (' + esc(R.energy_convention) + ' gas reference)</dd>' +
+      '<dt>E<sub>latt</sub></dt><dd>' + fmt(R.E_latt, 4) + ' (' + esc(R.energy_convention) + '); static &minus; minimised gas ' + fmt(E.static_minus_minimised_gas, 3) + '; relaxed ' + fmt(E.relaxed, 3) + '</dd>' +
+      '<dt>Slice</dt><dd>d<sub>eff</sub> ' + fmt(S.d_eff, 4) + ' &Aring; (d<sub>hkl</sub> ' + fmt(f.d_hkl, 4) + ' / n ' + esc(S.extinction_factor) + '), ' + esc(S.n_slice) + ' molecules, area ' + fmt(S.area_A2, 2) + ' &Aring;<sup>2</sup>; rule ' + esc(S.rule) + ', cut ' + esc(S.cut_index) + ' of ' + esc(S.n_cuts) + '</dd>' +
+      '<dt>QEq</dt><dd>' + (R.qeq ? (R.qeq.measured ? 'mean |&Delta;q| ' + fmt(R.qeq.mean_abs_dq, 4) + ' e, max ' + fmt(R.qeq.max_abs_dq, 3) + ' e (bulk rms ' + fmt(R.qeq.rms_q_bulk, 3) + ')' : esc(R.qeq.note)) : 'n/a (fixed charges)') + '</dd>' +
+      '<dt>Flags</dt><dd>' + (R.flags.length ? R.flags.map((x) => badge(x) + ' <span class="small">' + esc(x.detail) + '</span>').join('<br>') : 'none') + '</dd>' +
+      '<dt>Facet</dt><dd>(' + esc(f.hkl.join(' ')) + ') of ' + esc(f.family) + '</dd><dt>Setting</dt><dd class="small">' + esc(f.setting.description) + '</dd>' +
+      '</dl><dl class="kv">' +
+      '<dt>Source</dt><dd>' + esc(pv.source) + '</dd><dt>Entry</dt><dd class="mono small">' + esc(pv.source_ref) + '</dd>' +
+      '<dt>Tool</dt><dd>' + esc(pv.sim2l.name) + (pv.sim2l.revision ? ' (' + esc(pv.sim2l.revision) + ')' : '') + '</dd>' +
+      '<dt>Oriented cell</dt><dd class="mono small">' + esc(pv.run_ref || '-') + ' <span class="muted">(not shipped)</span></dd>' +
+      '<dt>Input md5</dt><dd class="mono small">' + Object.entries(pv.input_md5 || {}).map(([k, v]) => esc(k) + ' ' + esc(v)).join('<br>') + '</dd>' +
+      '<dt>Date</dt><dd>' + esc(pv.date) + '</dd><dt>Reproduce</dt><dd class="small">' + esc(pv.reproduce || '-') + '</dd>' +
+      ((r.related_record_ids || []).length ? '<dt>Level-1 &gamma;</dt><dd>' + r.related_record_ids.map((id) => anyLink(id, id)).join('<br>') + '</dd>' : '') +
+      (shapes.length ? '<dt>Used in</dt><dd>' + shapes.map((s) => shapeLink(s, 'growth shape ' + esc(s.shape_id))).join('<br>') + '</dd>' : '') +
+      '</dl></div></div>' +
+      '<div class="card"><h2>Cuts</h2><div class="tablewrap"><table><thead><tr><th>Cut</th><th class="num">z (&Aring;)</th><th class="num">gap (&Aring;)</th><th class="num">E<sub>att</sub></th><th class="num">E<sub>slice</sub></th><th class="num">&gamma; 2-period (mJ/m<sup>2</sup>)</th><th></th></tr></thead><tbody>' + cuts + '</tbody></table></div></div>' +
+      '<div class="card"><h2>Full record</h2><pre class="json">' + esc(JSON.stringify(r, null, 1)) + '</pre></div>';
   }
 
   // ------------------------------------------------------------------ boot

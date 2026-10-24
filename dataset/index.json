@@ -1,16 +1,23 @@
 {
- "schema_version": "0.1.1",
+ "schema_version": "0.2.0",
  "schema": "schema/surface_energy.schema.json",
- "built": "2026-10-24T01:54:09-04:00",
+ "built": "2026-10-24T02:56:52-04:00",
  "built_by": "tools/export_dataset.py",
  "files": {
   "surface_energy": "surface_energy.jsonl",
-  "wulff_shape": "wulff_shape.jsonl"
+  "wulff_shape": "wulff_shape.jsonl",
+  "attachment_energy": "attachment_energy.jsonl"
  },
  "parquet": "skipped: pyarrow is not installed in this environment (JSON Lines only)",
  "counts": {
   "surface_energy": 415,
-  "wulff_shape": 15,
+  "wulff_shape": 18,
+  "attachment_energy": 50,
+  "attachment_energy_by_material": {
+   "paracetamol-i": 19,
+   "rdx-alpha": 15,
+   "tnt-monoclinic": 16
+  },
   "by_source": {
    "wulffhound-ledger:tnt": 55,
    "wulffhound-ledger:paracetamol": 84,
@@ -407,8 +414,24 @@
   "surfenergy: TNT 300 K example defaults (1 + 2 ps): 101.0 +- 13.9 / 121.7 +- 14.9, not stationary, no run id",
   "surfenergy: HMX 300 K at production length: never run (needs a cluster venue)"
  ],
+ "attachment_energy": {
+  "store": "attachment_energy.jsonl",
+  "materials": [
+   "paracetamol-i",
+   "rdx-alpha",
+   "tnt-monoclinic"
+  ],
+  "source": "chain:devtools/attachment/results",
+  "growth_shapes_checked_against_morphology_max_abs_diff": {
+   "paracetamol-i": 0.0,
+   "rdx-alpha": 0.0,
+   "tnt-monoclinic": 1e-06
+  },
+  "what": "static (unrelaxed) Hartman-Perdok attachment energies of the growth slices (d_eff = d_hkl / n), kcal/mol per molecule; the growth (AE) shape uses |E_att| as the distance: a kinetic, vacuum morphology, not an equilibrium shape"
+ },
  "limits": [
-  "prototype (schema 0.1.0)",
+  "prototype (schema 0.2.0)",
+  "attachment energies: static slices, vacuum, prototype tool (not a Sim2L yet)",
   "zoo values are unrelaxed ReaxFF-lg screening cuts, not validated surface energies",
   "TNT: validated non-reactive force field",
   "paracetamol: ReaxFF-lg, not validated (screening-level)"

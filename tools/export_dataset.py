@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 """Export the surface-energy dataset (prototype): dataset/surface_energy.jsonl, dataset/wulff_shape.jsonl,
-dataset/index.json, and a Parquet copy of the surface-energy records when pyarrow is installed.
+dataset/attachment_energy.jsonl, dataset/index.json, and a Parquet copy of the surface-energy records when pyarrow is
+installed.
 
-    ./wh py tools/export_dataset.py [--chain-root PATH] [--zoo PATH] [--out dataset]
+    ./wh py tools/export_dataset.py [--chain-root PATH] [--zoo PATH] [--ae DIR] [--out dataset]
 
-Sources (schema/surface_energy.schema.json, schema_version 0.1.0):
+Sources (schema/surface_energy.schema.json, schema_version 0.2.0):
   1. wulffhound ledgers, data/tnt/ledger.json and data/paracetamol/ledger.json (levels 1 and 2, failures too):
      one record per computed termination group of a level-1 run, one per level-2 run.
   2. The chain's CIF zoo, <chain>/notes/validation/cif_zoo.json: 21 COD crystals x 2 facets, the unrelaxed gamma
@@ -16,6 +17,12 @@ Sources (schema/surface_energy.schema.json, schema_version 0.1.0):
      by `./wh campaign run`, already schema-valid, with their run ids. A campaign level-2 record of a bundle material
      (TNT, paracetamol) enters that material's shape (a newer run wins over the ledger's, as in the engine), and a
      ledger record it refreshes gets the refreshing record's id in its protocol_superseded flag.
+  5. The chain's attachment-energy prototype (static Hartman-Perdok growth slices), <chain>/devtools/attachment/
+     results/<m>_{spec,attachment,morphology}.json for TNT, paracetamol and alpha-RDX: READ from the private chain
+     (WULFFHOUND_AE_RESULTS, --ae or <chain-root>/devtools/attachment/results; wulffhound/attachment_ingest.py), one
+     attachment_energy record per family, and the growth (AE) shape of each material (shapes.ae_shape, construction
+     'attachment_energy'; Laue orbits and pymatgen symprec asserted as for the Wulff shapes), whose area fractions are
+     asserted equal to the prototype's morphology JSON to 3 decimals. Only the exported records are written here.
 Every record is validated against the schema (the export fails on an invalid record); flagged records are kept.
 Derived wulff_shape records: TNT and paracetamol at level 'best' and level 1, built with the wulffhound engine
 (pymatgen WulffShape on the data-file lattice, symprec 1e-5 <= 1e-3, orbits asserted equal to the Laue class 2/m).
@@ -44,7 +51,7 @@ import numpy as np
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, 'wulffhound'))
 
-SCHEMA_VERSION = '0.1.1'
+SCHEMA_VERSION = '0.2.0'
 SCHEMA_PATH = os.path.join(ROOT, 'schema', 'surface_energy.schema.json')
 MASS = {'C': 12.011, 'H': 1.008, 'N': 14.007, 'O': 15.999}
 REAX_FF = {'name': 'ReaxFF-lg', 'version': 'reax-lg-2011 (Liu, Liu, Zybin & Goddard, J. Phys. Chem. A 115, 11016 (2011))',
@@ -705,7 +712,7 @@ def build_shapes(mat, entry_records, led, n_samples=40, seed=0, campaign_recs=()
             sflags.append(flag('shape_not_converged', 'info', 'stop rule not met: ' + '; '.join(conv.get('open', [])[:4]), by='engine'))
         lvl = 'best' if level == 'best' else '1'
         shapes.append({
-            'schema_version': SCHEMA_VERSION, 'record_type': 'wulff_shape',
+            'schema_version': SCHEMA_VERSION, 'record_type': 'wulff_shape', 'construction': 'wulff',
             'shape_id': rid('ws', mat, lvl, sorted(in_ids)),
             'material_id': WH_MATERIALS[mat]['material_id'], 'material_name': WH_MATERIALS[mat]['name'],
             'structure_id': entry_records[0][0]['material']['structure']['structure_id'],
@@ -753,12 +760,21 @@ def main():
     ap.add_argument('--chain-root', default=os.environ.get('WULFFHOUND_CHAIN_ROOT') or os.environ.get('SIM2L_DEV_ROOT')
                     or os.path.join(os.path.dirname(ROOT), 'surface-energy-sim2ls'))
     ap.add_argument('--zoo', default=None, help='cif_zoo.json (default <chain>/notes/validation/cif_zoo.json)')
+    ap.add_argument('--ae', default=os.environ.get('WULFFHOUND_AE_RESULTS'),
+                    help='attachment-energy results folder (<m>_spec/_attachment/_morphology.json; default '
+                         '$WULFFHOUND_AE_RESULTS, else <chain>/devtools/attachment/results)')
     ap.add_argument('--out', default=os.path.join(ROOT, 'dataset'))
     args = ap.parse_args()
     chain = os.path.abspath(os.path.expanduser(args.chain_root))
     zoo_path = args.zoo or os.path.join(chain, 'notes', 'validation', 'cif_zoo.json')
     if not os.path.isfile(zoo_path):
         sys.exit('cif_zoo.json not found at %s: set WULFFHOUND_CHAIN_ROOT or pass --zoo' % zoo_path)
+    ae_dir = os.path.abspath(os.path.expanduser(args.ae or os.path.join(chain, 'devtools', 'attachment', 'results')))
+    import attachment_ingest as AI
+    ae_found = AI.find_results(ae_dir) if os.path.isdir(ae_dir) else {}
+    if not ae_found:
+        sys.exit('no attachment-energy results (<m>_spec.json, _attachment.json, _morphology.json) in %s: set '
+                 'WULFFHOUND_AE_RESULTS or pass --ae' % ae_dir)
     zoo = json.load(open(zoo_path))
     zoo_rev = git_rev('notes/validation/cif_zoo.json', chain)
     zoo_rev = 'chain %s' % zoo_rev if zoo_rev else None
@@ -768,7 +784,8 @@ def main():
     schema = json.load(open(SCHEMA_PATH))
     validator = jsonschema.Draft202012Validator(schema)
     sub = {t: jsonschema.Draft202012Validator({'$schema': schema['$schema'], '$defs': schema['$defs'],
-                                               '$ref': '#/$defs/%s' % t}) for t in ('surface_energy', 'wulff_shape')}
+                                               '$ref': '#/$defs/%s' % t})
+           for t in ('surface_energy', 'wulff_shape', 'attachment_energy')}
 
     se, shapes, entry_recs, counts, skipped = [], [], {}, {}, []
     for mat in ('tnt', 'paracetamol'):
@@ -835,10 +852,30 @@ def main():
             no_shape[mid] = why
     zoo_no_shape = sorted(m for m in no_shape if m not in have_shape)
 
+    # attachment energies (growth morphology): records + the AE shape, checked against the prototype's morphology
+    from shapes import ae_shape
+    rel = os.path.relpath(ae_dir, chain)
+    ae_ref = 'chain:' + rel if not rel.startswith('..') else 'external:' + os.path.basename(ae_dir)
+    ae, ae_counts, ae_checks = [], {}, {}
+    for key, paths in ae_found.items():
+        rev = git_rev(os.path.relpath(paths['attachment'], chain), chain) if not rel.startswith('..') else None
+        recs = AI.ae_records(key, AI.load_json(paths['spec']), AI.load_json(paths['attachment']), se, sys.modules[__name__],
+                             ae_ref, 'chain %s' % rev if rev else None)
+        s_, why = ae_shape(recs, flag=flag, rid=rid, schema_version=SCHEMA_VERSION)
+        if not s_:
+            sys.exit('attachment energies of %s: no AE shape: %s' % (key, why))
+        chk = AI.check_against_morphology(s_, AI.load_json(paths['morphology']), '%s/%s_morphology.json' % (ae_ref, key))
+        s_['provenance']['checked_against_morphology'] = chk
+        s_['provenance']['attachment_results'] = '%s/%s_attachment.json' % (ae_ref, key)
+        ae += recs
+        shapes.append(s_)
+        ae_counts[recs[0]['material']['material_id']] = len(recs)
+        ae_checks[recs[0]['material']['material_id']] = chk['max_abs_diff_area']
+
     # validate
     ids = set()
     bad = 0
-    for r in se + shapes:
+    for r in se + shapes + ae:
         errs = list(validator.iter_errors(r))
         if errs:   # the oneOf error says nothing: report the record type's own errors
             errs = list(sub[r.get('record_type', 'surface_energy')].iter_errors(r)) or errs
@@ -856,7 +893,7 @@ def main():
             print('INVALID %s: unknown input records %s' % (s['shape_id'], missing))
     if bad:
         sys.exit('%d invalid records: nothing written' % bad)
-    blob = json.dumps(se + shapes)
+    blob = json.dumps(se + shapes + ae)
     if re.search(r'(/home|/Users)/[A-Za-z]', blob):
         sys.exit('an absolute home path leaked into the records: nothing written')
 
@@ -866,6 +903,9 @@ def main():
             f.write(json.dumps(r, sort_keys=False) + '\n')
     with open(os.path.join(args.out, 'wulff_shape.jsonl'), 'w') as f:
         for r in shapes:
+            f.write(json.dumps(r) + '\n')
+    with open(os.path.join(args.out, 'attachment_energy.jsonl'), 'w') as f:
+        for r in ae:
             f.write(json.dumps(r) + '\n')
     try:
         import pyarrow  # noqa: F401
@@ -892,9 +932,11 @@ def main():
     index = {'schema_version': SCHEMA_VERSION, 'schema': 'schema/surface_energy.schema.json',
              'built': datetime.datetime.now().astimezone().isoformat(timespec='seconds'),
              'built_by': 'tools/export_dataset.py',
-             'files': {'surface_energy': 'surface_energy.jsonl', 'wulff_shape': 'wulff_shape.jsonl'},
+             'files': {'surface_energy': 'surface_energy.jsonl', 'wulff_shape': 'wulff_shape.jsonl',
+                       'attachment_energy': 'attachment_energy.jsonl'},
              'parquet': parquet,
-             'counts': {'surface_energy': len(se), 'wulff_shape': len(shapes), 'by_source': counts,
+             'counts': {'surface_energy': len(se), 'wulff_shape': len(shapes), 'attachment_energy': len(ae),
+                        'attachment_energy_by_material': ae_counts, 'by_source': counts,
                         'status_failed': sum(1 for r in se if r['result']['status'] == 'failed'),
                         'with_warning_or_error_flags': n_flag, 'with_error_flags': n_err,
                         'materials': len(materials)},
@@ -907,13 +949,20 @@ def main():
                                   'materials': sorted({r['material']['material_id'] for r in recs})}
                            for name, recs in camp.items()},
              'skipped': skipped,
-             'limits': ['prototype (schema 0.1.0)', 'zoo values are unrelaxed ReaxFF-lg screening cuts, not validated surface energies',
+             'attachment_energy': {'store': 'attachment_energy.jsonl', 'materials': sorted(ae_counts),
+                                   'source': ae_ref, 'growth_shapes_checked_against_morphology_max_abs_diff': ae_checks,
+                                   'what': 'static (unrelaxed) Hartman-Perdok attachment energies of the growth slices '
+                                           '(d_eff = d_hkl / n), kcal/mol per molecule; the growth (AE) shape uses |E_att| '
+                                           'as the distance: a kinetic, vacuum morphology, not an equilibrium shape'},
+             'limits': ['prototype (schema 0.2.0)', 'attachment energies: static slices, vacuum, prototype tool (not a Sim2L yet)', 'zoo values are unrelaxed ReaxFF-lg screening cuts, not validated surface energies',
                         'TNT: validated non-reactive force field', 'paracetamol: ReaxFF-lg, not validated (screening-level)']}
     json.dump(index, open(os.path.join(args.out, 'index.json'), 'w'), indent=1)
     print('surface_energy records: %d (%s); failed runs %d; with warning/error flags %d (errors %d)' % (
         len(se), ', '.join('%s %d' % kv for kv in counts.items()), index['counts']['status_failed'], n_flag, n_err))
     print('wulff_shape records: %d (%s)' % (len(shapes), ', '.join('%s L%s %d families' % (s['material_id'], s['level'],
                                                                                           len(s['facets'])) for s in shapes)))
+    print('attachment_energy records: %d (%s); AE shapes vs the morphology JSON: max |dA| %s' % (
+        len(ae), ', '.join('%s %d' % kv for kv in ae_counts.items()), ', '.join('%s %.1e' % kv for kv in ae_checks.items())))
     print('all records valid against schema %s' % SCHEMA_VERSION)
     print('parquet: %s' % parquet)
     print('no shape (< 3 families or not bounded): %d materials' % len(zoo_no_shape))
