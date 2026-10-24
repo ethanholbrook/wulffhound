@@ -57,7 +57,8 @@ DEFAULTS = {
     'temperatures': [0.0],
     'md': {'equilibration_ps': 10.0, 'production_ps': 20.0, 'n_blocks': 5, 'timestep': 0.0},
     'protocol': {'n_periods': 2, 'search_range': None, 'slab_from': None, 'vacuum': None, 'angle_dev': None,
-                 's_tol': None},
+                 's_tol': None, 'cell_fallbacks': []},
+    'level_facets': {},
     'budget': {'cpu_minutes': 30.0, 'per_run_cap_minutes': 6.0},
     'policy': 'baseline',
     'executor': {'backend': 'local', 'workers': 1},
@@ -95,7 +96,9 @@ def parse_facets(f):
             return {'select': 'max_index', 'k': int(s[len('max_index'):].strip('_ ') or 2)}
         if s == 'on_shape':
             return {'select': 'on_shape'}
-        raise SpecError('facets %r: use a list, "bfdh_top_N", "max_index K", "on_shape" or a dict' % f)
+        if s == 'wulff_priority':
+            return {'select': 'wulff_priority'}
+        raise SpecError('facets %r: use a list, "bfdh_top_N", "max_index K", "on_shape", "wulff_priority" or a dict' % f)
     if isinstance(f, dict):
         d = dict(f)
         d.setdefault('select', 'explicit' if 'families' in d else 'bfdh_top')
@@ -125,6 +128,8 @@ def load_spec(path_or_dict, base_dir=None):
         if not isinstance(raw, dict):
             raise SpecError('the spec is not a mapping (did you give a file that does not exist? %r)'
                             % str(path_or_dict)[:200])
+    if isinstance(raw.get('level_facets'), dict):          # YAML gives {2: ...}: the schema keys are strings
+        raw['level_facets'] = {str(k): v for k, v in raw['level_facets'].items()}
     try:
         import jsonschema
         jsonschema.validate(raw, json.load(open(SPEC_SCHEMA)))
@@ -134,6 +139,13 @@ def load_spec(path_or_dict, base_dir=None):
         raise SpecError('spec does not match schema/campaign.schema.json: %s' % getattr(exc, 'message', exc))
     spec = _merge(DEFAULTS, {k: v for k, v in raw.items() if k != 'facets'})
     spec['facets'] = parse_facets(raw.get('facets'))
+    spec['level_facets'] = {int(k): parse_facets(v) for k, v in (raw.get('level_facets') or {}).items()}
+    for lv in spec['level_facets']:
+        if lv not in (1, 2, 3):
+            raise SpecError('level_facets: level %r is not 1, 2 or 3' % lv)
+    rf = spec['dedup'].get('retry_failed')
+    if rf not in (True, False, None, 'other_cell'):
+        raise SpecError("dedup.retry_failed must be true, false or 'other_cell', not %r" % (rf,))
     spec['levels'] = sorted({int(x) for x in spec['levels']})
     spec['temperatures'] = [float(t) for t in spec['temperatures']]
     if 3 in spec['levels'] and not any(t > 0 for t in spec['temperatures']):
@@ -425,6 +437,8 @@ def resolve_material(entry, spec, ctx):
                             'chain%s; give {cif: PATH} or {example: DIR}' % (
                                 entry, ', '.join(sorted(MATERIALS)), '' if zoo else ' (zoo not readable: ' +
                                 config.NO_CHAIN_MSG + ')'))
+    if mat.zoo and ctx.get('cif_mapped', {}).get(mat.zoo['key']):
+        mat.notes.append(ctx['cif_mapped'][mat.zoo['key']])
     mat.meta.update({k: v for k, v in e.items() if k not in ('forcefield',)})
     ffs = _merge(spec['forcefield'], e.get('forcefield') or {})
     route = ffs.get('route') or 'auto'
@@ -448,7 +462,9 @@ def resolve_material(entry, spec, ctx):
         # the bundle's own force-field block (same names as the dataset's ledger records)
         mat.route['ff_block'] = dict(ex.WH_MATERIALS[mat.bundle]['force_field'])
     if mat.zoo and route == 'reaxff' and mat.route['ff_block']['md5'] == REAX_MD5:
-        mat.route['ff_block'] = dict(ex.REAX_FF, md5=REAX_MD5, validated_for_material=False, note=mat.ff_note)
+        # the dataset's ReaxFF-lg block (same name as the zoo records); a spec may give its own note / validated
+        mat.route['ff_block'] = dict(ex.REAX_FF, md5=REAX_MD5, validated_for_material=bool(ffs.get('validated', False)),
+                                     note=ffs.get('note') or mat.ff_note)
     return mat
 
 
@@ -536,6 +552,52 @@ class DatasetIndex:
 
 
 # ============================================================================================ facets
+class ShapeNeeded(SpecError):
+    """A selection that needs a Wulff shape the dataset does not have yet (the jobs of that level wait)."""
+
+
+def select_families_tiered(mat, fs, shapes):
+    """(families, how, tiers): tiers {family: (tier, why)} for a wulff_priority selection, else {}."""
+    if fs.get('select') != 'wulff_priority':
+        fams, how = select_families(mat, fs, shapes)
+        return fams, how, {}
+    lv = str(fs.get('shape_level') or '1')
+    amin = float(fs.get('min_area') or 1e-4)
+    k = float(fs.get('k_sigma', 2.0))
+    sh = [s for s in shapes if s['material_id'] == mat.material_id and s['level'] == lv]
+    if not sh:
+        raise ShapeNeeded('wulff_priority needs the level-%s Wulff shape of %s in the dataset (none yet: it is built '
+                          'from the records once the earlier levels are ingested)' % (lv, mat.material_id))
+    import shapes as shapes_mod
+    s0 = sh[0]
+    rank = {f['family']: f['bfdh_rank'] for f in mat.symmetry()['families']}
+    tiers = {}
+    for f in s0['facets']:
+        if f['area_fraction'] > amin:
+            tiers[f['family']] = (0, 'on the level-%s shape (area %.3f)' % (lv, f['area_fraction']))
+    for f in s0['facets']:
+        if f['family'] in tiers:
+            continue
+        why = []
+        if (f.get('p_on_shape') or 0) > 0:
+            why.append('on the shape in %.0f %% of the sensitivity samples' % (100 * f['p_on_shape']))
+        red = shapes_mod.reduction_to_appear(s0, f['family'], amin)
+        if red is not None and red <= k * (f.get('sigma') or 0):
+            why.append('appears when its gamma is lowered by %.1f mJ/m^2 <= %g sigma (%.1f)' % (
+                red, k, k * (f.get('sigma') or 0)))
+        if why:
+            tiers[f['family']] = (1, 'within the uncertainty of the level-%s shape: %s' % (lv, '; '.join(why)))
+    for f in s0['facets']:
+        if f['family'] not in tiers:
+            tiers[f['family']] = (2, 'off the level-%s shape; BFDH rank %s' % (lv, rank.get(f['family'])))
+    fams = sorted(tiers, key=lambda f: (tiers[f][0], -next(x['area_fraction'] for x in s0['facets'] if x['family'] == f)
+                                        if tiers[f][0] == 0 else rank.get(f, 999)))
+    n = [sum(1 for t in tiers.values() if t[0] == i) for i in range(3)]
+    return fams, ('wulff_priority on the level-%s shape %s: %d on it, %d within %g sigma, then %d more in BFDH order%s'
+                  % (lv, s0['shape_id'], n[0], n[1], k, n[2], ', until %d have a value' % int(fs['target_ok'])
+                     if fs.get('target_ok') else '')), tiers
+
+
 def select_families(mat, fs, shapes):
     """The facet families of a material, in the selection's order (BFDH order for bfdh_top / max_index, area
     order for on_shape, the given order for explicit)."""
@@ -622,16 +684,135 @@ def surfenergy_estimates(rows):
     return out
 
 
-def _est_row(mat, sym, jid, hkl, sr, level, T, spec):
+def cell_settings(pr):
+    """The oriented-cell settings a non-bundle job may use, in order: the protocol's (search_range, angle_dev), then
+    each of protocol.cell_fallbacks merged over it. The first whose cell the estimator accepts (a cell exists, the
+    ReaxFF memory rule passes, the estimate is within the per-run cap) is used."""
+    base = {'search_range': int(pr.get('search_range') or SEARCH_RANGE_NONBUNDLE), 'angle_dev': pr.get('angle_dev')}
+    out = [base]
+    for fb in pr.get('cell_fallbacks') or []:
+        st = dict(base, **{k: v for k, v in fb.items() if k in ('search_range', 'angle_dev')})
+        st['search_range'] = int(st['search_range'])
+        if st not in out:
+            out.append(st)
+    return out
+
+
+def _setting_text(st):
+    return 'search_range %d, angle_dev %s' % (st['search_range'], st['angle_dev'] if st.get('angle_dev') is not None
+                                              else 'default (1)')
+
+
+def choose_cell(j, est, cap):
+    """Pick the cell setting and family member of a non-bundle job from the estimates est {job:si:mi: estimate}:
+    settings in order, the member with the smallest estimated cell; a setting is passed over when it has no cell,
+    the ReaxFF memory rule (slabcutter's) refuses its cell, or its estimate is over the per-run cap. Sets hkl,
+    search_range, cell_overrides, cell_choice / cell_tried / cell_refused on j; returns the estimate used (or None)."""
+    tried, first_over = [], None
+    if not est:                                 # the estimator is not available: nothing to choose from
+        j.update(hkl=j['members_considered'][0], search_range=j['_settings'][0]['search_range'], cell_overrides={})
+        return None
+    failed = j.get('failed_cells') or []
+    n_failed_out = 0
+    for si, st in enumerate(j['_settings']):
+        cand = [(int(k.split(':')[2]), v) for k, v in est.items() if int(k.split(':')[1]) == si and 'seconds' in v]
+        # a member whose cell at this setting failed before is passed over (try another family member)
+        probe = lambda mi: {'hkl': j['members_considered'][mi], 'search_range': st['search_range'],
+                            'cell_overrides': {'angle_dev': st.get('angle_dev')}}
+        out = [mi for mi, v in cand if any(same_cell(c, probe(mi)) for c in failed)]
+        if out:
+            n_failed_out += len(out)
+            tried.append('%s: (%s) failed before, passed over' % (_setting_text(st), '), ('.join(
+                ' '.join(map(str, j['members_considered'][mi])) for mi in out)))
+            cand = [(mi, v) for mi, v in cand if mi not in out]
+            if not cand:
+                continue
+        refused = [(mi, v) for mi, v in cand if v.get('reaxff_refused')]
+        okc = [(mi, v) for mi, v in cand if not v.get('reaxff_refused')]
+        if not cand:
+            errs = sorted({v.get('error', '')[:120] for k, v in est.items() if int(k.split(':')[1]) == si})
+            tried.append('%s: no cell (%s)' % (_setting_text(st), '; '.join(errs) or 'no estimate'))
+            continue
+        if not okc:
+            mi, v = min(refused, key=lambda x: (x[1]['molecules_cell'], x[0]))
+            tried.append('%s: refused, ReaxFF memory: %s' % (_setting_text(st), v['reaxff_refused']))
+            continue
+        mi, v = min(okc, key=lambda x: (x[1]['molecules_cell'], x[0]))
+        if v['seconds'] / 60.0 > cap:
+            tried.append('%s: %d molecules, est. %.1f min > cap %.1f' % (_setting_text(st), v['molecules_cell'],
+                                                                         v['seconds'] / 60.0, cap))
+            first_over = first_over or (si, mi, v)
+            continue
+        _set_cell(j, si, mi, v, tried)
+        return v
+    j['cell_tried'] = tried
+    if first_over:                              # over the cap at every setting: report the first (skipped later)
+        si, mi, v = first_over
+        _set_cell(j, si, mi, v, tried)
+        return v
+    j['hkl'] = j['members_considered'][0]
+    j['search_range'] = j['_settings'][0]['search_range']
+    j['cell_overrides'] = {}
+    j['cell_refused'] = 'no usable oriented cell: ' + ' | '.join(tried)
+    j['all_cells_failed'] = bool(n_failed_out)
+    return None
+
+
+def _set_cell(j, si, mi, v, tried):
+    st = j['_settings'][si]
+    j['hkl'] = j['members_considered'][mi]
+    j['search_range'] = st['search_range']
+    j['cell_overrides'] = {'angle_dev': st['angle_dev']} if st.get('angle_dev') is not None else {}
+    j['cell_choice'] = 'cell: (%s) at %s%s' % (' '.join(map(str, j['hkl'])), _setting_text(st),
+                                               ' (after: %s)' % ' | '.join(tried) if tried else '')
+    j['cell_tried'] = tried
+
+
+def failed_cell_of_event(ev):
+    """The oriented cell of a failed journal event (None fields: not recorded, they match any value)."""
+    return {'hkl': ev.get('hkl'), 'search_range': ev.get('search_range'), 'angle_dev': ev.get('angle_dev', None),
+            'angle_dev_known': 'angle_dev' in ev, 'ref': 'journal %s' % ev.get('time')}
+
+
+def failed_cells_of_event(ev):
+    """All the cells a job has failed with: the executor lists them in the failed event (cells_failed)."""
+    if ev.get('cells_failed'):
+        return [dict(c, angle_dev_known=True, ref='journal %s' % ev.get('time')) for c in ev['cells_failed']]
+    return [failed_cell_of_event(ev)]
+
+
+def failed_cell_of_record(r):
+    """The oriented cell of a failed dataset record; records carry no angle_dev, and every one so far used the tool
+    default."""
+    return {'hkl': (r.get('facet') or {}).get('hkl'), 'search_range': (r.get('protocol') or {}).get('search_range'),
+            'angle_dev': None, 'angle_dev_known': True, 'ref': r.get('record_id')}
+
+
+def same_cell(c, j):
+    ad = (j.get('cell_overrides') or {}).get('angle_dev')
+    if c.get('hkl') is not None and list(c['hkl']) != list(j['hkl']):
+        return False
+    if c.get('search_range') is not None and int(c['search_range']) != int(j['search_range']):
+        return False
+    if c.get('angle_dev_known') and (c.get('angle_dev') or 1.0) != (ad or 1.0):
+        return False
+    return True
+
+
+def _est_row(mat, sym, jid, hkl, sr, level, T, spec, angle_dev=None):
     lp = sym['lattice_parameters']
     m = spec['md']
-    return {'id': jid, 'cell': [lp[k] for k in ('a', 'b', 'c', 'alpha', 'beta', 'gamma')],
+    extra = {}
+    if mat.route.get('use_reaxff') and mat.route.get('script'):
+        extra['script'] = mat.route['script']       # slabcutter's ReaxFF memory rule reads its pair_style line
+    return dict(extra, **{'id': jid, 'cell': [lp[k] for k in ('a', 'b', 'c', 'alpha', 'beta', 'gamma')],
             'n_atoms': sym.get('n_atoms') or sym['n_molecules'] * sym['atoms_per_molecule'],
             'n_molecules': sym['n_molecules'], 'hkl': list(hkl), 'search_range': sr, 'level': level, 'temperature': T,
             'n_periods': spec['protocol']['n_periods'], 'slab_from': spec['protocol'].get('slab_from'),
             'kind': 'reaxff' if mat.route['use_reaxff'] else 'nonreactive',
             'equilibration_ps': m['equilibration_ps'], 'production_ps': m['production_ps'], 'n_blocks': m['n_blocks'],
-            'timestep': m.get('timestep'), 'angle_dev': spec['protocol'].get('angle_dev')}
+            'timestep': m.get('timestep'),
+            'angle_dev': angle_dev if angle_dev is not None else spec['protocol'].get('angle_dev')})
 
 
 # ============================================================================================ journal
@@ -703,18 +884,31 @@ def plan(spec, records=None, shapes=None, journal=None, estimator=None, ctx=None
     mats, jobs, skipped, notes = [], [], [], []
     for entry in spec['materials']:
         mats.append(resolve_material(entry, spec, ctx))
+    retry = spec['dedup'].get('retry_failed')
+    deferred = []
     for mi, mat in enumerate(mats):
-        fams, how = select_families(mat, spec['facets'], shapes)
-        mat.selection = how
         fam_rec = mat.families()
-        for fi, fam in enumerate(fams):
-            for level in spec['levels']:
+        hows = []
+        for level in spec['levels']:
+            fs = spec['level_facets'].get(level) or spec['facets']
+            try:
+                fams, how, tiers = select_families_tiered(mat, fs, shapes)
+            except ShapeNeeded as exc:
+                deferred.append({'material': mat.key, 'material_id': mat.material_id, 'level': level, 'why': str(exc)})
+                hows.append('L%d: waits for a shape (%s)' % (level, exc))
+                continue
+            hows.append('L%d: %s' % (level, how))
+            for fi, fam in enumerate(fams):
                 for T in ([0.0] if level < 3 else [t for t in spec['temperatures'] if t > 0]):
                     key = job_key(mat, fam, level, T, spec)
                     j = {'job_id': job_id(key), 'key': key, 'material': mat.key, 'material_id': mat.material_id,
                          'family': fam, 'level': level, 'level_name': LEVEL_NAME[level], 'temperature_K': T,
                          'bfdh_rank': (fam_rec.get(fam) or {}).get('bfdh_rank'), 'order': (mi, fi, level, T),
                          'near_duplicates': [], 'runnable': mat.route.get('runnable', True)}
+                    if fam in tiers:
+                        j['tier'], j['tier_why'] = tiers[fam]
+                    if fs.get('target_ok'):
+                        j['target_ok'] = int(fs['target_ok'])
                     ok, bad, near = idx.lookup(key, mat.route['ff_block'].get('md5'), mat.datafile_md5())
                     j['near_duplicates'] = [{'record_id': r['record_id'], 'gamma': r['result']['gamma'],
                                              'status': r['result']['status'], 'differs_in': d,
@@ -726,9 +920,14 @@ def plan(spec, records=None, shapes=None, journal=None, estimator=None, ctx=None
                             r['record_id'], r['result']['gamma'], r['provenance']['source']) for r in ok[:4]))
                     elif ev and ev.get('event') == 'done':
                         why = 'done in this campaign (journal %s)' % ev.get('time')
-                    elif ev and ev.get('event') == 'failed' and not spec['dedup'].get('retry_failed'):
+                    elif retry == 'other_cell' and ((ev and ev.get('event') == 'failed') or bad):
+                        # not retried blindly: only with another oriented cell than the one that failed (checked
+                        # once the cell is chosen, below)
+                        j['failed_cells'] = failed_cells_of_event(ev) if ev and ev.get('event') == 'failed' else []
+                        j['failed_cells'] += [failed_cell_of_record(r) for r in bad]
+                    elif ev and ev.get('event') == 'failed' and not retry:
                         why = 'failed in this campaign, not retried blindly: %s' % error_line(ev.get('error'), 300)
-                    elif bad and not spec['dedup'].get('retry_failed'):
+                    elif bad and not retry:
                         why = 'failed before (%s): %s; not retried blindly (change the protocol, or dedup.retry_failed)' % (
                             bad[0]['record_id'], error_line(bad[0]['result'].get('error_message'), 200))
                     if why:
@@ -739,6 +938,8 @@ def plan(spec, records=None, shapes=None, journal=None, estimator=None, ctx=None
                                             why=why, this_campaign=mine))
                     else:
                         jobs.append(j)
+        mat.selection = hows[0].split(': ', 1)[1] if len(hows) == 1 or (
+            not spec['level_facets'] and not deferred) else '; '.join(hows)
     # ---------------------------------------------------------------- cell + cost
     rows, by_id = [], {}
     for j in jobs:
@@ -749,46 +950,48 @@ def plan(spec, records=None, shapes=None, journal=None, estimator=None, ctx=None
             if pr.get('search_range'):
                 sr = int(pr['search_range'])
             j.update({'hkl': h, 'search_range': sr, 'est_engine_minutes': round(em, 2), 'est_basis': basis,
-                      'n_molecules_cell': ncell})
-            rows.append(_est_row(mat, sym, j['job_id'] + ':0', h, sr, j['level'], j['temperature_K'], spec))
+                      'n_molecules_cell': ncell, 'cell_overrides': {}})
+            rows.append(_est_row(mat, sym, j['job_id'] + ':0:0', h, sr, j['level'], j['temperature_K'], spec))
         else:
-            sr = int(pr.get('search_range') or SEARCH_RANGE_NONBUNDLE)
             members = (mat.families().get(j['family']) or {}).get('members') or \
                 [[int(v) for v in j['family'].strip('{}').split()]]
-            j.update({'search_range': sr, 'members_considered': members[:8]})
-            for i, h in enumerate(members[:8]):
-                rows.append(_est_row(mat, sym, '%s:%d' % (j['job_id'], i), h, sr, j['level'], j['temperature_K'], spec))
+            j['members_considered'] = members[:8]
+            j['_settings'] = cell_settings(pr)
+            for si, st in enumerate(j['_settings']):
+                for i, h in enumerate(members[:8]):
+                    rows.append(_est_row(mat, sym, '%s:%d:%d' % (j['job_id'], si, i), h, st['search_range'], j['level'],
+                                         j['temperature_K'], spec, angle_dev=st.get('angle_dev')))
         by_id[j['job_id']] = j
     est = estimator(rows) if rows else {}
     if '_error' in est:
         notes.append('surfenergy estimator: ' + est['_error'])
     for j in jobs:
-        cand = [(k, v) for k, v in est.items() if k.startswith(j['job_id'] + ':') and 'seconds' in v]
-        errs = [v['error'] for k, v in est.items() if k.startswith(j['job_id'] + ':') and 'error' in v]
-        if 'hkl' not in j:                       # non-bundle: the member with the smallest estimated cell
-            if cand:
-                k, v = min(cand, key=lambda kv: (kv[1]['molecules_cell'], int(kv[0].split(':')[1])))
-                j['hkl'] = j['members_considered'][int(k.split(':')[1])]
-            else:
-                j['hkl'] = j['members_considered'][0]
-                v = None
+        mine = {k: v for k, v in est.items() if k.startswith(j['job_id'] + ':')}
+        errs = [v['error'] for v in mine.values() if 'error' in v]
+        if 'hkl' not in j:                       # non-bundle: the first cell setting that fits, smallest member
+            v = choose_cell(j, mine, cap)
         else:
-            v = cand[0][1] if cand else None
+            v = next((x for x in mine.values() if 'seconds' in x), None)
         if v:
             j.update({'est_surfenergy_minutes': round(v['seconds'] / 60.0, 2),
                       'est_surfenergy_range_minutes': [round(v['low'] / 60.0, 2), round(v['high'] / 60.0, 2)],
                       'molecules_cell_est': v['molecules_cell'], 'molecules_slab_est': v['molecules_slab']})
+            if v.get('reaxff_gb') is not None:
+                j['reaxff_reservation_gb_est'] = v['reaxff_gb']
             j.setdefault('n_molecules_cell', v['molecules_cell'])
         if j.get('est_engine_minutes') is not None and j['level'] < 3:
             j['est_minutes'] = j['est_engine_minutes']
         elif v:
             j['est_minutes'] = j['est_surfenergy_minutes']
             j['est_basis'] = ('surfenergy estimator (its GUI model): oriented cell ~%d molecules, slab ~%d'
-                              % (v['molecules_cell'], v['molecules_slab']))
+                              % (v['molecules_cell'], v['molecules_slab'])) + (
+                '; %s' % j['cell_choice'] if j.get('cell_choice') else '')
         else:
             j['est_minutes'] = None
-            j['est_basis'] = 'no estimate: %s' % ('; '.join(errs)[:200] or est.get('_error', 'estimator unavailable'))
+            j['est_basis'] = 'no estimate: %s' % (j.get('cell_refused') or '; '.join(errs)[:300] or
+                                                 est.get('_error', 'estimator unavailable'))
         j.pop('members_considered', None)
+        j.pop('_settings', None)
     # ---------------------------------------------------------------- recalibration from this campaign's runs
     ratios = {}
     for e in journal.values():
@@ -806,7 +1009,18 @@ def plan(spec, records=None, shapes=None, journal=None, estimator=None, ctx=None
     # ---------------------------------------------------------------- per-run cap, limit_new, order, budget
     keep = []
     for j in jobs:
-        if j['est_minutes'] is None:
+        same = [c for c in j.get('failed_cells') or [] if j.get('est_minutes') is not None and same_cell(c, j)]
+        if same:
+            skipped.append(dict(j, reason='failed_before', why='the same oriented cell (hkl %s, search_range %s, '
+                                'angle_dev %s) failed before (%s): not retried; another cell setting would be' % (
+                                    ' '.join(map(str, j['hkl'])), j['search_range'],
+                                    (j.get('cell_overrides') or {}).get('angle_dev', 'default'), same[0].get('ref'))))
+            continue
+        if j.get('failed_cells'):
+            j['retry_of_failed'] = [c.get('ref') for c in j['failed_cells']]
+        if j['est_minutes'] is None and j.get('all_cells_failed'):
+            skipped.append(dict(j, reason='failed_before', why='no cell left that has not failed before: ' + j['est_basis']))
+        elif j['est_minutes'] is None:
             skipped.append(dict(j, reason='no_estimate', why=j['est_basis']))
         elif j['est_minutes'] > cap:
             skipped.append(dict(j, reason='over_cap', why='estimated %.1f CPU min > per-run cap %.1f' % (
@@ -830,8 +1044,26 @@ def plan(spec, records=None, shapes=None, journal=None, estimator=None, ctx=None
             else:
                 kept.append(j)
         keep = kept
+    # a wulff_priority level ranks on a shape built from the lower levels: while some of those still run (e.g. a
+    # retry of a failed level-1 cell), its jobs wait for the next stage
+    low = {}
+    for j in keep:
+        low.setdefault(j['material'], set()).add(j['level'])
+    waiting = [j for j in keep if j.get('tier') is not None and any(lv < j['level'] for lv in low.get(j['material'], ()))]
+    for mat_key, lv in sorted({(j['material'], j['level']) for j in waiting}):
+        d0 = next(j for j in waiting if j['material'] == mat_key and j['level'] == lv)
+        deferred.append({'material': mat_key, 'material_id': d0['material_id'], 'level': lv,
+                         'why': 'its selection ranks on a shape that the level-%s jobs of this plan will change (%d '
+                                'job(s) wait)' % ('/'.join(str(x) for x in sorted(low[mat_key]) if x < lv),
+                                                  sum(1 for j in waiting if j['material'] == mat_key and j['level'] == lv))})
+    keep = [j for j in keep if j not in waiting]
     keep = order_jobs(keep, spec['policy'], shapes)
-    total, run = 0.0, []
+    keep = apply_target_ok(keep, skipped)
+    spent = sum(float(e.get('cpu_s') or 0) for e in journal.values() if e.get('event') in ('done', 'failed')) / 60.0
+    total, run = spent, []
+    if spent:
+        notes.append('this campaign has spent %.1f CPU min already (journal): the budget left is %.1f'
+                     % (spent, max(0.0, budget - spent)))
     for j in keep:
         if total + j['est_minutes'] > budget + 1e-9:
             skipped.append(dict(j, reason='over_budget', why='%.1f planned + %.1f > budget %.1f CPU min' % (
@@ -847,8 +1079,9 @@ def plan(spec, records=None, shapes=None, journal=None, estimator=None, ctx=None
             'budget_cpu_min': budget, 'per_run_cap_min': cap,
             'chain': {'present': chain_present(), 'revision': rev, 'uncommitted': dirty[:10]},
             'materials': [dict(m.describe(), selection=getattr(m, 'selection', None)) for m in mats],
-            'jobs': run, 'skipped': skipped, 'notes': notes,
-            'totals': {'n_jobs': len(run), 'est_cpu_min': round(total, 2), 'n_skipped': len(skipped),
+            'jobs': run, 'skipped': skipped, 'deferred': deferred, 'notes': notes,
+            'totals': {'n_jobs': len(run), 'est_cpu_min': round(total - spent, 2), 'spent_cpu_min': round(spent, 2),
+                       'n_skipped': len(skipped), 'n_deferred': len(deferred),
                        'skipped_by_reason': _count(s['reason'] for s in skipped),
                        'n_near_duplicates': sum(1 for j in run if j['near_duplicates'])},
             '_materials': mats}
@@ -883,8 +1116,35 @@ def order_jobs(jobs, policy, shapes):
         j['relevance'] = round(rel(j), 4)
         j['score'] = round((j['relevance'] + 1e-3) / max(j['est_minutes'], 0.05), 4)
     l1 = sorted([j for j in jobs if j['level'] == 1], key=lambda j: (j['bfdh_rank'] or 999, j['order']))
-    hi = sorted([j for j in jobs if j['level'] > 1], key=lambda j: (j['level'], -j['score'], j['order']))
+    # a wulff_priority selection sets tiers: 0 on the shape (by relevance / cost, as before), 1 within the
+    # uncertainty, 2 the rest (both in BFDH order); jobs without a tier keep the plain greedy order
+    hi = sorted([j for j in jobs if j['level'] > 1], key=lambda j: (
+        j['level'], j.get('tier', 0), -j['score'] if j.get('tier', 0) == 0 else (j['bfdh_rank'] or 999), j['order']))
     return l1 + hi
+
+
+def apply_target_ok(jobs, skipped):
+    """facets.target_ok N: per material / level / T, run jobs (in the policy's order) only until N families of the
+    selection have an ok value: the ones in the dataset or done in this campaign count, failed or skipped ones do
+    not (so a refused cell makes room for the next family)."""
+    have = {}
+    for x in skipped:
+        if x.get('target_ok') and x['reason'] == 'cached':
+            k = (x['material'], x['level'], x['temperature_K'])
+            have[k] = have.get(k, 0) + 1
+    out = []
+    for j in jobs:
+        if not j.get('target_ok'):
+            out.append(j)
+            continue
+        k = (j['material'], j['level'], j['temperature_K'])
+        if have.get(k, 0) >= j['target_ok']:
+            skipped.append(dict(j, reason='target_reached', why='facets.target_ok = %d families with a value reached '
+                                '(dataset + this campaign + jobs planned before this one)' % j['target_ok']))
+            continue
+        have[k] = have.get(k, 0) + 1
+        out.append(j)
+    return out
 
 
 # ============================================================================================ output
@@ -909,15 +1169,23 @@ def format_plan(p):
     for j in p['jobs']:
         nd = '; '.join('%s %s (%s differs)' % (d['record_id'], d['gamma'], ', '.join(d['differs_in']))
                        for d in j['near_duplicates'][:2])
+        if j.get('tier') is not None:
+            nd = (nd + '; ' if nd else '') + 'tier %d: %s' % (j['tier'], j.get('tier_why', ''))
+        if j.get('retry_of_failed'):
+            nd = (nd + '; ' if nd else '') + 'retry with another cell of failed %s' % ', '.join(map(str, j['retry_of_failed']))
         L.append('  %-12s %-16s %-10s %-3d %-6g %-11s %-4s %7.2f %7.2f  %s%s' % (
             j['job_id'], j['material_id'][:16], j['family'], j['level'], j['temperature_K'],
             ' '.join(str(x) for x in j.get('hkl') or []), j.get('search_range'), j['est_minutes'], j['cum_est_minutes'],
-            (j.get('est_basis') or '')[:90], ('\n' + ' ' * 16 + 'refresh of: ' + nd) if nd else ''))
+            (j.get('est_basis') or '')[:90] + (' [angle_dev %s]' % j['cell_overrides']['angle_dev']
+                                               if (j.get('cell_overrides') or {}).get('angle_dev') is not None else ''),
+            ('\n' + ' ' * 16 + ('refresh of: ' if j['near_duplicates'] else '') + nd) if nd else ''))
     L.append('')
     L.append('SKIPPED %d:' % len(p['skipped']))
     for s in p['skipped']:
         L.append('  %-12s %-16s %-10s L%d  %-13s %s' % (s['job_id'], s['material_id'][:16], s['family'], s['level'],
                                                        s['reason'], s['why'][:150]))
+    for d in p.get('deferred') or []:
+        L.append('DEFERRED %s L%d: %s; `run` re-plans after the ingest' % (d['material_id'], d['level'], d['why']))
     for n in p['notes']:
         L.append('note: ' + n)
     return '\n'.join(L)

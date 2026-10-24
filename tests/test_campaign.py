@@ -210,6 +210,92 @@ class TestPlanner(unittest.TestCase):
         self.assertEqual(make_plan(s, journal=journal)['jobs'], [])
 
 
+class TestStagedSelection(unittest.TestCase):
+    """level_facets, wulff_priority (tiers, deferral), target_ok, cell fallbacks and the ReaxFF memory rule."""
+
+    def l2spec(self, **fs):
+        f = dict({'select': 'wulff_priority', 'shape_level': '1', 'k_sigma': 2}, **fs)
+        return spec(levels=[2], facets='bfdh_top_4', level_facets={'2': f}, policy='baseline',
+                    budget={'cpu_minutes': 500, 'per_run_cap_minutes': 60})
+
+    def test_wulff_priority_tiers_and_order(self):
+        p = make_plan(self.l2spec())
+        tiers = [j['tier'] for j in p['jobs']]
+        self.assertEqual(tiers, sorted(tiers))                      # on the shape, then within sigma, then the rest
+        self.assertEqual(tiers[0], 0)
+        sh = next(x for x in C.load_shapes() if x['material_id'] == 'tnt-monoclinic' and x['level'] == '1')
+        on = {f['family'] for f in sh['facets'] if f['area_fraction'] > 1e-4}
+        allf = {j['family']: j['tier'] for j in p['jobs'] + [x for x in p['skipped'] if 'tier' in x]}
+        self.assertTrue(all(allf[f] == 0 for f in on if f in allf))
+        rest = [j['bfdh_rank'] for j in p['jobs'] if j['tier'] == 2]
+        self.assertEqual(rest, sorted(rest))                        # the rest in BFDH order
+
+    def test_wulff_priority_waits_for_shape(self):
+        s = self.l2spec()
+        p = C.plan(s, records=[], shapes=[], journal={}, estimator=EST)
+        self.assertEqual(p['jobs'], [])
+        self.assertEqual([d['level'] for d in p['deferred']], [2])
+        self.assertIn('DEFERRED', C.format_plan(p))
+
+    def test_target_ok(self):
+        p = make_plan(self.l2spec(target_ok=2))
+        self.assertEqual(len(p['jobs']), 2)
+        self.assertIn('target_reached', p['totals']['skipped_by_reason'])
+        first = p['jobs'][0]
+        # a family with a value already counts; a failed one does not
+        rec = tnt_record(first['family'], 2, 'relaxed_bulk', rid='se-000000000009')
+        p2 = make_plan(self.l2spec(target_ok=2), [rec])
+        self.assertEqual(len(p2['jobs']), 1)
+        bad = tnt_record(first['family'], 2, 'relaxed_bulk', status='failed', rid='se-00000000000a', error='x')
+        p3 = make_plan(self.l2spec(target_ok=2), [bad])
+        self.assertEqual(len(p3['jobs']), 2)
+        self.assertNotIn(first['family'], [j['family'] for j in p3['jobs']])
+
+    def test_level_facets_parse(self):
+        s = C.load_spec(dict(BASE, levels=[1, 2], level_facets={2: 'wulff_priority'}))
+        self.assertEqual(s['level_facets'][2]['select'], 'wulff_priority')
+        with self.assertRaises(C.SpecError):
+            C.load_spec(dict(BASE, dedup={'retry_failed': 'sometimes'}))
+
+    def fake_job(self):
+        return {'job_id': 'j-x', 'members_considered': [[1, 1, 1], [-1, 1, 1]],
+                '_settings': C.cell_settings({'search_range': 4, 'cell_fallbacks': [{'search_range': 6},
+                                                                                     {'angle_dev': 30}]})}
+
+    def test_cell_fallbacks_memory(self):
+        j = self.fake_job()
+        self.assertEqual([(x['search_range'], x['angle_dev']) for x in j['_settings']], [(4, None), (6, None), (4, 30)])
+        big = {'seconds': 600, 'low': 1, 'high': 2, 'molecules_cell': 1320, 'molecules_slab': 240,
+               'reaxff_refused': 'the cell is too large for a ReaxFF run 0'}
+        small = {'seconds': 420, 'low': 1, 'high': 2, 'molecules_cell': 88, 'molecules_slab': 16, 'reaxff_refused': None}
+        est = {'j-x:0:0': big, 'j-x:0:1': big, 'j-x:1:0': dict(big, molecules_cell=600), 'j-x:2:0': dict(small),
+               'j-x:2:1': dict(small, molecules_cell=90)}
+        v = C.choose_cell(j, est, cap=20)
+        self.assertEqual(v['molecules_cell'], 88)
+        self.assertEqual((j['hkl'], j['search_range'], j['cell_overrides']), ([1, 1, 1], 4, {'angle_dev': 30}))
+        self.assertEqual(len(j['cell_tried']), 2)
+        self.assertIn('ReaxFF memory', j['cell_tried'][0])
+        # the member whose cell failed before is passed over: the next member at the same setting
+        j = self.fake_job()
+        j['failed_cells'] = [{'hkl': [1, 1, 1], 'search_range': 4, 'angle_dev': 30, 'angle_dev_known': True, 'ref': 'x'}]
+        C.choose_cell(j, est, cap=20)
+        self.assertEqual(j['hkl'], [-1, 1, 1])
+        # nothing fits: no cell, with the reasons
+        j = self.fake_job()
+        self.assertIsNone(C.choose_cell(j, {k: v for k, v in est.items() if not k.startswith('j-x:2')}, cap=20))
+        self.assertIn('no usable oriented cell', j['cell_refused'])
+
+    def test_same_cell(self):
+        j = {'hkl': [1, 1, 1], 'search_range': 4, 'cell_overrides': {'angle_dev': 30}}
+        rec = {'facet': {'hkl': [1, 1, 1]}, 'protocol': {'search_range': 6}, 'record_id': 'se-1'}
+        self.assertFalse(C.same_cell(C.failed_cell_of_record(rec), j))           # other search_range and angle_dev
+        rec['protocol']['search_range'] = 4
+        self.assertFalse(C.same_cell(C.failed_cell_of_record(rec), j))           # records: the default angle_dev
+        self.assertTrue(C.same_cell(C.failed_cell_of_record(rec), dict(j, cell_overrides={})))
+        ev = {'hkl': [1, 1, 1], 'time': 't'}                                    # an old event: fields unknown
+        self.assertTrue(C.same_cell(C.failed_cell_of_event(ev), j))
+
+
 class TestExecutor(unittest.TestCase):
     def setUp(self):
         self.name = 'exec_%d' % id(self)
@@ -420,6 +506,49 @@ class TestShapes(unittest.TestCase):
                 'facet': {'family': fam, 'hkl': rep, 'family_representative': rep, 'family_members': members, 'd_eff': 5.0},
                 'termination': {'label': 't0'}, 'protocol': {'level': 1},
                 'result': {'status': 'ok', 'gamma': g, 'gamma_flags': []}, 'provenance': {'source': 'campaign'}}
+
+    def rec2(self, fam, members, g, gu, i, L, date='2026-10-23T12:00:00', flags=()):
+        r = self.rec(fam, members, g, i, L)
+        r['protocol'] = {'level': 2, 'temperature_K': 0.0}
+        r['termination'] = {'label': 't0 (lowest unrelaxed)', 'is_lowest': True}
+        r['result'].update(gamma_error=None, gamma_unrelaxed=gu, gamma_flags=list(flags))
+        r['provenance'] = {'source': 'campaign', 'date': date}
+        return r
+
+    def test_best_shape_mmm(self):
+        import export_dataset as X
+        import shapes as S
+        L = [[13.0, 0, 0], [0, 11.5, 0], [0, 0, 10.7]]
+        m111 = [[a, b, c] for a in (1, -1) for b in (1, -1) for c in (1, -1)]
+        fams = {'{1 0 0}': [[1, 0, 0], [-1, 0, 0]], '{0 1 0}': [[0, 1, 0], [0, -1, 0]], '{0 0 1}': [[0, 0, 1], [0, 0, -1]],
+                '{1 1 1}': m111}
+        recs = [self.rec(f, m, 200.0 + 10 * i, i, L) for i, (f, m) in enumerate(fams.items())]
+        self.assertIsNone(S.best_shape(recs, X.flag, X.rid, X.SCHEMA_VERSION)[0])     # no level 2 yet
+        recs += [self.rec2('{1 0 0}', fams['{1 0 0}'], 150.0, 190.0, 11, L),
+                 self.rec2('{1 1 1}', m111, 160.0, 220.0, 12, L),
+                 self.rec2('{0 1 0}', fams['{0 1 0}'], 300.0, 210.0, 13, L,            # fails the guard
+                           flags=[X.flag('relaxed_above_unrelaxed', 'error', 'x', by='wulffhound-guard')])]
+        s, why = S.best_shape(recs, X.flag, X.rid, X.SCHEMA_VERSION)
+        self.assertIsNone(why)
+        by = {f['family']: f for f in s['facets']}
+        ratio = (150.0 / 200.0 + 160.0 / 230.0) / 2
+        self.assertAlmostEqual(s['shape_metrics']['relax_ratio'], round(ratio, 5), places=5)
+        self.assertEqual(by['{1 0 0}']['level'], 2)
+        self.assertEqual(by['{0 0 1}']['level'], 1)
+        self.assertAlmostEqual(by['{0 0 1}']['gamma'], round(220.0 * ratio, 4), places=3)
+        self.assertEqual(by['{0 1 0}']['level'], 1)                                    # guard: level 1 used, flagged
+        self.assertIn('level1_used_for_inconsistent_level2', [f['code'] for f in by['{0 1 0}']['flags']])
+        self.assertEqual((s['checks']['laue_class'], s['checks']['pymatgen_recip_ops_order'],
+                          s['checks']['pymatgen_recip_ops_symprec_1em3']), ('mmm', 8, 8))
+        import jsonschema
+        sch = json.load(open(os.path.join(ROOT, 'schema', 'surface_energy.schema.json')))
+        jsonschema.validate(s, {'$schema': sch['$schema'], '$defs': sch['$defs'], '$ref': '#/$defs/wulff_shape'})
+        # a Laue class that does not match the metric is refused (pymatgen would add faces)
+        for r in recs:
+            r['material']['space_group'] = {'laue_class': '2/m'}
+        s2, why2 = S.level1_shape(recs, X.flag, X.rid, X.SCHEMA_VERSION)
+        self.assertIsNone(s2)
+        self.assertIn('2/m', why2)
 
     def test_level1_shape(self):
         import export_dataset as X

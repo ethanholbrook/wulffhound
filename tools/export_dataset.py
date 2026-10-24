@@ -20,8 +20,10 @@ Every record is validated against the schema (the export fails on an invalid rec
 Derived wulff_shape records: TNT and paracetamol at level 'best' and level 1, built with the wulffhound engine
 (pymatgen WulffShape on the data-file lattice, symprec 1e-5 <= 1e-3, orbits asserted equal to the Laue class 2/m).
 Materials without a bundle get a level-1 shape built from their records (wulffhound/shapes.py) once >= 3 families
-are computed and they enclose a bounded shape; with fewer (the zoo's two per crystal) only the facet energies are
-recorded.
+are computed and they enclose a bounded shape, and a 'best' shape once they also have relaxed (level-2) records
+(the engine's rule: level 2 where available, else level 1 x the mean relaxed/unrelaxed ratio); the orbits are
+asserted equal to pymatgen's reciprocal-lattice operations and to the Laue class of the space group (2/m, mmm, ...)
+at symprec 1e-5 and 1e-3. With fewer families (the zoo's two per crystal) only the facet energies are recorded.
 No atomic coordinates are exported: only gamma values, hkl, lattice parameters and metadata.
 """
 import argparse
@@ -812,7 +814,7 @@ def main():
         er, led = entry_recs[mat]
         shapes += build_shapes(mat, er, led, campaign_recs=camp_recs + surf_l2, rec_by_id=rec_by_id)
     # materials without a bundle: a level-1 shape from their records once they have enough families
-    from shapes import level1_shape
+    from shapes import best_shape, level1_shape
     have_shape = {s['material_id'] for s in shapes}
     by_mat = {}
     for r in se:
@@ -825,6 +827,10 @@ def main():
         if s_:
             shapes.append(s_)
             have_shape.add(mid)
+            # and a 'best' shape once the material has relaxed (level-2) records: the engine's rule, from the records
+            b_, bwhy = best_shape(recs, flag=flag, rid=rid, schema_version=SCHEMA_VERSION)
+            if b_:
+                shapes.append(b_)
         else:
             no_shape[mid] = why
     zoo_no_shape = sorted(m for m in no_shape if m not in have_shape)

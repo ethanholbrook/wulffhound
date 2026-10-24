@@ -28,23 +28,9 @@
       }
     },
     "forcefield": {"$ref": "#/$defs/forcefield"},
-    "facets": {
-      "description": "a list of families / hkl ('{0 1 1}', [1, 0, 0]); or 'bfdh_top_N'; or 'max_index K'; or 'on_shape' (families on the material's current shape in the dataset); or an object",
-      "oneOf": [
-        {"type": "array", "items": {"oneOf": [{"type": "string"}, {"type": "array", "items": {"type": "integer"}, "minItems": 3, "maxItems": 3}]}},
-        {"type": "string"},
-        {"type": "object", "additionalProperties": false,
-         "properties": {
-           "select": {"enum": ["explicit", "bfdh_top", "max_index", "on_shape"]},
-           "families": {"type": "array"},
-           "n": {"type": "integer", "minimum": 1, "description": "bfdh_top: how many families (default 4)"},
-           "k": {"type": "integer", "minimum": 1, "description": "max_index: largest |h|, |k|, |l| (default 2)"},
-           "shape_level": {"enum": ["best", "1", "2"], "description": "on_shape: which shape (default best)"},
-           "min_area": {"type": "number", "description": "on_shape: area fraction above which a family is on the shape (default 1e-4)"},
-           "limit_new": {"type": "integer", "minimum": 1, "description": "at most this many new jobs per material and level for this campaign (after the dataset look-up and the per-run cap), in selection order; jobs the campaign already ran count towards it"}
-         }}
-      ]
-    },
+    "facets": {"$ref": "#/$defs/facets"},
+    "level_facets": {"type": "object", "additionalProperties": false, "patternProperties": {"^[123]$": {"$ref": "#/$defs/facets"}},
+      "description": "per-level facet selections, keys '1' '2' '3' (the forms of facets); a level not named here uses facets"},
     "levels": {"type": "array", "items": {"enum": [1, 2, 3]}, "minItems": 1, "description": "1 unrelaxed screening (supercell + slabcutter), 2 relaxed T = 0 (surfenergy temperature 0), 3 MD at T > 0 (surfenergy with the md lengths). Default [1]"},
     "temperatures": {"type": "array", "items": {"type": "number", "minimum": 0}, "description": "K; levels 1 and 2 are T = 0, level 3 runs every T > 0 here. Default [0]"},
     "md": {"type": "object", "additionalProperties": false, "description": "level 3 only (surfenergy inputs)",
@@ -56,7 +42,11 @@
         "search_range": {"type": ["integer", "null"], "minimum": 1, "description": "null: bundle materials use the engine's smallest known cell, others 4"},
         "slab_from": {"enum": ["relaxed_bulk", "static_cut", null], "description": "levels 2-3; null = surfenergy's default (relaxed_bulk since R3)"},
         "vacuum": {"type": ["number", "null"], "description": "angstrom (default 30)"},
-        "angle_dev": {"type": ["number", "null"]}, "s_tol": {"type": ["number", "null"]}
+        "angle_dev": {"type": ["number", "null"], "description": "supercell's GCCM angle_dev, degrees (null: the tool's default, 1)"}, "s_tol": {"type": ["number", "null"]},
+        "cell_fallbacks": {"type": "array", "items": {"type": "object", "additionalProperties": false,
+                                                       "properties": {"search_range": {"type": "integer", "minimum": 1},
+                                                                      "angle_dev": {"type": ["number", "null"], "exclusiveMinimum": 0, "maximum": 89}}},
+                           "description": "non-bundle materials: oriented-cell settings tried in order after (search_range, angle_dev) when the estimator finds no cell, slabcutter's ReaxFF memory rule refuses the cell, or the estimate is over the per-run cap; each is merged over the protocol's values, and at each the family member with the smallest estimated cell is used"}
       }},
     "budget": {"type": "object", "additionalProperties": false,
       "properties": {"cpu_minutes": {"type": "number", "exclusiveMinimum": 0, "description": "total estimated CPU of the jobs that run (default 30)"},
@@ -71,9 +61,28 @@
         "aura": {"type": "object", "description": "revision: {tool: revision number}, trace_id"}
       }},
     "dedup": {"type": "object", "additionalProperties": false,
-      "properties": {"retry_failed": {"type": "boolean", "description": "run a job whose exact key failed before (default false: failures are never retried blindly)"}}}
+      "properties": {"retry_failed": {"oneOf": [{"type": "boolean"}, {"const": "other_cell"}], "description": "true: run a job whose exact key failed before; 'other_cell': only when the planned oriented cell (hkl, search_range, angle_dev) differs from the one that failed; default false (failures are never retried blindly)"}}}
   },
   "$defs": {
+    "facets": {
+      "description": "a list of families / hkl ('{0 1 1}', [1, 0, 0]); or 'bfdh_top_N'; or 'max_index K'; or 'on_shape' (families on the material's current shape in the dataset); or 'wulff_priority' (the families on a shape of the material first, then those within its uncertainty, then the rest of its facet set in BFDH order; the level's jobs wait until that shape is in the dataset, and `run` re-plans after each ingest); or an object",
+      "oneOf": [
+        {"type": "array", "items": {"oneOf": [{"type": "string"}, {"type": "array", "items": {"type": "integer"}, "minItems": 3, "maxItems": 3}]}},
+        {"type": "string"},
+        {"type": "object", "additionalProperties": false,
+         "properties": {
+           "select": {"enum": ["explicit", "bfdh_top", "max_index", "on_shape", "wulff_priority"]},
+           "families": {"type": "array"},
+           "n": {"type": "integer", "minimum": 1, "description": "bfdh_top: how many families (default 4)"},
+           "k": {"type": "integer", "minimum": 1, "description": "max_index: largest |h|, |k|, |l| (default 2)"},
+           "shape_level": {"enum": ["best", "1", "2"], "description": "on_shape: which shape (default best); wulff_priority: the shape it ranks on (default 1)"},
+           "k_sigma": {"type": "number", "minimum": 0, "description": "wulff_priority: an off-shape family is within the uncertainty when it is on the shape in some sensitivity samples, or appears when its gamma is lowered by k_sigma x its sigma (default 2)"},
+           "target_ok": {"type": "integer", "minimum": 1, "description": "run jobs (in the policy's order) only until this many families of the selection have an ok value for the material and level; the dataset's and this campaign's count, failed or refused ones do not, so a refused cell makes room for the next family"},
+           "min_area": {"type": "number", "description": "on_shape: area fraction above which a family is on the shape (default 1e-4)"},
+           "limit_new": {"type": "integer", "minimum": 1, "description": "at most this many new jobs per material and level for this campaign (after the dataset look-up and the per-run cap), in selection order; jobs the campaign already ran count towards it"}
+         }}
+      ]
+    },
     "forcefield": {
       "type": "object", "additionalProperties": false,
       "description": "route: 'auto' (the material's own: ReaxFF for CIF/zoo materials, the bundle's for tnt/paracetamol), 'reaxff' (ffield file), 'nonreactive' (a typed data file with full topology + its run-0 script); further routes register in campaign.FORCEFIELD_ROUTES",

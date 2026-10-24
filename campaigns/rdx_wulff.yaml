@@ -1,0 +1,44 @@
+# alpha-RDX: level 1 (unrelaxed screening) of the first 15 BFDH families, then level 2 (relaxed, T = 0) of up to 10
+# families, and the Wulff shape. User request 2026-10-23: "can you get up to 10 surfaces for RDX?". A production run:
+# the per-run cap is 20 CPU min (the usual test rule is lifted for it).
+#   ./wh campaign plan campaigns/rdx_wulff.yaml      (dry run; level 2 waits for the level-1 shape)
+#   ./wh campaign run  campaigns/rdx_wulff.yaml      (needs the chain; staged: level 1 -> ingest -> shape -> level 2)
+#
+# Material: the COD 5000148 CIF (alpha-RDX, Pbca, Z = 8; neutron, Choi & Prince, Acta Cryst. B28, 2857 (1972); CC0)
+# through cif2lammps with surfenergy's CIF defaults (normalize_hydrogens, relax_unitcell atoms). The unit cell is the
+# CIF-zoo entry 'rdx' (same data file apart from the title line), so the zoo's records ({1 0 0} level 1, the refused
+# {1 1 1}) are this material's too. Laue class mmm (8 operations): the families are mmm orbits, d_eff uses the Pbca
+# absences (0kl k odd, h0l l odd, hk0 h odd, and h00 / 0k0 / 00l odd).
+campaign: rdx_wulff
+description: alpha-RDX, level 1 for 15 BFDH families, level 2 (T = 0) for up to 10, chosen on the level-1 shape
+materials:
+  - cif: chain:cif2lammps/examples/rdx/rdx1.cif
+    name: alpha-RDX
+forcefield:
+  route: reaxff
+  ffield: chain:cif2lammps/examples/hmx/reax-lg-2011.ff
+  validated: false     # the dataset's convention: ReaxFF-lg is never marked validated (HMX included)
+  note: >-
+    ReaxFF-lg (reax-lg-2011) was fitted with experimental crystal data that include RDX (with PETN, TATB and
+    nitromethane; Liu, Liu, Zybin, Sun & Goddard, J. Phys. Chem. A 115, 11016 (2011)), so it is this crystal's own
+    force field as far as the lattice goes; its surface energies are not validated against a reference, and T = 0
+    ReaxFF relaxations stop at force-field cusps (FIRE in fixed cells)
+facets: {select: bfdh_top, n: 15}
+level_facets:
+  "2": {select: wulff_priority, shape_level: "1", k_sigma: 2, target_ok: 10}
+levels: [1, 2]
+temperatures: [0]
+protocol:
+  n_periods: 2
+  search_range: 4
+  # oblique facets of this orthorhombic cell have no near-perpendicular in-plane pair at angle_dev 1 (GCCM's default)
+  # except in huge cells (e.g. {1 1 1}: 1320 molecules at search_range 4, 600 at 6, both refused by slabcutter's
+  # ReaxFF memory rule); a larger angle_dev admits small oblique cells (88 molecules for {1 1 1})
+  cell_fallbacks:
+    - {search_range: 6}
+    - {angle_dev: 30}
+    - {search_range: 6, angle_dev: 30}
+budget: {cpu_minutes: 180, per_run_cap_minutes: 20}
+policy: baseline
+executor: {backend: local, workers: 2}
+dedup: {retry_failed: other_cell}   # the zoo's {1 1 1} failed on a refused cell: retried only with another cell

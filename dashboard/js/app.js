@@ -232,7 +232,8 @@
     if (!shapes.some((s) => s.level === st.level) && shapes.length) st.level = shapes[0].level;
     const shape = shapes.find((s) => s.level === st.level) || null;
     const m0 = recs[0].material;
-    const ff = recs[0].force_field;
+    // the force-field note of the highest level present (a relaxed record's note, not the screening one)
+    const ff = recs.slice().sort((x, y) => y.protocol.level - x.protocol.level)[0].force_field;
     const structs = [...new Set(recs.map((r) => r.material.structure.structure_id))];
     let h = '<div class="card"><h1>' + esc(M.name) + ' <span class="muted small">' + esc(M.polymorph) + '</span></h1>' +
       '<div class="cols2"><dl class="kv">' +

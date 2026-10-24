@@ -57,6 +57,7 @@ def job_request(job, mat, spec, work_dir, timeout_s):
     one is the tool's own default (slab_from relaxed_bulk, vacuum 30, ...)."""
     pr, md = spec['protocol'], spec['md']
     ov = {k: pr.get(k) for k in ('slab_from', 'vacuum', 'angle_dev', 's_tol') if pr.get(k) is not None}
+    ov.update({k: v for k, v in (job.get('cell_overrides') or {}).items() if v is not None})   # the planner's cell choice
     if job['level'] == 3:
         ov.update({k: md[k] for k in ('equilibration_ps', 'production_ps', 'n_blocks', 'timestep') if md.get(k)})
     r = mat.route
@@ -133,8 +134,10 @@ def _hub_inputs(job, mat, spec):
     pr = spec['protocol']
     h, k, l = job['hkl']
     if job['level'] == 1:
+        sc_cell = {x: y for x, y in (job.get('cell_overrides') or {}).items() if y is not None}
         return [{'tool': 'supercell', 'inputs': dict(files, orientation_mode='hkl', h=h, k=k, l=l,
-                                                      search_range=job['search_range'], use_reaxff=r['use_reaxff'])},
+                                                      search_range=job['search_range'], use_reaxff=r['use_reaxff'],
+                                                      **sc_cell)},
                 {'tool': 'slabcutter', 'inputs': dict(files, datafilename='<supercell DataFileOutput>', termination_index=0,
                                                        n_periods=pr['n_periods'], vacuum=pr.get('vacuum') or 30.0,
                                                        compute_unrelaxed_sfe=True),
@@ -145,6 +148,7 @@ def _hub_inputs(job, mat, spec):
     for x in ('slab_from', 'vacuum', 'angle_dev', 's_tol'):
         if pr.get(x) is not None:
             v[x] = pr[x]
+    v.update({k: x for k, x in (job.get('cell_overrides') or {}).items() if x is not None})
     if job['level'] == 3:
         v.update({x: spec['md'][x] for x in ('equilibration_ps', 'production_ps', 'n_blocks', 'timestep')})
     return [{'tool': 'surfenergy', 'inputs': v}]
@@ -235,6 +239,13 @@ def make_backend(spec):
 
 
 # ============================================================================================ CIF preparation
+def _data_body(path):
+    """A LAMMPS data file without its first (title) line: what makes two unit cells the same."""
+    with open(path) as f:
+        lines = f.read().splitlines()
+    return '\n'.join(lines[1:]).strip()
+
+
 def prepare_cif(entry, spec, ctx):
     """{cif: PATH} -> cif2lammps (chain, local) with surfenergy's CIF defaults (normalize_hydrogens, relax_unitcell
     atoms, the ReaxFF file), cached by the CIF's md5. Returns the name of a known material when the unit cell is
@@ -290,9 +301,15 @@ def prepare_cif(entry, spec, ctx):
     for m, mj in MATERIALS.items():
         if mj.get('datafile_md5_recorded') == dmd5:
             return m
+    body = _data_body(outs['DataFileOutput'])
     for r in ctx['zoo']:
         p = _reroot((r.get('cif2lammps') or {}).get('data'))
-        if p and os.path.isfile(p) and md5(p) == dmd5:
+        if p and os.path.isfile(p) and (md5(p) == dmd5 or _data_body(p) == body):
+            # the same unit cell (the title line names the CIF file, e.g. 'from rdx1.cif' / 'from 5000148.cif')
+            ctx.setdefault('cif_mapped', {})[r['key']] = (
+                'CIF %s -> cif2lammps run %s: the same data file as the CIF-zoo entry %s (COD %s) apart from the title '
+                'line, so the material is that entry (its data file and records)' % (
+                    os.path.basename(cif), outs.get('_run_id'), r['key'], r.get('cod')))
             return r['key']
     mat = Material(entry.get('id') or os.path.splitext(os.path.basename(cif))[0], 'cif')
     mat.material_id = entry.get('id') or (outs.get('compound_name') or mat.key).lower().replace(' ', '-')[:40]
@@ -334,7 +351,8 @@ def _finish_event(job, res, work_dir):
     o = res.get('outputs') or {}
     ev = {'job_id': job['job_id'], 'event': 'done' if res.get('ok') else 'failed', 'material_id': job['material_id'],
           'family': job['family'], 'level': job['level'], 'temperature_K': job['temperature_K'],
-          'hkl': job['hkl'], 'cpu_s': res.get('cpu_s'), 'wall_s': res.get('wall_s'),
+          'hkl': job['hkl'], 'search_range': job.get('search_range'),
+          'angle_dev': (job.get('cell_overrides') or {}).get('angle_dev'), 'cpu_s': res.get('cpu_s'), 'wall_s': res.get('wall_s'),
           'est_minutes': job.get('est_minutes'), 'est_base_minutes': _base(job), 'result': portable(os.path.join(work_dir, 'result.json')),
           'run_dir': portable(res.get('run_dir'))}
     if res.get('ok'):
@@ -343,6 +361,10 @@ def _finish_event(job, res, work_dir):
     else:
         ev['error_line'] = error_line(res.get('error'))
         ev['error'] = _err_tail(res.get('error'), 1200)
+        # every oriented cell of this job that has failed so far (the journal keeps the last event per job)
+        prev = [c for c in job.get('failed_cells') or [] if str(c.get('ref', '')).startswith('journal')]
+        ev['cells_failed'] = [{k: c.get(k) for k in ('hkl', 'search_range', 'angle_dev')} for c in prev] + \
+            [{'hkl': ev['hkl'], 'search_range': ev['search_range'], 'angle_dev': ev['angle_dev']}]
     return ev
 
 
@@ -371,7 +393,10 @@ def execute(p, spec, backend=None, only=None, retry_failed=False, log=print, tim
     for j in jobs:
         ev = last.get(j['job_id'])
         wd = os.path.join(jr.dir, 'jobs', j['job_id'])
-        if ev and ev['event'] == 'done' or (ev and ev['event'] == 'failed' and not retry_failed):
+        # a failed job runs again only with --retry-failed, or when the planner chose another cell for it
+        # (dedup.retry_failed other_cell: j['retry_of_failed'])
+        if ev and ev['event'] == 'done' or (ev and ev['event'] == 'failed' and not retry_failed
+                                            and not j.get('retry_of_failed')):
             summary['skipped'].append({'job_id': j['job_id'], 'why': 'journal: %s at %s' % (ev['event'], ev['time'])})
             continue
         if not j.get('runnable', True) and backend.name == 'local':
@@ -432,7 +457,8 @@ def execute(p, spec, backend=None, only=None, retry_failed=False, log=print, tim
                     log('skip   %s %s %s L%d: %s' % (j['job_id'], j['material_id'], j['family'], j['level'], why))
                     continue
                 jr.write(job_id=j['job_id'], event='started', material_id=j['material_id'], family=j['family'],
-                         level=j['level'], hkl=j['hkl'], search_range=j['search_range'], est_minutes=j['est_minutes'],
+                         level=j['level'], hkl=j['hkl'], search_range=j['search_range'],
+                         angle_dev=(j.get('cell_overrides') or {}).get('angle_dev'), est_minutes=j['est_minutes'],
                          backend=backend.name)
                 log('start  %s %s %s L%d (%s) est %.1f min' % (j['job_id'], j['material_id'], j['family'], j['level'],
                                                                 ' '.join(map(str, j['hkl'])), j['est_minutes'] or 0))

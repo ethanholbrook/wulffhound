@@ -280,7 +280,7 @@ tools already accept. An override is passed only when the spec gives it; otherwi
 ./wh campaign run    campaigns/zoo_screen.yaml   # plan, run (journal, resumable), ingest, rebuild dataset/
 ./wh campaign status campaigns/zoo_screen.yaml   # the journal: gamma, gamma_flags, errors, CPU
 ./wh campaign ingest campaigns/zoo_screen.yaml   # journal -> dataset/campaigns/<name>.jsonl -> tools/export_dataset.py
-./wh py -W ignore -m unittest discover -s tests  # 29 unit tests (planner, executor, ingest, shapes), no chain needed
+./wh py -W ignore -m unittest discover -s tests  # 36 unit tests (planner, executor, ingest, shapes), no chain needed
 ```
 
 **Spec** (YAML or JSON, `schema/campaign.schema.json`):
@@ -289,10 +289,11 @@ tools already accept. An override is passed only when the spec gives it; otherwi
 campaign: zoo_screen
 materials: [naphthalene, anthracene, benzoic-acid]   # name / material_id / InChIKey, {cif: PATH}, {example: DIR}
 forcefield: {route: auto}           # auto | reaxff (ffield) | nonreactive (datafile + script); more routes register
-facets: {select: bfdh_top, n: 6, limit_new: 2}       # or a list, 'bfdh_top_N', 'max_index K', on_shape
+facets: {select: bfdh_top, n: 6, limit_new: 2}       # or a list, 'bfdh_top_N', 'max_index K', on_shape, wulff_priority
+# level_facets: {"2": {select: wulff_priority, target_ok: 10}}   # optional: another selection for one level
 levels: [1]                         # 1 unrelaxed, 2 relaxed T = 0, 3 MD at T (md: equilibration_ps, production_ps, n_blocks)
 temperatures: [0]
-protocol: {n_periods: 2, search_range: 4}            # also slab_from, vacuum, angle_dev, s_tol
+protocol: {n_periods: 2, search_range: 4}            # also slab_from, vacuum, angle_dev, s_tol, cell_fallbacks
 budget: {cpu_minutes: 15, per_run_cap_minutes: 3}
 policy: baseline                    # exhaustive | baseline (greedy) | agent (plan only: the MCP agent's queue)
 executor: {backend: local, workers: 2}               # local | nanohub | aura; workers capped at 2
@@ -309,11 +310,23 @@ executor: {backend: local, workers: 2}               # local | nanohub | aura; w
   journal, and the record ids are named. The key is material, structure, force field, family, level, T,
   n_periods, slab_from, vacuum and MD lengths. A record with the same material, family and level but another
   protocol is reported as a near-duplicate, and the job runs as a refresh. A key that failed before is not
-  retried unless `dedup.retry_failed` or `--retry-failed` says so.
+  retried unless `dedup.retry_failed` or `--retry-failed` says so. `retry_failed: other_cell` retries it only with
+  another oriented cell (hkl member, search_range, angle_dev) than every one it failed with.
+- *Facet selections.* `level_facets` gives one level its own selection. `wulff_priority` ranks on a shape of the
+  material (`shape_level`, default 1): the families on it (tier 0), those within its uncertainty (tier 1: on the
+  shape in some sensitivity samples, or appearing when their gamma drops by `k_sigma` x sigma, default 2), then
+  the rest of its facet set in BFDH order (tier 2). Without that shape, or while lower-level jobs of the material
+  are still planned, the level's jobs are deferred; `run` then re-plans after the ingest (staged, at most 6
+  stages, one budget). `target_ok N` runs jobs only until N families of the selection have a value: failed or
+  refused ones do not count, so the next family takes their place.
 - *Cost.* Bundle materials use the engine's calibrated model, on measured cells. Every job also gets surfenergy's
   own estimate (its GUI model, `wulffhound/chain_estimate.py` in the chain env). For other materials that estimate
-  is used, and it picks the family member with the smallest oriented cell. Jobs over the per-run cap, or with no
-  oriented cell at the search range, are skipped.
+  is used, and it picks the family member with the smallest oriented cell. For a ReaxFF route the estimate also
+  applies slabcutter's own memory rule (`check_reaxff_size`: the far-neighbour reservation of the whole oriented
+  cell against its 8 GB limit), so a cell slabcutter would refuse is not planned. `protocol.cell_fallbacks` lists
+  further (search_range, angle_dev) settings, tried in order when a setting has no cell, a refused cell or an
+  estimate over the cap; a member whose cell failed before is passed over. Jobs with no usable cell, or over the
+  per-run cap, are skipped. The budget counts the CPU this campaign has already spent.
 - *Order and budget.* `exhaustive` runs in the spec's order. `baseline` is the deterministic greedy policy: level 1
   in BFDH order, then the higher levels by (area on the current shape) / (CPU). The plan is then cut at the budget.
 
@@ -345,7 +358,10 @@ executor: {backend: local, workers: 2}               # local | nanohub | aura; w
   material's `best` shape: the newer run wins, as in the engine. A refreshed ledger record names the record that
   refreshes it in its `protocol_superseded` flag. Other materials get a level-1 shape from their records
   (`wulffhound/shapes.py`) once they have three or more families that enclose a bounded shape and whose Laue
-  orbits equal pymatgen's lattice symmetry. The dashboard picks all of it up, and `tools/test_dashboard.py` checks
+  orbits equal pymatgen's lattice symmetry, with as many operations as the Laue class of the space group (2/m 4,
+  mmm 8) at symprec 1e-5 and 1e-3. Once they also have level-2 records they get a `best` shape by the engine's
+  rule: the relaxed T = 0 value where a family has one that passes the guard, else its level-1 value x the mean
+  relaxed/unrelaxed ratio; sigma max(gamma_error, 2 %) and (std of the ratios + 2 %, floor 5 %). The dashboard picks all of it up, and `tools/test_dashboard.py` checks
   a campaign record and a campaign-completed shape.
 - *MCP.* `campaign_plan(spec)` and `campaign_status(spec)` in `mcp_server.py` let the agent plan with the driver.
   Both only read.
@@ -449,3 +465,14 @@ wulffhound is MIT-licensed (see `LICENSE`).
 - ReaxFF-lg: Liu, Liu, Zybin & Goddard, *J. Phys. Chem. A* 115, 11016 (2011). Used through the chain; not
   included.
 - **MCP Bond** (Valency) for literature search.
+
+### alpha-RDX campaign (2026-10-23)
+
+`campaigns/rdx_wulff.yaml`: alpha-RDX (COD 5000148, Pbca, Laue mmm), ReaxFF-lg, 15 BFDH families screened (level 1)
+and 10 relaxed at T = 0 (level 2), about 186 CPU min on one workstation. The relaxed ("best") Wulff shape has 12
+families on it, led by {2 1 1} 33 % (its slab minimisation hit the step cap and is flagged), {0 0 1} 23 % (the lowest
+gamma, 143.4 mJ/m^2), {2 1 2} 9 %, {0 2 1} 8 % and {1 0 0} 8 %. Predicted growth morphologies in the literature
+(abstracts retrieved through MCP Bond: doi:10.1007/s00894-013-2033-3 and doi:10.1021/jp508731q; standard Pbca setting
+assumed, the abstracts do not state it) list (111), (200), (020), (002) and (210): four of the five are on our
+equilibrium shape ({0 0 1}, {1 0 0}, {0 1 0}, {2 1 0}), while {1 1 1}, 74 % of the BFDH shape, is off it (relaxed
+220.1 mJ/m^2). A Wulff shape is the equilibrium form, not a growth habit, so this is a consistency check.

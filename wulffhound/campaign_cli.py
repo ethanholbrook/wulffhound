@@ -6,7 +6,9 @@
                 Writes state/campaigns/<name>/plan.json. --json prints the plan as JSON.
   run SPEC      plan, then run the jobs through the spec's backend (journal: resumable; failed jobs are not
                 retried unless --retry-failed), then ingest (unless --no-ingest). --only JOB_ID ... runs a subset;
-                --yes is not needed: the plan's budget and per-run cap are the limits.
+                --yes is not needed: the plan's budget and per-run cap are the limits. Staged: when a level's
+                selection waits for a shape (wulff_priority) or a target_ok selection lost families to failures,
+                run re-plans after the ingest and goes on (at most MAX_STAGES stages, one budget for all).
   status SPEC   the journal: last event of every job, CPU spent, planned jobs not started yet.
   ingest SPEC   finished jobs -> schema-valid surface_energy records in dataset/campaigns/<name>.jsonl, then
                 rebuild the dataset (tools/export_dataset.py; --no-export to skip) and report the shapes that
@@ -20,6 +22,8 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from campaign import campaign_dir, format_plan, load_spec, plan, public_plan  # noqa: E402
+
+MAX_STAGES = 6      # run: plan -> run -> ingest, again while a selection waits for a shape or lost families
 
 
 def _plan(spec):
@@ -64,16 +68,36 @@ def main(argv=None):
                       (('flags %s ' % e['gamma_flags']) if e.get('gamma_flags') else '') +
                       ((e.get('error_line') or __import__('campaign').error_line(e.get('error')) or e.get('why') or '')[:200]))
         return 0
+    from campaign_ingest import ingest
     if a.cmd == 'run':
         from campaign_exec import execute
-        p = _plan(spec)
-        print(format_plan(p))
-        print()
-        s = execute(p, spec, only=a.only, retry_failed=a.retry_failed)
-        print('\nrun: %d done, %d failed, %d skipped, %d recovered; campaign CPU %.2f min' % (
-            len(s['done']), len(s['failed']), len(s['skipped']), len(s['recovered']), s['cpu_min_spent_campaign']))
-        if a.no_ingest:
-            return 0 if not s['failed'] else 2
+        n_failed = 0
+        for stage in range(1, MAX_STAGES + 1):
+            p = _plan(spec)
+            if stage > 1:
+                if not p['jobs']:
+                    print('stage %d: the re-plan has no new jobs: done' % stage)
+                    break
+                print('\n==== stage %d: re-planned after ingest (%s)' % (stage, 'a shape the selection waited for is in '
+                      'the dataset now' if had_deferred else 'failed or refused jobs make room for the next families'))
+            print(format_plan(p))
+            print()
+            s = execute(p, spec, only=a.only, retry_failed=a.retry_failed)
+            n_failed += len(s['failed'])
+            print('\nrun (stage %d): %d done, %d failed, %d skipped, %d recovered; campaign CPU %.2f min' % (
+                stage, len(s['done']), len(s['failed']), len(s['skipped']), len(s['recovered']),
+                s['cpu_min_spent_campaign']))
+            if a.no_ingest:
+                return 0 if not n_failed else 2
+            r = ingest(spec, export=not a.no_export)
+            print(json.dumps(r, indent=1, default=str) if a.json else r['text'])
+            had_deferred = bool(p.get('deferred'))
+            # another stage only when this one ran something and the selection can move on: a level waited for a
+            # shape, or a target_ok selection lost families to failures
+            more = had_deferred or (s['failed'] and any(j.get('target_ok') for j in p['jobs']))
+            if a.only or a.no_export or not (s['done'] or s['failed']) or not more:
+                break
+        return 0
     from campaign_ingest import ingest
     r = ingest(spec, export=not a.no_export)
     print(json.dumps(r, indent=1, default=str) if a.json else r['text'])

@@ -9,18 +9,37 @@ same numbers for the same inputs; nothing here changes how the chain runs.
 
 jobs.json: [{"id", "cell": [a, b, c, alpha, beta, gamma], "n_atoms", "n_molecules", "hkl", "search_range",
 "level" (1 screening, 2 T = 0, 3 MD), "temperature", "n_periods", "slab_from", "kind" ("reaxff" | "nonreactive"),
-"equilibration_ps", "production_ps", "n_blocks", "timestep", "angle_dev"}]. out.json: {id: {"seconds", "low",
-"high", "molecules_cell", "atoms_cell", "molecules_slab", "det", "mnp", "parts"} or {"error"}}.
+"equilibration_ps", "production_ps", "n_blocks", "timestep", "angle_dev", optional "script" (ReaxFF: slabcutter's
+memory rule)}]. out.json: {id: {"seconds", "low", "high", "molecules_cell", "atoms_cell", "molecules_slab", "det",
+"mnp", "parts", and with a ReaxFF script "reaxff_gb", "reaxff_limit_gb", "reaxff_refused"} or {"error"}}.
 """
 import json
 import os
 import sys
 
 
+def reaxff_memory(script, atoms_cell, atoms_slab):
+    """slabcutter's own ReaxFF memory rule (slabcutter_core.check_reaxff_size: the far-neighbour reservation of the
+    largest run 0, the bulk = the whole oriented cell, against REAXFF_MEMORY_LIMIT_GB) on the estimated cell, so a
+    cell that slabcutter would refuse is not planned. {'reaxff_gb', 'reaxff_limit_gb', 'reaxff_refused' (text or None)}."""
+    import slabcutter_core as sc
+    settings = sc.reaxff_settings(open(script).read().splitlines())
+    if settings is None:
+        return {}
+    try:
+        sc.check_reaxff_size(open(script).read().splitlines(), [('bulk', int(atoms_cell)), ('slab', int(atoms_slab))])
+        why = None
+    except sc.SlabError as exc:
+        why = str(exc).split('. Such a run')[0]
+    need = sc.reaxff_reservation_gb(max(atoms_cell, atoms_slab), *settings)
+    return {'reaxff_gb': round(need, 2), 'reaxff_limit_gb': sc.REAXFF_MEMORY_LIMIT_GB, 'reaxff_refused': why}
+
+
 def main():
     root = os.environ.get('SIM2L_DEV_ROOT', '')
     sys.path.insert(0, os.path.join(root, 'surfenergy', 'bin'))
     sys.path.insert(0, os.path.join(root, 'surfenergy', 'simtool'))
+    sys.path.insert(0, os.path.join(root, 'slabcutter', 'simtool'))
     jobs = json.load(open(sys.argv[1]))
     out = {}
     try:
@@ -59,6 +78,8 @@ def main():
                             'molecules_cell': est['molecules_cell'], 'atoms_cell': est['atoms_cell'],
                             'molecules_slab': est['molecules_slab'], 'det': cell['det'], 'mnp': cell['mnp'],
                             'parts': [[p[0], round(p[1], 1)] for p in parts]}
+            if j.get('script') and j['kind'] == 'reaxff':
+                out[j['id']].update(reaxff_memory(j['script'], est['atoms_cell'], est['atoms_slab']))
         except Exception as exc:
             out[j['id']] = {'error': '%s: %s' % (type(exc).__name__, exc)}
     json.dump(out, open(sys.argv[2], 'w'), indent=1)

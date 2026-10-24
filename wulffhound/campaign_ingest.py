@@ -133,12 +133,19 @@ def job_records(job, ev, res, mat, spec, X, mats, revision, dirty):
         m = re.search(r'run dir (\S+?)\)', res.get('error') or '')     # chain_runner names the failed run's folder
         run_dir = m.group(1) if m and m.group(1) != 'None' else None
     run_id = os.path.basename(str(run_dir).rstrip('/')) if run_dir else job['job_id']
+    # the oriented-cell settings of this job: the protocol's, with the planner's cell choice (cell_fallbacks) over it
+    cell = dict({k: pr.get(k) for k in ('slab_from', 'vacuum', 'angle_dev', 's_tol')},
+                **{k: v for k, v in (job.get('cell_overrides') or {}).items() if v is not None})
+    if cell.get('angle_dev') is None and ev.get('angle_dev') is not None:
+        cell['angle_dev'] = ev['angle_dev']
     if lv == 1:
         child = [os.path.basename(str(c.get('run_dir')).rstrip('/')) for c in res.get('child_runs') or [] if c.get('run_dir')]
         sim2l = 'supercell+slabcutter'
-        chain_call = ('chain_runner level 1: supercell hkl (%s) search_range %s, then slabcutter compute_unrelaxed_sfe '
-                      'per termination group, %s periods, vacuum %s' % (' '.join(map(str, job['hkl'])), job['search_range'],
-                                                                        pr['n_periods'], proto['vacuum_A']))
+        chain_call = ('chain_runner level 1: supercell hkl (%s) search_range %s%s, then slabcutter compute_unrelaxed_sfe '
+                      'per termination group, %s periods, vacuum %s' % (
+                          ' '.join(map(str, job['hkl'])), job['search_range'],
+                          ' angle_dev %s' % cell['angle_dev'] if cell.get('angle_dev') is not None else '',
+                          pr['n_periods'], proto['vacuum_A']))
     else:
         child = _run_ids(o.get('child_runs'))
         sim2l = 'surfenergy'
@@ -146,12 +153,15 @@ def job_records(job, ev, res, mat, spec, X, mats, revision, dirty):
         sets = ['temperature=%g' % (0 if lv == 2 else job['temperature_K'])] + \
             ['%s=%s' % (k, v) for k, v in zip('hkl', job['hkl'])] + \
             ['search_range=%s' % job['search_range'], 'n_periods=%s' % pr['n_periods'], 'termination_mode=lowest'] + \
-            ['%s=%s' % (k, pr[k]) for k in ('slab_from', 'vacuum', 'angle_dev', 's_tol') if pr.get(k) is not None]
+            ['%s=%s' % (k, cell[k]) for k in ('slab_from', 'vacuum', 'angle_dev', 's_tol') if cell.get(k) is not None]
         chain_call = 'chain: devtools/run_sim2l.py surfenergy %s --set %s' % (
             portable(ex) if ex else '<unit-cell inputs.yaml written by chain_runner>', ' --set '.join(sets))
     spec_ref = spec.get('_source') or 'campaigns/%s.yaml' % name
     notes = ['campaign %s (spec %s), policy %s, backend %s; job %s' % (name, spec_ref, spec['policy'],
                                                                        res.get('backend', 'local'), job['job_id'])]
+    if cell.get('angle_dev') is not None:
+        notes.append('oriented cell: hkl (%s), search_range %s, GCCM angle_dev %s deg (tool default 1; the planner\'s cell '
+                     'choice, protocol.cell_fallbacks)' % (' '.join(map(str, job['hkl'])), job['search_range'], cell['angle_dev']))
     if dirty:
         notes.append('the chain had uncommitted changes in %s at run time (revision marked +dirty)' % ', '.join(dirty[:4]))
     for n in (o.get('notes') or '').splitlines():
@@ -291,7 +301,8 @@ def build_records(spec, journal=None, plan_jobs=None, ctx=None):
             continue
         j = jobs.get(jid) or {'job_id': jid, 'material_id': ev['material_id'], 'family': ev['family'],
                               'level': ev['level'], 'temperature_K': ev.get('temperature_K') or 0.0,
-                              'hkl': ev.get('hkl') or res.get('hkl'), 'search_range': res.get('search_range')}
+                              'hkl': ev.get('hkl') or res.get('hkl'), 'search_range': res.get('search_range'),
+                              'cell_overrides': {'angle_dev': ev.get('angle_dev')} if ev.get('angle_dev') is not None else {}}
         j.setdefault('search_range', res.get('search_range'))
         out += job_records(j, ev, res, mat, spec, X, mats_x, revision, dirty)
     return out, problems
