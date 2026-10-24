@@ -13,8 +13,8 @@ out=$(echo "$files" | xargs -r grep -nIE -- '-----BEGIN [A-Z ]*PRIVATE KEY-----|
 # 2. absolute home paths (a user's machine)
 out=$(echo "$files" | xargs -r grep -nIE '/home/[a-z][a-z0-9_-]+/|/Users/[A-Za-z]' 2>/dev/null | grep -v 'home/coder/svn-repositories/_RELOADED_COD')
 [ -n "$out" ] && hit "absolute home path" "$out"
-# 3. force-field files and non-distributable structure files
-out=$(echo "$files" | grep -iE '\.ff$|ffield|reax.*\.(ff|txt)$|tnt.*\.(data|cif|lmp)$|\.(res|ccdc)$')
+# 3. force-field files and non-distributable (CCDC-derived: TNT, TATB) structure files
+out=$(echo "$files" | grep -iE '\.ff$|ffield|reax.*\.(ff|txt)$|(tnt|tatb).*\.(data|cif|lmp)$|\.(res|ccdc)$')
 [ -n "$out" ] && hit "force-field or restricted structure file" "$out"
 [ $fail -eq 0 ] && echo "check_public: OK ($(echo "$files" | wc -l) files)"
 exit $fail

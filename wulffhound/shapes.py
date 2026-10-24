@@ -177,7 +177,9 @@ def _build(rows, flag, rid, schema_version, level, level_description, sigma_rule
         except Exception:
             pass
     S = np.array(S)
-    d_eff = [x['record']['facet'].get('d_eff') or x['record']['facet'].get('d_hkl') for x in rows]
+    # d_eff (BFDH): the row's own (best_shape fills it in from another record of the family when the record used
+    # has none, e.g. a surfenergy pin), else the record's, else d_hkl
+    d_eff = [x.get('d_eff') or x['record']['facet'].get('d_eff') or x['record']['facet'].get('d_hkl') for x in rows]
     bf = _wulff(L, reps_list, [1.0 / d for d in d_eff])[1]
     facets, ids = [], []
     for j, x in enumerate(rows):
@@ -279,6 +281,7 @@ def best_shape(records, flag, rid, schema_version, n_samples=40, seed=0):
                    ('force_field_not_validated',)]
             rows.append({'family': f, 'record': r, 'gamma': g, 'sigma': max(r['result'].get('gamma_error') or 0.0,
                                                                             SIGMA2_REL * g),
+                         'd_eff': r['facet'].get('d_eff') or ((l1.get(f) or {}).get('facet') or {}).get('d_eff'),
                          'level': 2, 'basis': 'relaxed T = 0 run, record %s (%s)' % (r['record_id'],
                                                                                   r['provenance']['source']), 'flags': fl})
             continue

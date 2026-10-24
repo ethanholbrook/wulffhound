@@ -492,6 +492,30 @@ class TestIngest(unittest.TestCase):
         self.assertIn('faces_not_equivalent', [f['code'] for f in recs[1]['result']['gamma_flags']])
         self.assertNotEqual(recs[0]['record_id'], recs[1]['record_id'])
 
+    def test_cif_material_laue_class(self):
+        """A material from a CIF (not a bundle or zoo entry) gets the Laue class of its point group, so the shape's
+        operation-count check applies to it too (-1: 2, 4/mmm: 16)."""
+        import symmetry
+        L = [[9.0, 0.0, 0.0], [-4.5, 7.8, 0.0], [-0.2, -2.1, 6.4]]
+        for pg, laue in (('-1', '-1'), ('-42m', '4/mmm'), ('2/m', '2/m'), ('mmm', 'mmm')):
+            m = C.Material('x', 'cif')
+            m.material_id, m.name = 'x', 'x'
+            m.meta = {'cif_md5': 'abc', 'structure_id': 'local-x'}
+            m._sym = {'lattice_parameters': {'a': 9.0, 'b': 9.0, 'c': 6.8, 'alpha': 108.6, 'beta': 91.8, 'gamma': 120.0},
+                      'formula_molecule': {'C': 6, 'H': 6, 'N': 6, 'O': 6}, 'n_molecules': 2, 'lattice_rows_abc': L,
+                      'spacegroup': {'international_data_setting': 'P-1', 'number': 2, 'pointgroup': pg}}
+            mb = I.material_block(m, self.X, self.mats)
+            self.assertEqual(mb['space_group']['laue_class'], laue)
+            self.assertEqual(symmetry.laue_class(pg), laue)
+
+    def test_laue_class_table(self):
+        import shapes as S
+        import symmetry
+        self.assertGreaterEqual(len(symmetry.LAUE_OF_POINTGROUP), 32)   # the 32 point groups (some in two spellings)
+        self.assertTrue(set(symmetry.LAUE_OF_POINTGROUP.values()) <= set(S.LAUE_ORDER))
+        self.assertEqual(len(set(symmetry.LAUE_OF_POINTGROUP.values())), 11)
+        self.assertIsNone(symmetry.laue_class('not a group'))
+
     def test_store_refuses_home_paths(self):
         with self.assertRaises(RuntimeError):
             I.write_store('leak', [{'x': '/' + 'home/someone/file'}], store_dir=tempfile.mkdtemp())
@@ -549,6 +573,28 @@ class TestShapes(unittest.TestCase):
         s2, why2 = S.level1_shape(recs, X.flag, X.rid, X.SCHEMA_VERSION)
         self.assertIsNone(s2)
         self.assertIn('2/m', why2)
+
+    def test_best_shape_deff_from_level1(self):
+        """A level-2 record without d_eff (e.g. a surfenergy pin) takes its family's d_eff from the level-1 record, so
+        the BFDH overlay of the best shape equals the level-1 one (0k0 absent for k odd: d_eff = d_hkl / 2)."""
+        import export_dataset as X
+        import shapes as S
+        L = [[13.0, 0, 0], [0, 11.5, 0], [0, 0, 10.7]]
+        fams = {'{1 0 0}': [[1, 0, 0], [-1, 0, 0]], '{0 1 0}': [[0, 1, 0], [0, -1, 0]], '{0 0 1}': [[0, 0, 1], [0, 0, -1]]}
+        recs = [self.rec(f, m, 200.0 + 10 * i, i, L) for i, (f, m) in enumerate(fams.items())]
+        for r in recs:
+            r['facet']['d_eff'] = {'{1 0 0}': 13.0, '{0 1 0}': 5.75, '{0 0 1}': 10.7}[r['facet']['family']]
+        pin = self.rec2('{0 1 0}', fams['{0 1 0}'], 190.0, 210.0, 21, L)
+        pin['facet']['d_eff'], pin['facet']['d_hkl'] = None, 11.5
+        s1 = S.level1_shape(recs, X.flag, X.rid, X.SCHEMA_VERSION)[0]
+        sb, why = S.best_shape(recs + [pin], X.flag, X.rid, X.SCHEMA_VERSION)
+        self.assertIsNone(why)
+        b1 = {f['family']: f['bfdh_area_fraction'] for f in s1['facets']}
+        bb = {f['family']: f for f in sb['facets']}
+        self.assertEqual(bb['{0 1 0}']['level'], 2)
+        self.assertEqual(bb['{0 1 0}']['d_eff'], 5.75)
+        for f in fams:
+            self.assertAlmostEqual(bb[f]['bfdh_area_fraction'], b1[f], places=6)
 
     def test_level1_shape(self):
         import export_dataset as X

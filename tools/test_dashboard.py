@@ -10,8 +10,9 @@ Firefox (selenium + geckodriver) and checks
   5. phone width (390 px): no horizontal page scroll;
   6. campaign driver: a driver-ingested record (provenance.source campaign) has its record page, and a material whose
      shape a campaign completed renders it, with the campaign record linked in its facet table;
-  7. alpha-RDX (campaign rdx_wulff, Laue mmm): its page renders the 'best' shape built from the campaign's relaxed
-     records (and offers the level-1 one), with a level-2 record linked, and the shape's mmm checks are recorded;
+  7. the production campaign materials (CAMPAIGN_SHAPES: alpha-RDX mmm, beta-HMX 2/m, ...): each page renders the
+     'best' shape built from the campaign's relaxed records (and offers the level-1 one), with a level-2 record
+     linked, and both shapes record the Laue class with as many pymatgen operations (mmm 8, 2/m 4, ...);
 and saves small screenshots under docs/dashboard/ (--screenshots).
 
     python tools/test_dashboard.py [--screenshots] [--port 8766]
@@ -29,6 +30,9 @@ import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FAIL = []
+# production campaign materials: (material_id, name, Laue class of the space group, its operations, screenshot)
+CAMPAIGN_SHAPES = [('rdx-alpha', 'alpha-RDX', 'mmm', 8, 'rdx_material'),        # campaigns/rdx_wulff.yaml, Pbca
+                   ('hmx-beta', 'beta-HMX', '2/m', 4, 'hmx_material')]         # campaigns/hmx_wulff.yaml, P2_1/n
 
 
 def check(ok, what):
@@ -242,25 +246,32 @@ def main():
                       '%s (shape from a campaign) renders: %d mesh3d faces, the campaign record %s linked in the facet '
                       'table, self-check: %s' % (m, ntr, cm[0]['record_id'], sc.strip()[:80]))
                 shot('campaign_material', 1280, 1500)
-        # alpha-RDX (campaign rdx_wulff, Laue mmm): its page renders the 'best' shape (relaxed T = 0 values from the
-        # campaign) and the level-1 one, with a level-2 campaign record linked in the facet table
-        rdx = [s for s in shapes if s['material_id'] == 'rdx-alpha']
-        if check({s['level'] for s in rdx} >= {'best', '1'}, 'RDX has a best and a level-1 shape (%s)' % sorted(s['level'] for s in rdx)):
-            sb = next(s for s in rdx if s['level'] == 'best')
+        # production campaigns (rdx_wulff, hmx_wulff, ...): each material's page renders its 'best' shape (relaxed
+        # T = 0 values from the campaign) and offers the level-1 one, with a level-2 campaign record linked in the
+        # facet table, and both shapes record the Laue class of the space group with as many pymatgen operations
+        for mid, name, laue, nops, png in CAMPAIGN_SHAPES:
+            ms = [s for s in shapes if s['material_id'] == mid]
+            if not check({s['level'] for s in ms} >= {'best', '1'}, '%s has a best and a level-1 shape (%s)' % (
+                    name, sorted(s['level'] for s in ms))):
+                continue
+            sb = next(s for s in ms if s['level'] == 'best')
             l2 = [f['input_record_ids'][0] for f in sb['facets'] if f['level'] == 2]
-            goto('#/m/rdx-alpha', 2.5)
+            goto('#/m/' + mid, 2.5)
             ntr = js('var p=document.getElementById("plot3d"); return p && p.data ? p.data.filter(function(t){return t.type==="mesh3d"}).length : 0')
             sc = js('var e=document.getElementById("selfcheck"); return e ? e.textContent : ""')
             lv = js('var s=document.getElementById("sel-level"); return s ? Array.from(s.options).map(function(o){return o.value}) : []')
             lk = js('var ids=arguments[0]; return Array.from(document.querySelectorAll("table tbody a")).filter(function(a){return ids.indexOf(a.getAttribute("href").replace("#/record/",""))>=0}).length', l2)
             check(ntr >= 4 and 'agree to 3 decimals' in sc and set(lv) >= {'best', '1'} and lk >= 1 and not errors(),
-                  'RDX page renders the best shape: %d mesh3d faces, levels %s, %d of %d level-2 records linked, self-check: %s'
-                  % (ntr, lv, lk, len(l2), sc.strip()[:80]))
-            check(sb['checks'].get('laue_class') == 'mmm' and sb['checks'].get('pymatgen_recip_ops_order') == 8
-                  and sb['checks'].get('pymatgen_recip_ops_symprec_1em3') == 8,
-                  'RDX shape: Laue mmm, 8 pymatgen operations at symprec 1e-5 and 1e-3 (%s)' % {k: sb['checks'].get(k) for k in (
-                      'laue_class', 'pymatgen_recip_ops_order', 'pymatgen_recip_ops_symprec_1em3')})
-            shot('rdx_material', 1280, 1500)
+                  '%s page renders the best shape: %d mesh3d faces, levels %s, %d of %d level-2 records linked, self-check: %s'
+                  % (name, ntr, lv, lk, len(l2), sc.strip()[:80]))
+            for sh in ms:
+                c = sh['checks']
+                check(c.get('laue_class') == laue and c.get('pymatgen_recip_ops_order') == nops
+                      and c.get('pymatgen_recip_ops_symprec_1em3') == nops,
+                      '%s shape level %s: Laue %s, %d pymatgen operations at symprec 1e-5 and 1e-3 (%s)' % (
+                          name, sh['level'], laue, nops, {k: c.get(k) for k in (
+                              'laue_class', 'pymatgen_recip_ops_order', 'pymatgen_recip_ops_symprec_1em3')}))
+            shot(png, 1280, 1500)
         rid = js('return document.querySelector(".cov a") ? null : null')
         first = json.loads(open(os.path.join(ROOT, 'dataset', 'surface_energy.jsonl')).readline())
         goto('#/record/' + first['record_id'], 1.0)

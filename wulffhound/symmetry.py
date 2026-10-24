@@ -15,6 +15,28 @@ import numpy as np
 import spglib
 
 
+# point group (spglib's Hermann-Mauguin symbol) -> Laue class (the point group plus the inversion); the 32
+# crystallographic point groups, in spglib's spelling
+LAUE_OF_POINTGROUP = {
+    '1': '-1', '-1': '-1',
+    '2': '2/m', 'm': '2/m', '2/m': '2/m',
+    '222': 'mmm', 'mm2': 'mmm', 'mmm': 'mmm',
+    '4': '4/m', '-4': '4/m', '4/m': '4/m',
+    '422': '4/mmm', '4mm': '4/mmm', '-42m': '4/mmm', '-4m2': '4/mmm', '4/mmm': '4/mmm',
+    '3': '-3', '-3': '-3',
+    '32': '-3m', '3m': '-3m', '-3m': '-3m', '312': '-3m', '321': '-3m', '31m': '-3m', '3m1': '-3m',
+    '-31m': '-3m', '-3m1': '-3m',
+    '6': '6/m', '-6': '6/m', '6/m': '6/m',
+    '622': '6/mmm', '6mm': '6/mmm', '-6m2': '6/mmm', '-62m': '6/mmm', '6/mmm': '6/mmm',
+    '23': 'm-3', 'm-3': 'm-3',
+    '432': 'm-3m', '-43m': 'm-3m', 'm-3m': 'm-3m'}
+
+
+def laue_class(pointgroup):
+    """spglib point-group symbol -> Laue class symbol ('-42m' -> '4/mmm', '-1' -> '-1'); None if unknown."""
+    return LAUE_OF_POINTGROUP.get(str(pointgroup or '').replace(' ', ''))
+
+
 def read_data(path):
     """LAMMPS data file (atom_style full) -> lattice rows a, b, c; origin; atoms (id, mol, type, x, y, z); masses."""
     box = {}

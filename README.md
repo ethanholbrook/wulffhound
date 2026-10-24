@@ -280,7 +280,7 @@ tools already accept. An override is passed only when the spec gives it; otherwi
 ./wh campaign run    campaigns/zoo_screen.yaml   # plan, run (journal, resumable), ingest, rebuild dataset/
 ./wh campaign status campaigns/zoo_screen.yaml   # the journal: gamma, gamma_flags, errors, CPU
 ./wh campaign ingest campaigns/zoo_screen.yaml   # journal -> dataset/campaigns/<name>.jsonl -> tools/export_dataset.py
-./wh py -W ignore -m unittest discover -s tests  # 36 unit tests (planner, executor, ingest, shapes), no chain needed
+./wh py -W ignore -m unittest discover -s tests  # 39 unit tests (planner, executor, ingest, shapes), no chain needed
 ```
 
 **Spec** (YAML or JSON, `schema/campaign.schema.json`):
@@ -361,7 +361,11 @@ executor: {backend: local, workers: 2}               # local | nanohub | aura; w
   orbits equal pymatgen's lattice symmetry, with as many operations as the Laue class of the space group (2/m 4,
   mmm 8) at symprec 1e-5 and 1e-3. Once they also have level-2 records they get a `best` shape by the engine's
   rule: the relaxed T = 0 value where a family has one that passes the guard, else its level-1 value x the mean
-  relaxed/unrelaxed ratio; sigma max(gamma_error, 2 %) and (std of the ratios + 2 %, floor 5 %). The dashboard picks all of it up, and `tools/test_dashboard.py` checks
+  relaxed/unrelaxed ratio; sigma max(gamma_error, 2 %) and (std of the ratios + 2 %, floor 5 %). A material
+  from a CIF that is neither a bundle nor a zoo entry gets its Laue class from its spglib point group
+  (`symmetry.laue_class`, e.g. -42m -> 4/mmm), so the operation-count check applies to it too. In a `best` shape,
+  a level-2 record without d_eff (a surfenergy pin) takes d_eff from its family's level-1 record, so the BFDH
+  overlay is the same as at level 1 (both added 2026-10-23 for the production campaigns). The dashboard picks all of it up, and `tools/test_dashboard.py` checks
   a campaign record and a campaign-completed shape.
 - *MCP.* `campaign_plan(spec)` and `campaign_status(spec)` in `mcp_server.py` let the agent plan with the driver.
   Both only read.
@@ -462,8 +466,8 @@ wulffhound is MIT-licensed (see `LICENSE`).
   Jelsch & Ghermani, *Acta Cryst.* B65, 363-374 (2009), doi:10.1107/S0108768109008271.
 - **CIF zoo (dataset)**: 21 COD entries (CC0). No structure files are shipped. Each record cites its COD id and the
   original authors (`material.structure.citation`, `doi`, `url`).
-- ReaxFF-lg: Liu, Liu, Zybin & Goddard, *J. Phys. Chem. A* 115, 11016 (2011). Used through the chain; not
-  included.
+- ReaxFF-lg: Liu, Liu, Zybin, Sun & Goddard, *J. Phys. Chem. A* 115, 11016 (2011), doi:10.1021/jp201599t. Used
+  through the chain; not included.
 - **MCP Bond** (Valency) for literature search.
 
 ### alpha-RDX campaign (2026-10-23)
@@ -476,3 +480,53 @@ gamma, 143.4 mJ/m^2), {2 1 2} 9 %, {0 2 1} 8 % and {1 0 0} 8 %. Predicted growth
 assumed, the abstracts do not state it) list (111), (200), (020), (002) and (210): four of the five are on our
 equilibrium shape ({0 0 1}, {1 0 0}, {0 1 0}, {2 1 0}), while {1 1 1}, 74 % of the BFDH shape, is off it (relaxed
 220.1 mJ/m^2). A Wulff shape is the equilibrium form, not a growth habit, so this is a consistency check.
+
+RDX {2 1 1} refresh (checked 2026-10-23): the slab step cap that {2 1 1} hit is not a surfenergy input. It is the
+internal constant `MIN_SETTINGS['fire_maxiter_slab']` (12000 FIRE steps; 10000 for the unit cell) of
+`surfenergy_md.py`, and the tool's inputs table has no cap. So the job was not re-run (no
+`campaigns/rdx_211_refresh.yaml`) and the record keeps its `minimisation_not_converged` flag.
+
+### beta-HMX campaign (2026-10-23)
+
+![beta-HMX material page: the relaxed (best) Wulff shape of the hmx_wulff campaign](docs/dashboard/hmx_material.png)
+
+`campaigns/hmx_wulff.yaml`: beta-HMX (COD 4110146, P 1 21/n 1, Laue 2/m), ReaxFF-lg, 49.5 CPU min (level 1 4.1,
+level 2 45.5).
+
+- *Level 1.* 15 BFDH families, 13 run and 2 taken from the CIF zoo ({0 1 1} 200.4, {1 1 0} 273.2 mJ/m^2).
+- *Level 2.* 10 families at T = 0. The planner counted surfenergy's pinned (0 1 0) value (226.07, run a1915be1)
+  as one of the 10 and did not run that family again. The 9 runs took 4-7 CPU min each. No guard or convergence
+  flags; relaxed/unrelaxed is 0.94 on average.
+- *{1 0 -1}.* Its first run failed in 9 s with `ModuleNotFoundError: thin_cell`: another agent was editing the
+  chain at that moment. The driver's `retry_failed: other_cell` rule retried it on another family member,
+  (-1 0 1), and it gave 301.9.
+- *Revision.* The records say `chain afc66e8+dirty`. afc66e8 has the same tool code as 0f14d89. The uncommitted
+  thin-cell edits replicate only cells with scaled special bonds, which ReaxFF cells do not have.
+- *Best shape.* {0 1 1} 45.5 % (the lowest gamma, 192.8), {1 1 0} 31.0 % (247.8), {0 1 0} 10.9 % (226.1, the
+  pin), {1 0 -1} 4.8 % (301.9), {1 0 1} 3.4 % (266.5). Below those are {0 1 2} 2.7 % and {0 3 1} 1.5 %, which are
+  ratio-scaled level-1 values (target_ok stopped before them), and {1 2 -1} 0.3 %.
+- *Level-1 and BFDH shapes.* The level-1 shape has the same order: 50.4 / 28.7 / 11.9 / 5.0 / 3.1 %. BFDH gives
+  40.3 / 31.9 / 12.2 / 10.8 % and puts {1 1 -1} on the shape (3.3 %).
+
+**Literature (consistency check, not validation).**
+
+- Singh, Negre, Redondo & Perriot, *Cryst. Growth Des.* 24, 3681 (2024), doi:10.1021/acs.cgd.3c01487. We read
+  the DOE accepted manuscript, OSTI 2346099.
+  - *Setting.* They use our setting: P121/n1 from the same 20 K structure (CSD OCHTET13 = Zhurova 2007).
+  - *Method.* DFTB (lanl31 + D) surface energies of 25 planes.
+  - *Their Wulff shape.* {0 1 1} 63.2 %, {1 1 0} 29.0 %, {0 1 0} 4.2 %, {1 0 -1} 2.7 %, {1 0 1} 0.8 %. These are
+    the same five families in the same order as ours. They mark them as the faces observed in experiments.
+  - *Absolute values.* Their gammas are about 0.45 x ours ((011) 86.5 vs 192.8 mJ/m^2).
+- Gallagher et al., *Chem. Cent. J.* 8, 75 (2014), doi:10.1186/s13065-014-0075-y. Crystals grown from acetone
+  show {011}, {110}, (010) and (101). The abstract gives no setting. We assume P2_1/n, because (101) is absent in
+  P2_1/c, so the indices are the same as ours.
+- Duan, Wei, Liu & Pei, *J. Hazard. Mater.* 174, 175 (2010), doi:10.1016/j.jhazmat.2009.09.033. A vacuum
+  attachment-energy morphology.
+  - *Their faces.* (020), (011), (10-2), (11-1) and (100). The overbars are lost in the abstract.
+  - *Setting.* P2_1/c, assumed because (100) and (10-2) are allowed only there (a 6.54, c 8.70 A, beta 124.3 deg).
+  - *Conversion.* (h k l)_n = (h, -k, -h-l) (d-spacings checked), which gives {0 1 0}, {0 1 1}, {1 0 1},
+    {1 1 0} and {1 0 -1} here: all five of our top families.
+
+Every face reported in these sources is on our shape, and our five largest families are all reported. The
+differences are in the proportions: ReaxFF-lg gives {0 1 1} less area and {0 1 0} more than DFTB does. ReaxFF-lg's
+dispersion fit did not include HMX (see the spec's force-field note).

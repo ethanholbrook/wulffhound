@@ -19,6 +19,7 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from config import ROOT, portable  # noqa: E402
+import symmetry  # noqa: E402
 from campaign import (CAMPAIGN_STORE, LEVEL_NAME, campaign_dir, chain_revision, error_line, load_shapes,  # noqa: E402
                       make_context, md5, read_journal, resolve_material, _export_module)
 
@@ -81,7 +82,8 @@ def material_block(mat, X, mats):
                           'doi': None, 'url': None, 'sha256': None, 'md5': mat.meta.get('cif_md5'),
                           'measurement_T_K': None, 'distributed': False},
             'space_group': {'symbol_data_setting': sym['spacegroup']['international_data_setting'],
-                            'number': sym['spacegroup']['number'], 'laue_class': None},
+                            'number': sym['spacegroup']['number'],
+                            'laue_class': symmetry.laue_class(sym['spacegroup'].get('pointgroup'))},
             'cell': X.cell_block([lp[k] for k in ('a', 'b', 'c', 'alpha', 'beta', 'gamma')], sym['n_molecules'], f,
                                  matrix=sym['lattice_rows_abc'], note='the data-file cell of the campaign material')}
 
