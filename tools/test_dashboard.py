@@ -33,7 +33,8 @@ FAIL = []
 # production campaign materials: (material_id, name, Laue class of the space group, its operations, screenshot)
 CAMPAIGN_SHAPES = [('rdx-alpha', 'alpha-RDX', 'mmm', 8, 'rdx_material'),        # campaigns/rdx_wulff.yaml, Pbca
                    ('hmx-beta', 'beta-HMX', '2/m', 4, 'hmx_material'),         # campaigns/hmx_wulff.yaml, P2_1/n
-                   ('petn-i', 'PETN-I', '4/mmm', 16, 'petn_material')]         # campaigns/petn_wulff.yaml, P-42_1c
+                   ('petn-i', 'PETN-I', '4/mmm', 16, 'petn_material'),         # campaigns/petn_wulff.yaml, P-42_1c
+                   ('tatb', 'TATB', '-1', 2, 'tatb_material')]                 # campaigns/tatb_wulff.yaml, P-1
 
 
 def check(ok, what):

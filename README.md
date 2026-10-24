@@ -575,3 +575,51 @@ Cost: ReaxFF-lg, 60.3 CPU min (level 1 7.3, level 2 53.0).
 Our prism agrees with these in orientation: (110)-like, as {3 2 0} plus a little {1 1 0}. Our caps do not, unless
 the flagged {2 1 2} value is set aside. {1 0 1} relaxes to 256.4 and sits just off the best shape. The unconverged
 {2 1 2} value and the averaged {3 2 0} faces (top and bottom differ) are where this shape is weakest.
+
+### TATB campaign (2026-10-23)
+
+![TATB material page: the Wulff shape of the tatb_wulff campaign](docs/dashboard/tatb_material.png)
+
+`campaigns/tatb_wulff.yaml`: TATB (the chain's tatb1.cif, CSD TATNBZ / CCDC 1266837, Cady & Larson 1965; P-1, Laue
+-1). The structure is CCDC-derived, so the dataset holds only gamma values, hkl, lattice parameters and metadata;
+the structure file stays in the private chain, and `tools/check_public.sh` now refuses `tatb*.cif/.data/.lmp`.
+The material came in through the new CIF path for its Laue class (-1): both shapes record 2 pymatgen operations
+at symprec 1e-5 and 1e-3.
+
+- *Level 1.* All 15 BFDH families, 21.0 CPU min, 1-2 min each. {1 -2 1}: the ReaxFF run 0 crashed (SIGSEGV, out
+  of memory) twice on a 170-molecule cell at search_range 6. The `cell_fallbacks` angle_dev 30 cell worked
+  (418.2).
+- *Level 2.* **Only {0 0 1}**: 139.6 mJ/m^2 (unrelaxed 205.6), 12.8 CPU min.
+  - *Unit-cell minimisation.* In every TATB level-2 run, surfenergy's FIRE minimisation of the 2-molecule unit
+    cell (the bulk reference, redone each run) reaches its 10000-step cap. That takes about 13 min, and the record
+    carries the `minimisation_not_converged` warning (0.013 vs 0.010 kcal/mol over the last chunk).
+  - *Timeouts.* surfenergy estimated 3-11 min per run. At the default stop of 3 x estimate + 120 s, on a machine
+    shared with another agent's jobs (load about 10 on 8 cores), the first four level-2 runs ({0 0 1}, {0 1 1},
+    {1 -1 1}, {1 0 0}) were stopped. They are failed records with `TimeoutExpired`.
+  - *Orphaned runs.* The stop kills only the chain runner's direct child, so the surfenergy kernels and LAMMPS
+    kept running, unaccounted, until they finished or were killed by hand. That is about 100 CPU min that the
+    journal's 34.7 min does not show.
+  - *What was run.* With `executor.timeout_factor: 10`, only {0 0 1} was re-run. The other level-2 families were
+    left out to stay near the material's budget.
+  - *Journal.* Two jobs killed by hand ({-1 1 1}, {1 0 1}) stay `started` in the journal and have no records.
+  - *Revision.* The records say `chain 985c21d+dirty`. The other agent committed the thin-cell change in the
+    meantime (95af9d0, "core routes bit-identical").
+- *Best shape.* It equals the level-1 shape, because the one relaxed/unrelaxed ratio (0.70) scales every family:
+  {0 0 1} 19.9 %, {1 -1 1} 13.6 %, {1 0 0} 12.8 %, {0 1 -1} 12.7 %, {-1 1 1} 9.1 %, {0 1 1} 9.1 %, 13 families
+  in all, e3/e1 0.50. BFDH gives {1 -1 0} 23 %, {1 0 0} 22 %, {0 1 0} 17 % and {0 0 1} 16.5 %.
+- *What-if (not data).* {0 0 1} relaxes by 30 %, far more than the 6-8 % of HMX and PETN. If the other families
+  relaxed by 8 % instead, {0 0 1} would reach 35 %.
+
+**Literature (consistency check, not validation).** No abstract we could retrieve (MCP Bond, PubMed, OpenAlex,
+OSTI) gives Miller indices for a predicted or observed TATB habit. What they do say:
+
+- TATB crystals are graphitic and plate-like (doi:10.1063/12.0000786);
+- pressed d-TATB grains align their (001) poles with the pressing direction (Cryst. 7, 138 (2017),
+  doi:10.3390/cryst7050138), so the plate face is (001);
+- attachment-energy modelling in DMSO gives hexagonal flakes (Liu et al., *Mol. Cryst. Liq. Cryst.* 634, 97 (2016),
+  doi:10.1080/15421406.2016.1177910).
+
+The sources use the Cady-Larson cell, as we do (their (001) is the molecular-layer plane), though the abstracts do
+not state the setting. Our {0 0 1} is the lowest-gamma and largest family, so it is consistent in kind. But our
+shape is only moderately flattened (e3/e1 0.50), not a thin plate. With one relaxed family, that is as far as this
+check goes.
