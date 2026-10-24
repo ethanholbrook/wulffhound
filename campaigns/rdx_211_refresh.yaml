@@ -1,0 +1,34 @@
+# alpha-RDX {2 1 1} refresh: the level-2 (T = 0) run of rdx_wulff stopped its slab FIRE minimisation at the
+# 12000-step cap (minimisation_not_converged, gamma 191.02, unrelaxed 239.63). surfenergy has had the cap as an
+# input since 2026-10-24 (fire_max_steps_slab, default 12000); this re-runs the same job with 30000.
+#   ./wh campaign run campaigns/rdx_211_refresh.yaml     (needs the chain)
+#
+# Same material, force field and oriented cell as rdx_wulff ({2 1 1}: hkl (2 1 1), search_range 4, GCCM angle_dev
+# 30, the cell rdx_wulff's planner chose through its cell_fallbacks). The raised cap is part of the dedup key, so
+# the capped record is a near-duplicate, not a cache hit. The newer ok record is the one the shapes use.
+campaign: rdx_211_refresh
+description: alpha-RDX {2 1 1} level 2 (T = 0) again with the slab FIRE step cap raised from 12000 to 30000
+materials:
+  - cif: chain:cif2lammps/examples/rdx/rdx1.cif
+    name: alpha-RDX
+forcefield:
+  route: reaxff
+  ffield: chain:cif2lammps/examples/hmx/reax-lg-2011.ff
+  validated: false     # the dataset's convention: ReaxFF-lg is never marked validated
+  note: >-
+    ReaxFF-lg (reax-lg-2011) was fitted with experimental crystal data that include RDX (with PETN, TATB and
+    nitromethane; Liu, Liu, Zybin, Sun & Goddard, J. Phys. Chem. A 115, 11016 (2011)), so it is this crystal's own
+    force field as far as the lattice goes; its surface energies are not validated against a reference, and T = 0
+    ReaxFF relaxations stop at force-field cusps (FIRE in fixed cells)
+facets: ['{2 1 1}']
+levels: [2]
+temperatures: [0]
+protocol:
+  n_periods: 2
+  search_range: 4
+  angle_dev: 30
+  fire_max_steps_slab: 30000
+# the old run took 20 CPU min with the slab at its 12000 cap (12 min of it); 30000 steps can take up to ~45 min
+budget: {cpu_minutes: 60, per_run_cap_minutes: 60}
+policy: baseline
+executor: {backend: local, workers: 1, timeout_factor: 10}

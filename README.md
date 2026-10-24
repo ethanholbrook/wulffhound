@@ -579,18 +579,21 @@ wulffhound is MIT-licensed (see `LICENSE`).
 ### alpha-RDX campaign (2026-10-23)
 
 `campaigns/rdx_wulff.yaml`: alpha-RDX (COD 5000148, Pbca, Laue mmm), ReaxFF-lg, 15 BFDH families screened (level 1)
-and 10 relaxed at T = 0 (level 2), about 186 CPU min on one workstation. The relaxed ("best") Wulff shape has 12
-families on it, led by {2 1 1} 33 % (its slab minimisation hit the step cap and is flagged), {0 0 1} 23 % (the lowest
-gamma, 143.4 mJ/m^2), {2 1 2} 9 %, {0 2 1} 8 % and {1 0 0} 8 %. Predicted growth morphologies in the literature
+and 10 relaxed at T = 0 (level 2), about 186 CPU min on one workstation, plus the {2 1 1} refresh below (38 CPU
+min). The relaxed ("best") Wulff shape has 12 families on it, led by {2 1 1} 36 % (189.2 mJ/m^2, refreshed), {0 0 1}
+23 % (the lowest gamma, 143.4), {0 2 1} 8 %, {1 0 0} 7 % and {2 1 2} 7 %. Predicted growth morphologies in the literature
 (abstracts retrieved through MCP Bond: doi:10.1007/s00894-013-2033-3 and doi:10.1021/jp508731q; standard Pbca setting
 assumed, the abstracts do not state it) list (111), (200), (020), (002) and (210): four of the five are on our
 equilibrium shape ({0 0 1}, {1 0 0}, {0 1 0}, {2 1 0}), while {1 1 1}, 74 % of the BFDH shape, is off it (relaxed
 220.1 mJ/m^2). A Wulff shape is the equilibrium form, not a growth habit, so this is a consistency check.
 
-RDX {2 1 1} refresh (checked 2026-10-23): the slab step cap that {2 1 1} hit is not a surfenergy input. It is the
-internal constant `MIN_SETTINGS['fire_maxiter_slab']` (12000 FIRE steps; 10000 for the unit cell) of
-`surfenergy_md.py`, and the tool's inputs table has no cap. So the job was not re-run (no
-`campaigns/rdx_211_refresh.yaml`) and the record keeps its `minimisation_not_converged` flag.
+RDX {2 1 1} refresh (2026-10-24): surfenergy now has the FIRE step caps as inputs (`fire_max_steps_bulk`, default
+10000; `fire_max_steps_slab`, default 12000), and the driver passes them as level-2 protocol overrides (part of the
+dedup key when not the default). `campaigns/rdx_211_refresh.yaml` re-ran {2 1 1} on the same oriented cell (hkl
+(2 1 1), search_range 4, angle_dev 30, the same mnp) with `fire_max_steps_slab: 30000`. The slab converged after
+15000 steps (0.13 kcal/mol over the last 500 steps, tolerance 0.19), and gamma is **189.24 mJ/m^2** (unrelaxed 239.63)
+against 191.02 at the 12000 cap. No `minimisation_not_converged` flag now. It took 38.4 CPU min (the estimate, at the
+default caps, was 5.5). The shape barely moves: {2 1 1} 32.8 -> 36.0 %, {2 1 2} 8.6 -> 7.0 %, the rest within 1 %.
 
 ### beta-HMX campaign (2026-10-23)
 
@@ -658,12 +661,18 @@ Cost: ReaxFF-lg, 60.3 CPU min (level 1 7.3, level 2 53.0).
 - *Level 2.* 10 families at T = 0, 3-10 CPU min each. One flag: {2 1 2} hit the slab step cap
   (`minimisation_not_converged`) and relaxed 21 % below its unrelaxed value (216.9 vs 275.7), against 3-9 % for
   the other families.
-- *Best shape.* Only 3 families are on it: {3 2 0} 58.6 % (156.4, the lowest gamma; top and bottom faces differ,
-  so this is their average), {2 1 2} 40.0 % (the flagged value) and {1 1 0} 1.4 % (158.9). The {3 2 0} family
+- *{2 1 2} refresh (2026-10-24).* `campaigns/petn_212_refresh.yaml` re-ran it on the same cell (search_range 6,
+  the same mnp) with surfenergy's new `fire_max_steps_slab: 30000`. The slab converged after 14000 steps, and gamma
+  is **215.72** (unrelaxed 275.68), 1.2 below the capped 216.89; no convergence flag now, 17.7 CPU min. So the large
+  relaxation of {2 1 2} (22 %) is real for this force field, not an artefact of the cap.
+- *Best shape.* Only 3 families are on it: {3 2 0} 58.4 % (156.4, the lowest gamma; top and bottom faces differ,
+  so this is their average), {2 1 2} 40.2 % (215.7, refreshed; 40.0 % with the capped value) and {1 1 0} 1.4 %
+  (158.9). The {3 2 0} family
   holds (3 2 0) and (2 3 0), each 11.3 deg from (1 1 0), so they form a shallow roof over the {1 1 0} prism: the
   prism zone is (110)-like, and its gamma barely depends on the angle.
-- *Without the flagged {2 1 2}.* With its ratio-scaled level-1 value (255.4) in place of 216.9, the caps become
-  {3 2 1} 19 %, {1 0 1} 10 %, {2 1 2} 7.5 % and {1 1 2} 7.5 %.
+- *Without {2 1 2}'s relaxed value.* With its ratio-scaled level-1 value (255.4) in place of the relaxed one, the
+  caps become {3 2 1} 19 %, {1 0 1} 10 %, {2 1 2} 7.5 % and {1 1 2} 7.5 % (a what-if: the converged refresh
+  confirms the relaxed value).
 - *Level-1 shape.* {3 2 0} 55 %, {1 0 1} 21 %, {3 2 1} 21 %, {2 1 2} 2 %.
 - *BFDH.* {1 1 0} 54.6 % and {1 0 1} 45.4 %.
 - *Revision.* As for HMX, `chain afc66e8+dirty`.
@@ -678,9 +687,10 @@ Cost: ReaxFF-lg, 60.3 CPU min (level 1 7.3, level 2 53.0).
 - Jeffries et al., arXiv:2509.25490 (2025). Their kinetic Monte Carlo and attachment-energy shapes are dominated by
   {110} and {101}, in P-421c with a = b = 9.087 and c = 6.738 A (the same setting).
 
-Our prism agrees with these in orientation: (110)-like, as {3 2 0} plus a little {1 1 0}. Our caps do not, unless
-the flagged {2 1 2} value is set aside. {1 0 1} relaxes to 256.4 and sits just off the best shape. The unconverged
-{2 1 2} value and the averaged {3 2 0} faces (top and bottom differ) are where this shape is weakest.
+Our prism agrees with these in orientation: (110)-like, as {3 2 0} plus a little {1 1 0}. Our caps do not: the
+{2 1 2} value, now converged (215.7), keeps them at {2 1 2}. {1 0 1} relaxes to 256.4 and sits just off the best
+shape. The large {2 1 2} relaxation and the averaged {3 2 0} faces (top and bottom differ) are where this shape is
+weakest.
 
 ### TATB campaign (2026-10-23)
 
@@ -710,11 +720,43 @@ at symprec 1e-5 and 1e-3.
   - *Journal.* Two jobs killed by hand ({-1 1 1}, {1 0 1}) stay `started` in the journal and have no records.
   - *Revision.* The records say `chain 985c21d+dirty`. The other agent committed the thin-cell change in the
     meantime (95af9d0, "core routes bit-identical").
-- *Best shape.* It equals the level-1 shape, because the one relaxed/unrelaxed ratio (0.70) scales every family:
-  {0 0 1} 19.9 %, {1 -1 1} 13.6 %, {1 0 0} 12.8 %, {0 1 -1} 12.7 %, {-1 1 1} 9.1 %, {0 1 1} 9.1 %, 13 families
-  in all, e3/e1 0.50. BFDH gives {1 -1 0} 23 %, {1 0 0} 22 %, {0 1 0} 17 % and {0 0 1} 16.5 %.
-- *What-if (not data).* {0 0 1} relaxes by 30 %, far more than the 6-8 % of HMX and PETN. If the other families
-  relaxed by 8 % instead, {0 0 1} would reach 35 %.
+- *Best shape (before the level-2 run below).* It equalled the level-1 shape, because the one relaxed/unrelaxed
+  ratio (0.70) scaled every family: {0 0 1} 19.9 %, {1 -1 1} 13.6 %, {1 0 0} 12.8 %, {0 1 -1} 12.7 %, {-1 1 1}
+  9.1 %, {0 1 1} 9.1 %, 13 families in all, e3/e1 0.50. BFDH gives {1 -1 0} 23 %, {1 0 0} 22 %, {0 1 0} 17 % and
+  {0 0 1} 16.5 %.
+
+**TATB level 2 with the raised unit-cell cap (2026-10-24).** surfenergy now has the FIRE step caps as inputs
+(`fire_max_steps_bulk`, default 10000; `fire_max_steps_slab`, default 12000), and its run-time estimate counts a
+fully triclinic unit cell at its cap. `campaigns/tatb_level2_caps.yaml` ran level 2 again with
+`fire_max_steps_bulk: 30000`, `timeout_factor: 10`, a per-run cap of 40 CPU min and a 360 CPU-min budget (2
+workers), on chain c8f0c03 (clean).
+
+- *Unit cell.* FIRE converges after 14000 steps (0.0095 vs 0.010 kcal/mol over the last chunk) in every run, so the
+  bulk reference is now converged and the same for all families. The fixed CIF cell keeps a large residual stress
+  under ReaxFF-lg (P -18750 atm, largest |P_ij| 22000 atm), as reported in the notes.
+- *8 families relaxed*, 275 CPU min in all (24-49 min each; the estimates were 12-15 min). The two others,
+  {0 1 -1} and {0 1 0}, were skipped at run time: their estimates times this campaign's measured/estimated ratio
+  (2.40) came to 48 and 43 CPU min, over the 40-min cap. They keep ratio-scaled level-1 values.
+
+  | family | relaxed gamma | unrelaxed | relaxed / unrelaxed | slab FIRE steps | CPU min |
+  |---|---|---|---|---|---|
+  | {0 0 1} | 141.48 | 205.40 | 0.69 | 5000 | 29.1 |
+  | {1 0 1} | 222.04 | 259.51 | 0.86 | 2500 | 26.2 |
+  | {1 -1 1} | 226.22 | 265.22 | 0.85 | 3000 | 29.0 |
+  | {0 1 1} | 235.14 | 271.68 | 0.87 | 3000 | 24.5 |
+  | {-1 1 1} | 246.51 | 300.75 | 0.82 | 7500 | 36.9 |
+  | {1 0 -1} | 259.80 | 321.68 | 0.81 | 8000 | 38.0 |
+  | {1 0 0} | 277.24 | 337.79 | 0.82 | 12000 (cap; flagged) | 49.3 |
+  | {1 -1 0} | 321.28 | 386.34 | 0.83 | 8500 | 42.1 |
+
+- *Flags.* {0 0 1} no longer carries `minimisation_not_converged` (it was 139.59 with the capped unit cell; the
+  converged bulk is lower, so gamma rises by 1.9). One new flag: the {1 0 0} slab reached the default 12000-step
+  slab cap (`minimisation_not_converged`); a `fire_max_steps_slab` refresh would settle it.
+- *Best shape now.* {0 0 1} 30.2 %, {1 -1 1} 12.5 %, {0 1 -1} 11.3 % (ratio-scaled level 1), {1 0 0} 11.0 %,
+  {1 0 -1} 6.1 %, {0 1 0} 6.0 % (ratio-scaled), {-1 1 1} 6.0 %, {1 0 1} 5.2 %, {1 -1 0} 4.8 %, {0 1 1} 4.0 %, 14
+  families on it; e3/e1 0.455 (0.50 before), mean relaxed/unrelaxed 0.83.
+- *The earlier what-if* (if the other families relaxed by 8 %, {0 0 1} would reach 35 %) is now measured: they
+  relax by 13-19 %, less than {0 0 1}'s 31 %, and {0 0 1} reaches 30 %.
 
 **Literature (consistency check, not validation).** No abstract we could retrieve (MCP Bond, PubMed, OpenAlex,
 OSTI) gives Miller indices for a predicted or observed TATB habit. What they do say:
@@ -726,6 +768,6 @@ OSTI) gives Miller indices for a predicted or observed TATB habit. What they do 
   doi:10.1080/15421406.2016.1177910).
 
 The sources use the Cady-Larson cell, as we do (their (001) is the molecular-layer plane), though the abstracts do
-not state the setting. Our {0 0 1} is the lowest-gamma and largest family, so it is consistent in kind. But our
-shape is only moderately flattened (e3/e1 0.50), not a thin plate. With one relaxed family, that is as far as this
-check goes.
+not state the setting. Our {0 0 1} is the lowest-gamma and largest family, so it is consistent in kind. With 8
+relaxed families it covers 30 % of the shape, but the shape is still only moderately flattened (e3/e1 0.46), not a
+thin plate.

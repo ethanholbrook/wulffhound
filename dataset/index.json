@@ -1,7 +1,7 @@
 {
  "schema_version": "0.2.0",
  "schema": "schema/surface_energy.schema.json",
- "built": "2026-10-24T02:56:52-04:00",
+ "built": "2026-10-24T08:01:16-04:00",
  "built_by": "tools/export_dataset.py",
  "files": {
   "surface_energy": "surface_energy.jsonl",
@@ -10,7 +10,7 @@
  },
  "parquet": "skipped: pyarrow is not installed in this environment (JSON Lines only)",
  "counts": {
-  "surface_energy": 415,
+  "surface_energy": 425,
   "wulff_shape": 18,
   "attachment_energy": 50,
   "attachment_energy_by_material": {
@@ -23,15 +23,18 @@
    "wulffhound-ledger:paracetamol": 84,
    "cif-zoo": 117,
    "campaign:hmx_wulff": 22,
+   "campaign:petn_212_refresh": 1,
    "campaign:petn_wulff": 27,
+   "campaign:rdx_211_refresh": 1,
    "campaign:rdx_wulff": 60,
+   "campaign:tatb_level2_caps": 8,
    "campaign:tatb_wulff": 34,
    "campaign:tnt_t0_relax": 5,
    "campaign:zoo_screen": 8,
    "surfenergy": 3
   },
   "status_failed": 10,
-  "with_warning_or_error_flags": 380,
+  "with_warning_or_error_flags": 390,
   "with_error_flags": 12,
   "materials": 22
  },
@@ -203,7 +206,7 @@
    "force_fields": [
     "ReaxFF-lg"
    ],
-   "n_records": 29
+   "n_records": 30
   },
   {
    "material_id": "pyrazine",
@@ -229,7 +232,7 @@
    "force_fields": [
     "ReaxFF-lg"
    ],
-   "n_records": 65
+   "n_records": 66
   },
   {
    "material_id": "salicylic-acid",
@@ -268,7 +271,7 @@
    "force_fields": [
     "ReaxFF-lg"
    ],
-   "n_records": 34
+   "n_records": 42
   },
   {
    "material_id": "theophylline-ii",
@@ -366,6 +369,13 @@
     "hmx-beta"
    ]
   },
+  "petn_212_refresh": {
+   "records": 1,
+   "store": "campaigns/petn_212_refresh.jsonl",
+   "materials": [
+    "petn-i"
+   ]
+  },
   "petn_wulff": {
    "records": 27,
    "store": "campaigns/petn_wulff.jsonl",
@@ -373,11 +383,25 @@
     "petn-i"
    ]
   },
+  "rdx_211_refresh": {
+   "records": 1,
+   "store": "campaigns/rdx_211_refresh.jsonl",
+   "materials": [
+    "rdx-alpha"
+   ]
+  },
   "rdx_wulff": {
    "records": 60,
    "store": "campaigns/rdx_wulff.jsonl",
    "materials": [
     "rdx-alpha"
+   ]
+  },
+  "tatb_level2_caps": {
+   "records": 8,
+   "store": "campaigns/tatb_level2_caps.jsonl",
+   "materials": [
+    "tatb"
    ]
   },
   "tatb_wulff": {

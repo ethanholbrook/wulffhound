@@ -33,7 +33,7 @@ sys.path.insert(0, HERE)
 from proc import run_group  # kills the whole job tree on timeout
 import config  # noqa: E402
 from config import STATE, chain_env, chain_present, chain_root, portable  # noqa: E402
-from campaign import MAX_WORKERS, Material, SpecError, campaign_dir, error_line, md5, read_journal  # noqa: E402
+from campaign import FIRE_CAP_KEYS, MAX_WORKERS, Material, SpecError, campaign_dir, error_line, md5, read_journal  # noqa: E402
 
 
 class BackendNotAvailable(RuntimeError):
@@ -61,6 +61,8 @@ def job_request(job, mat, spec, work_dir, timeout_s):
     ov.update({k: v for k, v in (job.get('cell_overrides') or {}).items() if v is not None})   # the planner's cell choice
     if job['level'] == 3:
         ov.update({k: md[k] for k in ('equilibration_ps', 'production_ps', 'n_blocks', 'timestep') if md.get(k)})
+    if job['level'] == 2:     # surfenergy's FIRE step caps (ReaxFF at T = 0); absent = its defaults
+        ov.update({k: int(pr[k]) for k in FIRE_CAP_KEYS if pr.get(k) is not None})
     r = mat.route
     own = mat.kind in ('bundle', 'example') and r['name'] == mat.default_route and r['datafile'] == mat.inputs['datafile']
     return {'level': job['level'], 'hkl': list(job['hkl']), 'search_range': int(job['search_range']),

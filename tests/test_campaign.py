@@ -210,6 +210,55 @@ class TestPlanner(unittest.TestCase):
         self.assertEqual(make_plan(s, journal=journal)['jobs'], [])
 
 
+class TestFireCaps(unittest.TestCase):
+    """surfenergy's FIRE step caps (fire_max_steps_bulk / fire_max_steps_slab) as level-2 protocol overrides: sent to
+    the chain runner, and in the dedup key only when they differ from the defaults (default keys / job ids unchanged)."""
+
+    def test_overrides_and_dedup(self):
+        import types
+        import chain_runner
+        self.assertIn('fire_max_steps_bulk', chain_runner.OVERRIDES)
+        self.assertIn('fire_max_steps_slab', chain_runner.OVERRIDES)
+        s0 = spec()
+        s1 = spec(protocol={'n_periods': 2, 'slab_from': 'relaxed_bulk', 'fire_max_steps_slab': 30000})
+        s2 = spec(protocol={'n_periods': 2, 'slab_from': 'relaxed_bulk', 'fire_max_steps_bulk': 10000,
+                            'fire_max_steps_slab': 12000})        # the defaults given explicitly
+        p0, p1, p2 = make_plan(s0), make_plan(s1), make_plan(s2)
+        k0 = {j['family']: j for j in p0['jobs']}
+        k1 = {j['family']: j for j in p1['jobs']}
+        k2 = {j['family']: j for j in p2['jobs']}
+        self.assertNotIn('fire_max_steps', k0['{0 0 1}']['key'])
+        self.assertEqual(k1['{0 0 1}']['key']['fire_max_steps'], [10000, 30000])
+        self.assertEqual(k0['{0 0 1}']['job_id'], k2['{0 0 1}']['job_id'])     # explicit defaults = the same job
+        self.assertNotEqual(k0['{0 0 1}']['job_id'], k1['{0 0 1}']['job_id'])
+        # an ok record at the default caps is cached for the default spec, a near-duplicate for the raised cap
+        rec = tnt_record('{0 0 1}', 2, 'relaxed_bulk', rid='se-000000000001')
+        rec['result']['minimisation'] = {'unitcell': {'step_cap': 10000}, 'slab_t0': {'step_cap': 12000, 'steps': 12000}}
+        self.assertEqual({x['family']: x['reason'] for x in make_plan(s0, [rec])['skipped']}.get('{0 0 1}'), 'cached')
+        run = {j['family']: j for j in make_plan(s1, [rec])['jobs']}
+        self.assertIn('fire_max_steps', run['{0 0 1}']['near_duplicates'][0]['differs_in'])
+        # a record that ran at the raised cap (its step_cap, or for a failed run its reproduce line) matches it
+        rec2 = copy.deepcopy(rec)
+        rec2['result']['minimisation']['slab_t0']['step_cap'] = 30000
+        self.assertEqual({x['family']: x['reason'] for x in make_plan(s1, [rec2])['skipped']}.get('{0 0 1}'), 'cached')
+        bad = tnt_record('{0 0 1}', 2, 'relaxed_bulk', status='failed', rid='se-000000000004', error='TimeoutExpired')
+        bad['provenance']['reproduce'] = 'chain: ... --set fire_max_steps_slab=30000 --set n_periods=2'
+        self.assertEqual(C.record_fire_caps(bad), (10000, 30000))
+        self.assertEqual({x['family']: x['reason'] for x in make_plan(s1, [bad])['skipped']}.get('{0 0 1}'),
+                         'failed_before')
+        self.assertIn('{0 0 1}', [j['family'] for j in make_plan(s0, [bad])['jobs']])   # default caps: other key
+        # the chain runner request: level 2 sends the caps the spec gives, level 1 none
+        mat = types.SimpleNamespace(route={'name': 'r', 'datafile': 'd', 'script': 's', 'supplementary': None,
+                                           'use_reaxff': True}, kind='cif', default_route='r', inputs={})
+        j = dict(k1['{0 0 1}'], hkl=[0, 0, 1], search_range=4)
+        self.assertEqual(E.job_request(j, mat, s1, TMP, 600)['overrides'].get('fire_max_steps_slab'), 30000)
+        self.assertNotIn('fire_max_steps_bulk', E.job_request(j, mat, s1, TMP, 600)['overrides'])
+        self.assertNotIn('fire_max_steps_slab', E.job_request(dict(j, level=1), mat, s1, TMP, 600)['overrides'])
+        self.assertNotIn('fire_max_steps_slab', E.job_request(j, mat, s0, TMP, 600)['overrides'])
+        with self.assertRaises(C.SpecError):
+            spec(protocol={'n_periods': 2, 'fire_max_steps_slab': 100})
+
+
 class TestStagedSelection(unittest.TestCase):
     """level_facets, wulff_priority (tiers, deferral), target_ok, cell fallbacks and the ReaxFF memory rule."""
 

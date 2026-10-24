@@ -48,6 +48,11 @@ VACUUM_DEFAULT = 30.0
 SEARCH_RANGE_NONBUNDLE = 4              # the CIF zoo's search range (small cells first)
 MAX_WORKERS = 2                         # at most two heavy jobs at once
 REAX_MD5 = 'c129e55db39a4f1e0e5cad3b7a6b0a00'
+# surfenergy's FIRE step caps (ReaxFF at T = 0; inputs since chain 2026-10-24): protocol overrides of level 2, and part
+# of the dedup key only when they differ from surfenergy's defaults (so the keys and job ids of default runs are
+# unchanged, and a run with a raised cap is not taken for the capped one)
+FIRE_CAP_KEYS = ('fire_max_steps_bulk', 'fire_max_steps_slab')
+FIRE_CAP_DEFAULTS = (10000, 12000)
 
 DEFAULTS = {
     'description': '',
@@ -57,7 +62,7 @@ DEFAULTS = {
     'temperatures': [0.0],
     'md': {'equilibration_ps': 10.0, 'production_ps': 20.0, 'n_blocks': 5, 'timestep': 0.0},
     'protocol': {'n_periods': 2, 'search_range': None, 'slab_from': None, 'vacuum': None, 'angle_dev': None,
-                 's_tol': None, 'cell_fallbacks': []},
+                 's_tol': None, 'fire_max_steps_bulk': None, 'fire_max_steps_slab': None, 'cell_fallbacks': []},
     'level_facets': {},
     'budget': {'cpu_minutes': 30.0, 'per_run_cap_minutes': 6.0},
     'policy': 'baseline',
@@ -500,11 +505,32 @@ def record_key(r):
             'force_field': r['force_field']['name'], 'family': r['facet']['family'], 'level': lv,
             'temperature_K': float(P.get('temperature_K') or 0.0), 'n_periods': P.get('n_periods'),
             'slab_from': (P.get('slab_from') or 'static_cut') if lv >= 2 else None,
-            'vacuum_A': float(P['vacuum_A']) if P.get('vacuum_A') is not None else VACUUM_DEFAULT, 'md': md}
+            'vacuum_A': float(P['vacuum_A']) if P.get('vacuum_A') is not None else VACUUM_DEFAULT, 'md': md,
+            **_fire_key(lv, record_fire_caps(r))}
 
 
 KEY_FIELDS = ('material_id', 'structure_id', 'force_field', 'family', 'level', 'temperature_K', 'n_periods',
-              'slab_from', 'vacuum_A', 'md')
+              'slab_from', 'vacuum_A', 'md', 'fire_max_steps')
+
+
+def record_fire_caps(r):
+    """(unit cell, slab) FIRE step caps of a record: the step_cap its minimisation entries carry (the slab's from
+    any slab_* entry), the default for a missing one (records from before the caps were inputs ran at the defaults)."""
+    m = r['result'].get('minimisation') or {}
+    uc = (m.get('unitcell') or {}).get('step_cap')
+    sl = [v.get('step_cap') for k, v in m.items() if k.startswith('slab') and isinstance(v, dict) and v.get('step_cap')]
+    # a failed run has no minimisation: the --set of its reproduce line (campaign_ingest) gives the caps it asked for
+    rep = str((r.get('provenance') or {}).get('reproduce') or '')
+    given = [re.search(r'%s=(\d+)' % k, rep) for k in FIRE_CAP_KEYS]
+    return (int(uc) if uc else int(given[0].group(1)) if given[0] else FIRE_CAP_DEFAULTS[0],
+            int(max(sl)) if sl else int(given[1].group(1)) if given[1] else FIRE_CAP_DEFAULTS[1])
+
+
+def _fire_key(level, caps):
+    """{'fire_max_steps': [bulk, slab]} for a level-2 key whose caps differ from surfenergy's defaults, else {} (the
+    field is left out, so default keys and job ids stay as they were)."""
+    caps = tuple(int(c) for c in caps)
+    return {'fire_max_steps': list(caps)} if level == 2 and caps != FIRE_CAP_DEFAULTS else {}
 
 
 def job_key(mat, family, level, T, spec):
@@ -517,7 +543,8 @@ def job_key(mat, family, level, T, spec):
             'force_field': mat.route['ff_block']['name'], 'family': family, 'level': level,
             'temperature_K': float(T), 'n_periods': int(pr['n_periods']),
             'slab_from': (pr.get('slab_from') or SLAB_FROM_DEFAULT) if level >= 2 else None,
-            'vacuum_A': float(pr['vacuum']) if pr.get('vacuum') is not None else VACUUM_DEFAULT, 'md': md}
+            'vacuum_A': float(pr['vacuum']) if pr.get('vacuum') is not None else VACUUM_DEFAULT, 'md': md,
+            **_fire_key(level, [pr.get(k) or d for k, d in zip(FIRE_CAP_KEYS, FIRE_CAP_DEFAULTS)])}
 
 
 def job_id(key):
@@ -535,7 +562,7 @@ class DatasetIndex:
         """(exact ok records, exact failed records, near-duplicates [(record, differing fields)])."""
         exact_ok, exact_bad, near = [], [], []
         for k, r in self.by.get((key['material_id'], key['family'], key['level']), []):
-            diff = [f for f in KEY_FIELDS if k[f] != key[f]]
+            diff = [f for f in KEY_FIELDS if k.get(f) != key.get(f)]
             rm = r['force_field'].get('md5')
             if ff_md5 and rm and rm != ff_md5:
                 diff.append('force-field md5')

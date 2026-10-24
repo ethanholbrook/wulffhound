@@ -1,0 +1,35 @@
+# PETN-I {2 1 2} refresh: the level-2 (T = 0) run of petn_wulff stopped its slab FIRE minimisation at the
+# 12000-step cap (minimisation_not_converged, gamma 216.89, unrelaxed 275.68, 21 % below it against 3-9 % for the
+# other families). surfenergy has had the cap as an input since 2026-10-24 (fire_max_steps_slab, default 12000);
+# this re-runs the same job with 30000.
+#   ./wh campaign run campaigns/petn_212_refresh.yaml     (needs the chain)
+#
+# Same material, force field and oriented cell as petn_wulff ({2 1 2}: hkl (2 1 2), search_range 6, GCCM angle_dev
+# 1, the cell petn_wulff's planner chose through its cell_fallbacks). The raised cap is part of the dedup key, so
+# the capped record is a near-duplicate, not a cache hit. The newer ok record is the one the shapes use.
+campaign: petn_212_refresh
+description: PETN-I {2 1 2} level 2 (T = 0) again with the slab FIRE step cap raised from 12000 to 30000
+materials:
+  - cif: chain:cif2lammps/examples/petn/petn2.cif
+    name: PETN-I
+forcefield:
+  route: reaxff
+  ffield: chain:cif2lammps/examples/hmx/reax-lg-2011.ff
+  validated: false     # the dataset's convention: ReaxFF-lg is never marked validated
+  note: >-
+    ReaxFF-lg (reax-lg-2011) adds a low-gradient London dispersion term to ReaxFF, fitted to the experimental
+    crystal structures of graphite, polyethylene, CO2, N2, RDX, PETN, TATB and nitromethane (Liu, Liu, Zybin, Sun &
+    Goddard, J. Phys. Chem. A 115, 11016 (2011), doi:10.1021/jp201599t; abstract checked 2026-10-23), so PETN's
+    lattice is in its fitting set; its surface energies are not validated against a reference, and T = 0 ReaxFF
+    relaxations stop at force-field cusps (FIRE in fixed cells)
+facets: ['{2 1 2}']
+levels: [2]
+temperatures: [0]
+protocol:
+  n_periods: 2
+  search_range: 6
+  fire_max_steps_slab: 30000
+# the old run took 10.6 CPU min with the slab at its 12000 cap (7.6 min of it); 30000 steps up to ~25 min
+budget: {cpu_minutes: 45, per_run_cap_minutes: 45}
+policy: baseline
+executor: {backend: local, workers: 1, timeout_factor: 10}

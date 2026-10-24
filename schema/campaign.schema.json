@@ -43,6 +43,8 @@
         "slab_from": {"enum": ["relaxed_bulk", "static_cut", null], "description": "levels 2-3; null = surfenergy's default (relaxed_bulk since R3)"},
         "vacuum": {"type": ["number", "null"], "description": "angstrom (default 30)"},
         "angle_dev": {"type": ["number", "null"], "description": "supercell's GCCM angle_dev, degrees (null: the tool's default, 1)"}, "s_tol": {"type": ["number", "null"]},
+        "fire_max_steps_bulk": {"type": ["integer", "null"], "minimum": 500, "maximum": 100000, "description": "level 2, ReaxFF: surfenergy's FIRE step cap of the unit-cell minimisation (null: the tool's default, 10000); part of the dedup key when not the default"},
+        "fire_max_steps_slab": {"type": ["integer", "null"], "minimum": 500, "maximum": 100000, "description": "level 2, ReaxFF: surfenergy's FIRE step cap of each slab minimisation (null: the tool's default, 12000); part of the dedup key when not the default"},
         "cell_fallbacks": {"type": "array", "items": {"type": "object", "additionalProperties": false,
                                                        "properties": {"search_range": {"type": "integer", "minimum": 1},
                                                                       "angle_dev": {"type": ["number", "null"], "exclusiveMinimum": 0, "maximum": 89}}},

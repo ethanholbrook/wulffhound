@@ -13,7 +13,8 @@ The engine (wulff-dev) launches this as a subprocess (with a timeout) and reads 
 
 Optional request keys (campaign driver; the engine sends none of them, so its runs are unchanged):
   overrides    surfenergy inputs passed through as given: slab_from, vacuum, angle_dev, s_tol, equilibration_ps,
-               production_ps, n_blocks, timestep (absent = surfenergy's own default, e.g. slab_from relaxed_bulk)
+               production_ps, n_blocks, timestep, fire_max_steps_bulk, fire_max_steps_slab (absent = surfenergy's
+               own default, e.g. slab_from relaxed_bulk; the FIRE step caps exist in surfenergy since 2026-10-24)
   temperature  level 3 only
 A material without an example_dir (a CIF-zoo or cif2lammps unit cell) gets an inputs.yaml written into the work
 dir (material_source unitcell, the data file, script and supplementary file by absolute path).
@@ -45,7 +46,8 @@ KEEP2 = ('gamma', 'gamma_error', 'gamma_unrelaxed', 'termination_used', 'n_termi
          'gamma_flags', 'minimization', 'slab_from', 'slab_start', 'stationary', 'gamma_error_block',
          'gamma_equipartition_term', 'timestep_used', 'forcefield_kind', 'molecular_formula', 'inchikey',
          'bulk_temperature_mean', 'bulk_pressure_mean', 'child_runs')
-OVERRIDES = ('slab_from', 'vacuum', 'angle_dev', 's_tol', 'equilibration_ps', 'production_ps', 'n_blocks', 'timestep')
+OVERRIDES = ('slab_from', 'vacuum', 'angle_dev', 's_tol', 'equilibration_ps', 'production_ps', 'n_blocks', 'timestep',
+             'fire_max_steps_bulk', 'fire_max_steps_slab')
 
 
 def cpu_children():

@@ -1,0 +1,46 @@
+# TATB level 2 (T = 0) for up to 10 families, with the unit-cell FIRE step cap raised to 30000. In tatb_wulff every
+# level-2 run's FIRE minimisation of the 2-molecule unit cell (the bulk reference) reached the 10000-step cap
+# (0.013 vs 0.010 kcal/mol over the last chunk, ~8 min of LAMMPS time, ~13 min on the loaded machine) and the
+# runs timed out; only {0 0 1} came through, flagged. surfenergy has had the caps as inputs since 2026-10-24
+# (fire_max_steps_bulk, default 10000).
+#   ./wh campaign plan campaigns/tatb_level2_caps.yaml
+#   ./wh campaign run  campaigns/tatb_level2_caps.yaml     (needs the chain)
+#
+# Material, force field and cell settings as campaigns/tatb_wulff.yaml (its level-1 records and shape choose the
+# families). {0 0 1} is run again with the raised cap, so all ten families share one converged bulk reference; the
+# raised cap is part of the dedup key, so tatb_wulff's capped records are near-duplicates, not cache hits.
+# CCDC-derived structure: only gamma, hkl, lattice parameters and metadata are exported (see tatb_wulff.yaml).
+campaign: tatb_level2_caps
+description: TATB level 2 (T = 0) for up to 10 families on the level-1 shape, unit-cell FIRE cap 30000
+materials:
+  - cif: chain:cif2lammps/examples/tatb/tatb1.cif
+    id: tatb
+    name: TATB (1,3,5-triamino-2,4,6-trinitrobenzene)
+    polymorph: triclinic (Cady & Larson 1965)
+    structure_id: ccdc-1266837
+    licence: "CCDC terms: not redistributable (only gamma, hkl, lattice parameters and metadata are exported)"
+forcefield:
+  route: reaxff
+  ffield: chain:cif2lammps/examples/hmx/reax-lg-2011.ff
+  validated: false     # the dataset's convention: ReaxFF-lg is never marked validated
+  note: >-
+    ReaxFF-lg (reax-lg-2011) adds a low-gradient London dispersion term to ReaxFF, fitted to the experimental
+    crystal structures of graphite, polyethylene, CO2, N2, RDX, PETN, TATB and nitromethane (Liu, Liu, Zybin, Sun &
+    Goddard, J. Phys. Chem. A 115, 11016 (2011), doi:10.1021/jp201599t; abstract checked 2026-10-23), so TATB's
+    lattice is in its fitting set; its surface energies are not validated against a reference, and T = 0 ReaxFF
+    relaxations stop at force-field cusps (FIRE in fixed cells)
+facets: {select: wulff_priority, shape_level: "1", k_sigma: 2, target_ok: 10}
+levels: [2]
+temperatures: [0]
+protocol:
+  n_periods: 2
+  search_range: 4
+  fire_max_steps_bulk: 30000
+  cell_fallbacks:
+    - {search_range: 6}
+    - {angle_dev: 30}
+    - {search_range: 6, angle_dev: 30}
+budget: {cpu_minutes: 360, per_run_cap_minutes: 40}
+policy: baseline
+executor: {backend: local, workers: 2, timeout_factor: 10}
+dedup: {retry_failed: other_cell}

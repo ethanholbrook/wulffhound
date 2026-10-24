@@ -20,7 +20,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from config import ROOT, portable  # noqa: E402
 import symmetry  # noqa: E402
-from campaign import (CAMPAIGN_STORE, LEVEL_NAME, campaign_dir, chain_revision, error_line, load_shapes,  # noqa: E402
+from campaign import (CAMPAIGN_STORE, FIRE_CAP_KEYS, LEVEL_NAME, campaign_dir, chain_revision, error_line, load_shapes,  # noqa: E402
                       make_context, md5, read_journal, resolve_material, _export_module)
 
 SEVERITY = {'gamma_not_positive': 'error', 'relaxed_above_unrelaxed': 'error', 'minimisation_not_converged': 'warning',
@@ -115,7 +115,9 @@ def job_records(job, ev, res, mat, spec, X, mats, revision, dirty):
              'thickness_A': round(float(o['thickness']), 4) if o.get('thickness') else None,
              'energy_check': (not mat.route['use_reaxff']) if lv == 1 else None}
     if lv == 2:
-        proto['minimiser'] = ('FIRE in fixed cells (unit cell as the bulk reference, then the slab), surfenergy'
+        caps = ['%s %d' % (k, int(pr[k])) for k in FIRE_CAP_KEYS if pr.get(k) is not None]
+        proto['minimiser'] = ('FIRE in fixed cells (unit cell as the bulk reference, then the slab), surfenergy' +
+                              (' (%s)' % ', '.join(caps) if caps else '')
                               if mat.route['use_reaxff'] else
                               'CG with box/relax (bulk), slab %s then CG (surfenergy)' % (
                                   're-cut from the relaxed bulk' if slab_from == 'relaxed_bulk' else 'static cut mapped'))
@@ -155,7 +157,8 @@ def job_records(job, ev, res, mat, spec, X, mats, revision, dirty):
         sets = ['temperature=%g' % (0 if lv == 2 else job['temperature_K'])] + \
             ['%s=%s' % (k, v) for k, v in zip('hkl', job['hkl'])] + \
             ['search_range=%s' % job['search_range'], 'n_periods=%s' % pr['n_periods'], 'termination_mode=lowest'] + \
-            ['%s=%s' % (k, cell[k]) for k in ('slab_from', 'vacuum', 'angle_dev', 's_tol') if cell.get(k) is not None]
+            ['%s=%s' % (k, cell[k]) for k in ('slab_from', 'vacuum', 'angle_dev', 's_tol') if cell.get(k) is not None] + \
+            ['%s=%d' % (k, int(pr[k])) for k in FIRE_CAP_KEYS if lv == 2 and pr.get(k) is not None]
         chain_call = 'chain: devtools/run_sim2l.py surfenergy %s --set %s' % (
             portable(ex) if ex else '<unit-cell inputs.yaml written by chain_runner>', ' --set '.join(sets))
     spec_ref = spec.get('_source') or 'campaigns/%s.yaml' % name
@@ -248,7 +251,7 @@ def job_records(job, ev, res, mat, spec, X, mats, revision, dirty):
     mins = {}
     for k, v in (o.get('minimization') or {}).items():
         if isinstance(v, dict):
-            mins[k] = {x: v.get(x) for x in ('method', 'converged', 'stop_reason', 'steps', 'pe_change_last',
+            mins[k] = {x: v.get(x) for x in ('method', 'converged', 'stop_reason', 'steps', 'step_cap', 'pe_change_last',
                                              'fnorm_final', 'gamma_change_last') if v.get(x) is not None}
     st = o.get('slab_start') or {}
     terms = o.get('terminations_screened') or []
