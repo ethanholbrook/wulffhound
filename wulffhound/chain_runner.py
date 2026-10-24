@@ -30,6 +30,7 @@ import os
 import re
 import resource
 import subprocess
+from proc import run_group  # kills the whole job tree on timeout
 import sys
 import time
 import traceback
@@ -151,8 +152,8 @@ def level2(req, mat):
            example]
     for k, v in sets.items():
         cmd += ['--set', '%s=%s' % (k, v)]
-    p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=REPO,
-                       timeout=req.get('timeout_s', 900))
+    p = run_group(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=REPO,
+                  timeout=req.get('timeout_s', 900))
     log = p.stdout.decode(errors='replace')
     m = re.search(r'run directory: (\S+)', log)
     run_dir = os.path.abspath(os.path.join(REPO, 'surfenergy', 'bin', m.group(1))) if m else None

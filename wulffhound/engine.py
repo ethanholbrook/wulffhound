@@ -27,6 +27,7 @@ import numpy as np
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+from proc import run_group  # kills the whole job tree on timeout
 import config  # noqa: E402
 from config import DATA, NO_CHAIN_MSG, chain_env, chain_present, chain_root, resolve  # noqa: E402
 from ledger import Ledger, md5, now, rel  # noqa: E402
@@ -456,8 +457,8 @@ class Engine:
         cmd = [os.path.join(croot, 'devtools', 'sim2l-env'), 'python', os.path.join(HERE, 'chain_runner.py'), rq, rs]
         t0 = time.time()
         try:
-            p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env, cwd=croot,
-                               timeout=timeout_s + 60, start_new_session=True)
+            p = run_group(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env, cwd=croot,
+                          timeout=timeout_s + 60)
             log = p.stdout.decode(errors='replace')
         except subprocess.TimeoutExpired:
             log = 'TIMEOUT after %d s' % (timeout_s + 60)

@@ -30,6 +30,7 @@ import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+from proc import run_group  # kills the whole job tree on timeout
 import config  # noqa: E402
 from config import STATE, chain_env, chain_present, chain_root, portable  # noqa: E402
 from campaign import MAX_WORKERS, Material, SpecError, campaign_dir, error_line, md5, read_journal  # noqa: E402
@@ -105,8 +106,8 @@ class LocalBackend(Backend):
         cmd = [os.path.join(croot, 'devtools', 'sim2l-env'), 'python', os.path.join(HERE, 'chain_runner.py'), rq, rs]
         t0 = time.time()
         try:
-            p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env, cwd=croot,
-                               timeout=timeout_s + 60, start_new_session=True)
+            p = run_group(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env, cwd=croot,
+                          timeout=timeout_s + 60)
             log = p.stdout.decode(errors='replace')
         except subprocess.TimeoutExpired as exc:
             log = (exc.stdout or b'').decode(errors='replace') + '\nTIMEOUT after %d s (the job exceeded its time ' \
