@@ -257,6 +257,11 @@ class TestFireCaps(unittest.TestCase):
         self.assertNotIn('fire_max_steps_slab', E.job_request(j, mat, s0, TMP, 600)['overrides'])
         with self.assertRaises(C.SpecError):
             spec(protocol={'n_periods': 2, 'fire_max_steps_slab': 100})
+        # the estimate rows carry the caps to surfenergy's estimator (None = its defaults)
+        sym = {'lattice_parameters': dict(a=6, b=7, c=8, alpha=90, beta=90, gamma=90), 'n_molecules': 4,
+               'atoms_per_molecule': 21}
+        row = C._est_row(mat, sym, 'x', (0, 0, 1), 4, 2, 0.0, s1)
+        self.assertEqual((row['fire_max_steps_bulk'], row['fire_max_steps_slab']), (None, 30000))
 
 
 class TestStagedSelection(unittest.TestCase):

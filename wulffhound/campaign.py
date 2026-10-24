@@ -839,7 +839,9 @@ def _est_row(mat, sym, jid, hkl, sr, level, T, spec, angle_dev=None):
             'kind': 'reaxff' if mat.route['use_reaxff'] else 'nonreactive',
             'equilibration_ps': m['equilibration_ps'], 'production_ps': m['production_ps'], 'n_blocks': m['n_blocks'],
             'timestep': m.get('timestep'),
-            'angle_dev': angle_dev if angle_dev is not None else spec['protocol'].get('angle_dev')})
+            'angle_dev': angle_dev if angle_dev is not None else spec['protocol'].get('angle_dev'),
+            'fire_max_steps_bulk': spec['protocol'].get('fire_max_steps_bulk'),
+            'fire_max_steps_slab': spec['protocol'].get('fire_max_steps_slab')})
 
 
 # ============================================================================================ journal

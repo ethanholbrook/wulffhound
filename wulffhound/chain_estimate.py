@@ -9,7 +9,8 @@ same numbers for the same inputs; nothing here changes how the chain runs.
 
 jobs.json: [{"id", "cell": [a, b, c, alpha, beta, gamma], "n_atoms", "n_molecules", "hkl", "search_range",
 "level" (1 screening, 2 T = 0, 3 MD), "temperature", "n_periods", "slab_from", "kind" ("reaxff" | "nonreactive"),
-"equilibration_ps", "production_ps", "n_blocks", "timestep", "angle_dev", optional "script" (ReaxFF: slabcutter's
+"equilibration_ps", "production_ps", "n_blocks", "timestep", "angle_dev", optional "fire_max_steps_bulk",
+"fire_max_steps_slab" (surfenergy's ReaxFF T = 0 FIRE caps), optional "script" (ReaxFF: slabcutter's
 memory rule)}]. out.json: {id: {"seconds", "low", "high", "molecules_cell", "atoms_cell", "molecules_slab", "det",
 "mnp", "parts", and with a ReaxFF script "reaxff_gb", "reaxff_limit_gb", "reaxff_refused"} or {"error"}}.
 """
@@ -59,6 +60,9 @@ def main():
                      'search_range': int(j['search_range']), 'n_periods': int(j['n_periods']), 'temperature': T,
                      'termination_mode': 'lowest', 'slab_from': j.get('slab_from') or g.SLAB_FROM_DEFAULT,
                      'bulk_prerelaxed': False}
+            for k in ('fire_max_steps_bulk', 'fire_max_steps_slab'):    # surfenergy's FIRE caps (None: defaults)
+                if j.get(k) is not None:
+                    state[k] = int(j[k])
             settings = None
             if T > 0:
                 settings = md.md_settings(j['kind'], T, float(j.get('timestep') or 0.0),
