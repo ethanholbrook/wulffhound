@@ -1,7 +1,7 @@
 {
  "schema_version": "0.1.1",
  "schema": "schema/surface_energy.schema.json",
- "built": "2026-10-23T21:31:38-04:00",
+ "built": "2026-10-23T22:11:24-04:00",
  "built_by": "tools/export_dataset.py",
  "files": {
   "surface_energy": "surface_energy.jsonl",
@@ -9,20 +9,21 @@
  },
  "parquet": "skipped: pyarrow is not installed in this environment (JSON Lines only)",
  "counts": {
-  "surface_energy": 354,
-  "wulff_shape": 11,
+  "surface_energy": 381,
+  "wulff_shape": 13,
   "by_source": {
    "wulffhound-ledger:tnt": 55,
    "wulffhound-ledger:paracetamol": 84,
    "cif-zoo": 117,
    "campaign:hmx_wulff": 22,
+   "campaign:petn_wulff": 27,
    "campaign:rdx_wulff": 60,
    "campaign:tnt_t0_relax": 5,
    "campaign:zoo_screen": 8,
    "surfenergy": 3
   },
   "status_failed": 7,
-  "with_warning_or_error_flags": 319,
+  "with_warning_or_error_flags": 346,
   "with_error_flags": 9,
   "materials": 21
  },
@@ -194,7 +195,7 @@
    "force_fields": [
     "ReaxFF-lg"
    ],
-   "n_records": 2
+   "n_records": 29
   },
   {
    "material_id": "pyrazine",
@@ -312,7 +313,6 @@
    "nicotinamide",
    "oxalic-acid-alpha",
    "pentaerythritol",
-   "petn-i",
    "pyrazine",
    "salicylic-acid",
    "succinic-acid-beta",
@@ -329,7 +329,6 @@
    "nicotinamide": "2 usable facet families at level 1 (a shape needs >= 3)",
    "oxalic-acid-alpha": "2 usable facet families at level 1 (a shape needs >= 3)",
    "pentaerythritol": "2 usable facet families at level 1 (a shape needs >= 3)",
-   "petn-i": "2 usable facet families at level 1 (a shape needs >= 3)",
    "pyrazine": "2 usable facet families at level 1 (a shape needs >= 3)",
    "salicylic-acid": "1 usable facet families at level 1 (a shape needs >= 3)",
    "succinic-acid-beta": "2 usable facet families at level 1 (a shape needs >= 3)",
@@ -344,6 +343,13 @@
    "store": "campaigns/hmx_wulff.jsonl",
    "materials": [
     "hmx-beta"
+   ]
+  },
+  "petn_wulff": {
+   "records": 27,
+   "store": "campaigns/petn_wulff.jsonl",
+   "materials": [
+    "petn-i"
    ]
   },
   "rdx_wulff": {

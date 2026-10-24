@@ -530,3 +530,48 @@ level 2 45.5).
 Every face reported in these sources is on our shape, and our five largest families are all reported. The
 differences are in the proportions: ReaxFF-lg gives {0 1 1} less area and {0 1 0} more than DFTB does. ReaxFF-lg's
 dispersion fit did not include HMX (see the spec's force-field note).
+
+### PETN-I campaign (2026-10-23)
+
+![PETN-I material page: the relaxed (best) Wulff shape of the petn_wulff campaign](docs/dashboard/petn_material.png)
+
+`campaigns/petn_wulff.yaml`: PETN-I (COD 4111071, P -4 21 c). The point group is -42m, so the Laue class is
+**4/mmm (16 operations), not 4/m**. The tetragonal handling was checked end to end:
+
+- spglib finds 16 Laue operations in the data-file setting;
+- families are 4/mmm orbits ({1 0 1} has 8 members, (h k l) and (k h l) are one family, {2 1 1} has 16);
+- d_eff uses the P-42_1c absences (h00 and 00l odd, hhl with l odd: {1 0 0} d/2, {0 0 1} d/2, {1 1 1} d/2);
+- pymatgen finds 16 operations at symprec 1e-5 and 1e-3 for both shapes, and the browser and pymatgen area
+  fractions agree to 5e-7.
+
+Cost: ReaxFF-lg, 60.3 CPU min (level 1 7.3, level 2 53.0).
+
+- *Level 1.* 15 BFDH families, 13 run and 2 from the zoo ({1 1 0} 168.7, {1 0 1} 268.7). {1 0 0} failed twice in
+  GCCM: (1 0 0) and (0 1 0) are cells with |det(mnp)| = 1, and gen.out's molecule arrays overrun. The driver's
+  `retry_failed: other_cell` then ran (0 -1 0), which gave 231.4.
+- *Level 2.* 10 families at T = 0, 3-10 CPU min each. One flag: {2 1 2} hit the slab step cap
+  (`minimisation_not_converged`) and relaxed 21 % below its unrelaxed value (216.9 vs 275.7), against 3-9 % for
+  the other families.
+- *Best shape.* Only 3 families are on it: {3 2 0} 58.6 % (156.4, the lowest gamma; top and bottom faces differ,
+  so this is their average), {2 1 2} 40.0 % (the flagged value) and {1 1 0} 1.4 % (158.9). The {3 2 0} family
+  holds (3 2 0) and (2 3 0), each 11.3 deg from (1 1 0), so they form a shallow roof over the {1 1 0} prism: the
+  prism zone is (110)-like, and its gamma barely depends on the angle.
+- *Without the flagged {2 1 2}.* With its ratio-scaled level-1 value (255.4) in place of 216.9, the caps become
+  {3 2 1} 19 %, {1 0 1} 10 %, {2 1 2} 7.5 % and {1 1 2} 7.5 %.
+- *Level-1 shape.* {3 2 0} 55 %, {1 0 1} 21 %, {3 2 1} 21 %, {2 1 2} 2 %.
+- *BFDH.* {1 1 0} 54.6 % and {1 0 1} 45.4 %.
+- *Revision.* As for HMX, `chain afc66e8+dirty`.
+
+**Literature (consistency check, not validation).**
+
+- Singh, Negre, Redondo & Perriot, *Cryst. Growth Des.* 24, 3681 (2024), doi:10.1021/acs.cgd.3c01487 (OSTI
+  2346099).
+  - *Setting.* Ours: P-421c from the same 100 K structure (CSD PERYTN12 = Zhurova 2006).
+  - *Their Wulff shape (DFTB).* {1 1 0} 54.4 %, {1 0 1} 35.2 %, {1 0 0} 7.0 %, {1 1 1} 3.6 %.
+  - *Observed faces they cite.* {1 1 0} prism and {1 0 1} caps.
+- Jeffries et al., arXiv:2509.25490 (2025). Their kinetic Monte Carlo and attachment-energy shapes are dominated by
+  {110} and {101}, in P-421c with a = b = 9.087 and c = 6.738 A (the same setting).
+
+Our prism agrees with these in orientation: (110)-like, as {3 2 0} plus a little {1 1 0}. Our caps do not, unless
+the flagged {2 1 2} value is set aside. {1 0 1} relaxes to 256.4 and sits just off the best shape. The unconverged
+{2 1 2} value and the averaged {3 2 0} faces (top and bottom differ) are where this shape is weakest.
